@@ -50,3 +50,26 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+#Binary Files
+*.bin
+*.sys
+
+#The images
+*.img
+*.qcow2
+*.vmdk
+
+#Object files
+*.o
+
+# Bash History
+.bash_history
+
+#Visual Studio files
+.vs
+[Bb]in/
+[Oo]bj/
+
+#Google Drive files
+*.ini
