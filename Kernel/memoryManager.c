@@ -1,3 +1,5 @@
+#ifdef CUSTOM
+
 #include <memoryManager.h>
 
 static void* next;
@@ -25,3 +27,5 @@ void * my_malloc(size_t size) {
 int my_free(void* ptr) {
     return 1;
 }
+
+#endif

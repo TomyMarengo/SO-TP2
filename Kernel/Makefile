@@ -1,5 +1,7 @@
 include Makefile.inc
 
+MM=CUSTOM
+
 KERNEL=kernel.bin
 SOURCES=$(wildcard [^_]*.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
@@ -15,7 +17,7 @@ $(KERNEL): $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM)
 	$(LD) $(LDFLAGS) -T kernel.ld -o $(KERNEL) $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(STATICLIBS)
 
 obj/%.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -c $< -o $@
+	$(GCC) $(GCCFLAGS) -D$(MM) -I./include -c $< -o $@
 
 obj/%.asm.o : asm/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@

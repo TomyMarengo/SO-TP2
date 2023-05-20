@@ -273,13 +273,17 @@ int main() {
 		char readbuf[READBUF_LENGTH] = {0};
 
 		int * p;
+		int * q;
 		p = sys_malloc(i * sizeof(int));
 		printf("dir: %x - aloc: %d ", p, i*sizeof(int));
+		q = sys_malloc(i * sizeof(int));
+		printf("dir: %x - aloc: %d ", q, i*sizeof(int));
 		i+=4;
 		
 		scanf(readbuf,READBUF_LENGTH);
 
 		sys_free(p);
+		sys_free(q);
 
 		char command[READBUF_LENGTH] = {0};
 		char parameters[MAX_PARAMETERS][LENGTH_PARAMETERS] = {{0}};
