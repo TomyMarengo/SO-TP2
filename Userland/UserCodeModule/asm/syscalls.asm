@@ -11,6 +11,8 @@ GLOBAL sys_drawrect
 GLOBAL sys_drawline
 GLOBAL sys_date
 GLOBAL sys_inforeg
+GLOBAL sys_malloc
+GLOBAL sys_free
 section .text
 
 sys_read:
@@ -81,5 +83,15 @@ sys_date:
 sys_inforeg:
     mov rax, 0x0C
     mov r10, rcx
+    int 80h
+    ret
+
+sys_malloc:
+    mov rax, 0x0D
+    int 80h
+    ret
+
+sys_free:
+    mov rax, 0x0E
     int 80h
     ret

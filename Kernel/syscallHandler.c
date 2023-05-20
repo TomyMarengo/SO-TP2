@@ -4,6 +4,7 @@
 #include <interrupts.h>
 #include <keyboard.h>
 #include <video.h>
+#include <memoryManager.h>
 
 extern uint8_t hasRegdump;
 extern const uint64_t regdump[17];
@@ -90,12 +91,22 @@ static uint8_t sys_inforeg_handler(uint64_t reg[17]) {
 	return hasRegdump;
 }
 
+void * sys_malloc_handler(size_t size){
+	return my_malloc(size);
+}
+
+int sys_free_handler(void* ptr){
+	return my_free(ptr);
+}
+
+
+
 // These function pointer casts are safe, provided all syscall handler functions take up to 5 parameters and they
 // are all of integer type.
 static uint64_t (*syscall_handlers[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) = {
 	sys_read_handler, sys_write_handler, sys_time_handler, sys_millis_handler, sys_clearscreen_handler,
 	sys_writeat_handler, sys_screensize_handler, sys_pollread_handler, sys_drawpoint_handler, sys_drawrect_handler,
-	sys_drawline_handler, sys_date_handler, sys_inforeg_handler
+	sys_drawline_handler, sys_date_handler, sys_inforeg_handler, sys_malloc_handler, sys_free_handler
 };
 
 uint64_t syscallHandler(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {

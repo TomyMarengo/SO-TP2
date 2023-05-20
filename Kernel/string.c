@@ -1,13 +1,12 @@
-#include <stdint.h>
 #include <string.h>
 
-void* memset(void* destination, uint8_t c, uint64_t length) {
+void* memset(void* destination, uint8_t c, size_t length) {
 	while(length--)
 		((char*)destination)[length] = c;
 	return destination;
 }
 
-void* memcpy(void* destination, const void* source, uint64_t length)
+void* memcpy(void* destination, const void* source, size_t length)
 {
 	/*
 	* memcpy does not support overlapping buffers, so always do it

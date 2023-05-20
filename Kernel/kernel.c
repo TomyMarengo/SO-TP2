@@ -1,8 +1,10 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <moduleLoader.h>
 #include <idtLoader.h>
 #include <interrupts.h>
 #include <string.h>
+#include <memoryManager.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -15,6 +17,8 @@ static const uint64_t PageSize = 0x1000;
 
 static void* const userCodeModuleAddress = (void*)0x400000;
 static void* const userDataModuleAddress = (void*)0x500000;
+static void * const startHeapAddress = (void*)0x600000;
+static void * const endHeapAddress = (void*)0x800000;
 
 typedef int (*EntryPoint)();
 
@@ -43,7 +47,7 @@ void* initializeKernelBinary() {
 
 int main() {
 	load_idt();
-
+	my_init(startHeapAddress, (size_t)(endHeapAddress - startHeapAddress));
 	((EntryPoint)userCodeModuleAddress)();
 	
 	while(1) _hlt();

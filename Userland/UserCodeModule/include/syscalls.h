@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <color.h>
+#include <stddef.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -27,5 +28,7 @@ void sys_drawpoint(uint16_t x, uint16_t y, Color color);
 void sys_drawrect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, Color color);
 void sys_drawline(uint16_t fromX, uint16_t fromY, uint16_t toX, uint16_t toY, Color color);
 uint8_t sys_inforeg(uint64_t reg[17]);
+int sys_free(void* ptr);
+void* sys_malloc(size_t size);
 
 #endif

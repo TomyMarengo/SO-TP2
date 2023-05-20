@@ -267,10 +267,19 @@ int main() {
 	clearscreen();	
 	print("Welcome to Shell! Type \"HELP\" for a list of commands.\n\n", 55, green);
 
+	int i = 4;
 	while(1) {
 		print("$ ", 2, magenta);
 		char readbuf[READBUF_LENGTH] = {0};
+
+		int * p;
+		p = sys_malloc(i * sizeof(int));
+		printf("dir: %x - aloc: %d ", p, i*sizeof(int));
+		i+=4;
+		
 		scanf(readbuf,READBUF_LENGTH);
+
+		sys_free(p);
 
 		char command[READBUF_LENGTH] = {0};
 		char parameters[MAX_PARAMETERS][LENGTH_PARAMETERS] = {{0}};

@@ -2,7 +2,7 @@
 #define _STRINGS_H_
 
 #include <stdint.h>
-#define NULL 0
+#include <stddef.h>
 
 char* strcat(char* dest, const char* src);
 char* strncat(char* dest, const char* src, uint64_t n);

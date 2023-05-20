@@ -1,6 +1,8 @@
 #include <coreUtil.h>
 #include <color.h>
 #include <syscalls.h>
+#include <stdarg.h>
+#include "string.h"
 
 static uint32_t penpos = 0;
 
@@ -99,4 +101,88 @@ void scanf(char* readbuf, uint64_t maxlen) {
             count++;
         }
     } while (1);
+}
+
+
+///
+
+char* convert(unsigned int num, unsigned int base, char* buff) {
+    const char* representation = "0123456789ABCDEF";
+    char* ptr;
+
+    ptr = &buff[sizeof(buff) - 1];
+    *ptr = '\0';
+
+    do {
+        *--ptr = representation[num % base];
+        num /= base;
+    } while (num != 0);
+
+    return ptr;
+}
+
+void printf(const char* frmt, ...) {
+    va_list arg;        
+    va_start(arg, frmt); 
+
+    const char* aux;
+
+    int i;
+    unsigned int u;
+    char* s;
+    char tmpBuff[33];
+
+    for (aux = frmt; *aux != '\0'; aux++) {
+        while (*aux != '%') {
+            if (*aux == '\0') {
+                va_end(arg);
+                return;
+            }
+            putchar(*aux);
+            aux++;
+        }
+        aux++;
+
+        switch (*aux) {
+            case 'c':
+                i = va_arg(arg, int); 
+                putchar(i);
+                break;
+
+            case 'd':
+                i = va_arg(arg, int); 
+                if (i < 0) {
+                    i = -i;
+                    putchar('-');
+                }
+                print(convert(i, 10, tmpBuff), strlen(convert(i, 10, tmpBuff)), gray);
+                break;
+
+            case 'o':
+                u = va_arg(arg, unsigned int);
+                print(convert(u, 8, tmpBuff), strlen(convert(u, 8, tmpBuff)), gray);
+                break;
+
+            case 's':
+                s = va_arg(arg, char*); 
+                print(s, strlen(s), gray);
+                break;
+
+            case 'u':
+                u = va_arg(arg, unsigned int); 
+                print(convert(u, 10, tmpBuff), strlen(convert(u, 10, tmpBuff)), gray);
+                break;
+
+            case 'x':
+                u = va_arg(arg, unsigned int); 
+                print(convert(u, 16, tmpBuff), strlen(convert(u, 16, tmpBuff)), gray);
+                break;
+
+            case '%':
+                putchar('%');
+                break;
+        }
+    }
+    
+    va_end(arg);
 }

@@ -20,5 +20,7 @@ void putchar(char c);
 void print(const char* buf, uint64_t count, Color color);
 char getChar(void);
 void scanf(char* readbuf, uint64_t maxLen);
+char* convert(unsigned int num, unsigned int base, char* buff);
+void printf(const char* frmt, ...);
 
 #endif
