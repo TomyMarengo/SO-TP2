@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <types.h>
+#include <video.h>
 
 /* Local headers */
 #include "string.h"
