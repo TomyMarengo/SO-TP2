@@ -1,6 +1,8 @@
 #include <steve.h>
 #include <syscalls.h>
 
+// Maincra
+
 Color hairColor = {0x0A, 0x1A, 0x26};
 Color eyeColor = {0x89, 0x3D, 0x52};
 Color noseColor = {0x3A, 0x52, 0x80};

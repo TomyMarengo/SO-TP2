@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 
+/**
+ * @brief Structure of a color in RGB (b,g,r).
+ */
 typedef struct {
     uint8_t b;
     uint8_t g;

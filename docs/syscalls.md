@@ -60,7 +60,7 @@ Request the memory manager to reserve a chunk of memory. Returns a pointer to th
 
 ## [0x0E] int sys_free(void *ptr)
 
-Notifies the memory manager that a previously allocated memory segment, reserved by my_malloc(), is now available to be marked as free and used elsewhere. Returns 0 if the operation is successful, 1 otherwise.
+Notifies the memory manager that a previously allocated memory segment, reserved by sys_malloc(), is now available to be marked as free and used elsewhere. Returns 0 if the operation is successful, 1 otherwise.
 
 ## [0x0E] void *sys_realloc(void *ptr, size_t size)
 
