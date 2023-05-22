@@ -1,5 +1,5 @@
 //Initial code from https://github.com/evanw/buddy-malloc
-#ifndef CUSTOM
+#ifdef USE_BUDDY
 
 #include <memoryManager.h>
 
