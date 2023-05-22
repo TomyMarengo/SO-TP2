@@ -4,7 +4,7 @@
 
 Welcome to the world of **tOS**, the operating system that's here to give you a contagious laughter *(and maybe a slight case of the coughs!)*. Operating Systems can be serious business, but why not inject a little humor into the mix?
 
-tOS, short for "The Operating System" *(and not related to any respiratory conditions, we promise)*, is a project that takes the fascinating realm of OS development and adds a whimsical twist. :microbe: We believe that coding and laughter go hand in hand, and tOS embodies that philosophy in every line of code.
+**tOS**, short for "The Operating System" *(and not related to any respiratory conditions, we promise)*, is a project that takes the fascinating realm of OS development and adds a whimsical twist. :microbe: We believe that coding and laughter go hand in hand, and tOS embodies that philosophy in every line of code.
 
 With tOS, you'll discover a playful approach to operating systems where learning becomes infectious. :microbe: Explore the inner workings of the **kernel**, dance with **pipes and semaphores**, and giggle at the **memory management**. Our OS *may not be entirely germ-free*, but it's guaranteed to provide a healthy dose of laughter and learning.
 
