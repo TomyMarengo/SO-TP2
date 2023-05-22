@@ -115,7 +115,8 @@ sys_free_handler(void *ptr) {
     return my_free(ptr);
 }
 
-void* sys_realloc_handler(void* ptr, size_t size) {
+void *
+sys_realloc_handler(void *ptr, size_t size) {
     return my_realloc(ptr, size);
 }
 

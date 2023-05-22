@@ -3,44 +3,37 @@
 #include <memoryManager.h>
 #include <string.h>
 
-/**
- * Represents a structure prepended to all allocated memory chunks to track said memory chunks.
- *
- * The size of this struct must be a multiple of 8 in order to preserve word-alignment.
- */
-typedef struct memoryBlockNode {
+typedef struct memoryListNode {
     size_t size;
     size_t leftoverSize;
     size_t checksum;
-    struct memoryBlockNode *previous;
-    struct memoryBlockNode *next;
-} TMemoryBlockNode;
+    struct memoryListNode *previous;
+    struct memoryListNode *next;
+} TMemoryListNode;
 
 static size_t totalMemory;
 static size_t usedMemory;
 static unsigned int memoryChunks;
 
-static TMemoryBlockNode *firstBlock = NULL;
+static TMemoryListNode *firstBlock = NULL;
 
 static void
-calcNodeChecksum(const TMemoryBlockNode *node, size_t *result) {
+calcNodeChecksum(const TMemoryListNode *node, size_t *result) {
     *result = node->size ^ node->leftoverSize ^ (size_t) node->previous ^ (size_t) node->next;
 }
 
 void
 my_init(void *memoryStart, size_t memorySize) {
-    // word-allign memoryStart by rounding up to a multiple of 8.
     void *actualStart = (void *) WORD_ALIGN_UP(memoryStart);
     memorySize -= (actualStart - memoryStart);
     memorySize = WORD_ALIGN_DOWN(memorySize);
 
     totalMemory = memorySize;
-    usedMemory = sizeof(TMemoryBlockNode);
+    usedMemory = sizeof(TMemoryListNode);
     memoryChunks = 1;
 
-    // Allocate space for a first TMemoryBlockNode at the start of our segment.
-    firstBlock = (TMemoryBlockNode *) actualStart;
-    memorySize -= sizeof(TMemoryBlockNode);
+    firstBlock = (TMemoryListNode *) actualStart;
+    memorySize -= sizeof(TMemoryListNode);
 
     firstBlock->size = 0;
     firstBlock->leftoverSize = memorySize;
@@ -56,13 +49,9 @@ my_malloc(size_t size) {
 
     size = WORD_ALIGN_UP(size);
 
-    TMemoryBlockNode *node = firstBlock;
-    size_t totalSizeWithNode = size + sizeof(TMemoryBlockNode);
+    TMemoryListNode *node = firstBlock;
+    size_t totalSizeWithNode = size + sizeof(TMemoryListNode);
 
-    // Find the first available node with enough size to fulfill the request.
-    // A valid node needs to have enough leftoverSize for the requested space, plus the
-    // TMemoryBlockNode placed at the start of the chunk. A node may however have a size
-    // if 0, in which case it may be used 'as is' and creating a new node isn't necessary.
     while ((node->size != 0 || node->leftoverSize < size) && node->leftoverSize < totalSizeWithNode) {
         node = node->next;
 
@@ -75,12 +64,12 @@ my_malloc(size_t size) {
         node->leftoverSize -= size;
         calcNodeChecksum(node, &node->checksum);
         usedMemory += size;
-        return (void *) node + sizeof(TMemoryBlockNode);
+        return (void *) node + sizeof(TMemoryListNode);
     }
 
-    TMemoryBlockNode *newNode = (TMemoryBlockNode *) ((void *) node + sizeof(TMemoryBlockNode) + node->size);
+    TMemoryListNode *newNode = (TMemoryListNode *) ((void *) node + sizeof(TMemoryListNode) + node->size);
     newNode->size = size;
-    newNode->leftoverSize = node->leftoverSize - sizeof(TMemoryBlockNode) - newNode->size;
+    newNode->leftoverSize = node->leftoverSize - sizeof(TMemoryListNode) - newNode->size;
     newNode->previous = node;
     newNode->next = node->next;
     node->leftoverSize = 0;
@@ -96,7 +85,7 @@ my_malloc(size_t size) {
 
     memoryChunks++;
     usedMemory += totalSizeWithNode;
-    return (void *) newNode + sizeof(TMemoryBlockNode);
+    return (void *) newNode + sizeof(TMemoryListNode);
 }
 
 void *
@@ -111,7 +100,7 @@ my_realloc(void *ptr, size_t size) {
         return NULL;
     }
 
-    TMemoryBlockNode *node = (TMemoryBlockNode *) (ptr - sizeof(TMemoryBlockNode));
+    TMemoryListNode *node = (TMemoryListNode *) (ptr - sizeof(TMemoryListNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -151,7 +140,7 @@ my_free(void *ptr) {
     if (ptr == NULL)
         return 0;
 
-    TMemoryBlockNode *node = (TMemoryBlockNode *) (ptr - sizeof(TMemoryBlockNode));
+    TMemoryListNode *node = (TMemoryListNode *) (ptr - sizeof(TMemoryListNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -164,9 +153,9 @@ my_free(void *ptr) {
         usedMemory -= node->size;
         calcNodeChecksum(node, &node->checksum);
     } else {
-        node->previous->leftoverSize += node->size + node->leftoverSize + sizeof(TMemoryBlockNode);
+        node->previous->leftoverSize += node->size + node->leftoverSize + sizeof(TMemoryListNode);
         node->previous->next = node->next;
-        usedMemory -= node->size + sizeof(TMemoryBlockNode);
+        usedMemory -= node->size + sizeof(TMemoryListNode);
         memoryChunks--;
         calcNodeChecksum(node->previous, &node->previous->checksum);
 

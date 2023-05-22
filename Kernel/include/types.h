@@ -5,12 +5,12 @@
 #include <stdint.h>
 
 /**
- * @brief Represents the different types of supported memory managers.
+ * @brief Represents the various categories of supported memory managers.
  */
-typedef enum { NODE, BUDDY } TMemoryManagerType;
+typedef enum { LIST, BUDDY } TMemoryManagerType;
 
 /**
- * @brief Represents the state of the system memory at a given point in time.
+ * @brief Reflects the condition of the system memory at a specific moment.
  */
 typedef struct {
     size_t total;

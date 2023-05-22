@@ -230,6 +230,11 @@ my_init(void *memoryStart, size_t memorySize) {
     return;
 }
 
+void *
+my_realloc(void *ptr, size_t size) {
+    return NULL;
+}
+
 // Function for getting memory information
 void
 mem_info() {
