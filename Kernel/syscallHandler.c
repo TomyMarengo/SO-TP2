@@ -115,6 +115,10 @@ sys_free_handler(void *ptr) {
     return my_free(ptr);
 }
 
+void* sys_realloc_handler(void* ptr, size_t size) {
+    return my_realloc(ptr, size);
+}
+
 // These function pointer casts are safe, provided all syscall handler functions take up to 5 parameters and they
 // are all of integer type.
 static uint64_t (*syscall_handlers[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8) = {
@@ -132,7 +136,8 @@ static uint64_t (*syscall_handlers[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, 
     sys_date_handler,         // 11
     sys_inforeg_handler,      // 12
     sys_malloc_handler,       // 13
-    sys_free_handler          // 14
+    sys_free_handler,         // 14
+    sys_realloc_handler       // 15
 };
 
 uint64_t

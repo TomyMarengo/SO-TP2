@@ -13,6 +13,7 @@ GLOBAL sys_date
 GLOBAL sys_inforeg
 GLOBAL sys_malloc
 GLOBAL sys_free
+GLOBAL sys_realloc
 section .text
 
 sys_read:
@@ -93,5 +94,10 @@ sys_malloc:
 
 sys_free:
     mov rax, 0x0E
+    int 80h
+    ret
+
+sys_realloc:
+    mov rax, 0x0F
     int 80h
     ret

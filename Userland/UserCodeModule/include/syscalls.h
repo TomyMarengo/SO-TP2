@@ -30,5 +30,6 @@ void sys_drawline(uint16_t fromX, uint16_t fromY, uint16_t toX, uint16_t toY, Co
 uint8_t sys_inforeg(uint64_t reg[17]);
 int sys_free(void *ptr);
 void *sys_malloc(size_t size);
+void* sys_realloc(void* ptr, size_t size);
 
 #endif
