@@ -50,6 +50,22 @@ Draws a line between two pixels on the screen.
 
 Returns the current date as a 64-bit number whose bits 0-7 represent day, bits 8-15 month and bits 16-23 year.
 
+## [0x0C] static uint8_t sys_inforeg(uint64_t reg[17])
+
+Dumps registers.
+
+## [0x0D] sys_malloc(size_t size)
+
+Request the memory manager to reserve a chunk of memory. Returns a pointer to the reserved memory, or NULL if the operation failed.
+
+## [0x0E] int sys_free(void *ptr)
+
+Notifies the memory manager that a previously allocated memory segment, reserved by my_malloc(), is now available to be marked as free and used elsewhere. Returns 0 if the operation is successful, 1 otherwise.
+
+## [0x0E] void *sys_realloc(void *ptr, size_t size)
+
+Instructs the memory manager to modify the size of a previously allocated block of memory. Returns a pointer to the resized memory block, or NULL if the operation failed.
+
 # Default file descriptors
 
 - [0] `STDIN`: Standard input
