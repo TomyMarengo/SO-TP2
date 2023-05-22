@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define TICKS_TO_SECONDS(x) ((x) * 5 / 91)
-#define TICKS_TO_MILLISECONDS(x) ((x) * 5000 / 91);
+#define TICKS_TO_SECONDS(x)      ((x) *5 / 91)
+#define TICKS_TO_MILLISECONDS(x) ((x) *5000 / 91);
 
 /* Gets the total amount of ticks elapsed since startup. */
 uint64_t rtc_getElapsedTicks();

@@ -1,7 +1,7 @@
-#include <stdint.h>
-#include <fractal.h>
-#include <syscalls.h>
 #include <color.h>
+#include <fractal.h>
+#include <stdint.h>
+#include <syscalls.h>
 
 #define MAX_ITERATIONS 300
 
@@ -10,14 +10,16 @@ typedef struct {
     double y;
 } Vec2;
 
-static void CMult(const Vec2* a, const Vec2* b, Vec2* res) {
-    res->x = a->x*b->x - a->y*b->y;
-    res->y = a->x*b->y + a->y*b->x;
+static void
+CMult(const Vec2 *a, const Vec2 *b, Vec2 *res) {
+    res->x = a->x * b->x - a->y * b->y;
+    res->y = a->x * b->y + a->y * b->x;
 }
 
-static void CSquare(const Vec2* a, Vec2* res) {
-    res->x = a->x*a->x - a->y*a->y;
-    res->y = a->x*a->y + a->y*a->x;
+static void
+CSquare(const Vec2 *a, Vec2 *res) {
+    res->x = a->x * a->x - a->y * a->y;
+    res->y = a->x * a->y + a->y * a->x;
 }
 
 typedef struct {
@@ -25,43 +27,43 @@ typedef struct {
     Vec2 v;
 } PixelCell;
 
-static void memclr(void* m, uint64_t count) {
+static void
+memclr(void *m, uint64_t count) {
     for (; count; count--)
-        *((uint8_t*)(m++)) = 0;
+        *((uint8_t *) (m++)) = 0;
 }
 
-static Color computeColor(uint64_t iteration) {
+static Color
+computeColor(uint64_t iteration) {
     iteration *= 256;
     uint64_t b = iteration / 50;
     uint64_t g = iteration / 150;
     uint64_t r = iteration / 100;
-    Color currentColor = {
-        ((b > 255) ? 255 : (uint8_t)b),
-        ((g > 255) ? 255 : (uint8_t)g),
-        ((r > 255) ? 255 : (uint8_t)r)
-    };
+    Color currentColor = {((b > 255) ? 255 : (uint8_t) b), ((g > 255) ? 255 : (uint8_t) g), ((r > 255) ? 255 : (uint8_t) r)};
     return currentColor;
 }
 
-static void setInitialState(PixelCell* cells, uint32_t width, uint32_t height, uint64_t pixelcount) {
+static void
+setInitialState(PixelCell *cells, uint32_t width, uint32_t height, uint64_t pixelcount) {
     const double minX = 0.2513415;
     const double maxX = 0.5031265;
     const double centerY = 0.105178981;
     double pixelDelta = (maxX - minX) / width;
-    double minY = centerY - pixelDelta*height/2.0;
-    
+    double minY = centerY - pixelDelta * height / 2.0;
+
     do {
         pixelcount--;
-        Vec2 v = { minX + pixelDelta*(pixelcount % width), minY + pixelDelta*(pixelcount / width) };
+        Vec2 v = {minX + pixelDelta * (pixelcount % width), minY + pixelDelta * (pixelcount / width)};
         cells->v = v;
         cells++;
     } while (pixelcount != 0);
 }
 
-static const Vec2 c = { 0.2680149, 0.0 };
-static const Vec2 b = { 0.1, -0.5 };
+static const Vec2 c = {0.2680149, 0.0};
+static const Vec2 b = {0.1, -0.5};
 
-static void step(Vec2* v) {
+static void
+step(Vec2 *v) {
     Vec2 v_squared, b_times_v;
     CSquare(v, &v_squared);
     CMult(&b, v, &b_times_v);
@@ -69,15 +71,16 @@ static void step(Vec2* v) {
     v->y = v_squared.y + b_times_v.y + c.y;
 }
 
-#define WIDTH 1024
-#define HEIGHT 768
-#define PIXELCOUNT (WIDTH*HEIGHT)
-static PixelCell cells[PIXELCOUNT]; // 12.75MBs of RAM. Ouch.
+#define WIDTH      1024
+#define HEIGHT     768
+#define PIXELCOUNT (WIDTH * HEIGHT)
+static PixelCell cells[PIXELCOUNT];  // 12.75MBs of RAM. Ouch.
 
-void frc_run(void) {
+void
+frc_run(void) {
     sys_clearscreen();
     sys_writeat("Press ESC at any moment to abort.", 33, 0, 0, white);
-    memclr((void*)cells, PIXELCOUNT * sizeof(PixelCell));
+    memclr((void *) cells, PIXELCOUNT * sizeof(PixelCell));
     setInitialState(cells, WIDTH, HEIGHT, PIXELCOUNT);
 
     uint64_t readlen;
@@ -87,7 +90,7 @@ void frc_run(void) {
     for (uint64_t iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
         Color currentColor = computeColor(iteration);
 
-        PixelCell* cell = cells;
+        PixelCell *cell = cells;
         for (uint64_t i = 0; i < PIXELCOUNT; i++, cell++) {
             if (!cell->isFinalized) {
                 step(&(cell->v));
@@ -98,11 +101,11 @@ void frc_run(void) {
         }
 
         // Check if should exit
-        if ((readlen = sys_pollread(KBDIN, (char*)readbuf, sizeof(readbuf), 0)) != 0) {
+        if ((readlen = sys_pollread(KBDIN, (char *) readbuf, sizeof(readbuf), 0)) != 0) {
             do {
                 readlen--;
-                if (readbuf[readlen] == (uint8_t)1) { // check for scancode for pressing down the ESC key.
-                    iteration = MAX_ITERATIONS; // Stop the for loop.
+                if (readbuf[readlen] == (uint8_t) 1) {  // check for scancode for pressing down the ESC key.
+                    iteration = MAX_ITERATIONS;         // Stop the for loop.
                     readlen = 0;
                 }
             } while (readlen != 0);
@@ -114,6 +117,6 @@ void frc_run(void) {
 
     // Wait until we read the scancode for pressing down the ESC key.
     do {
-        sys_read(KBDIN, (char*)readbuf, 1);
-    } while (*readbuf != (uint64_t)1); 
+        sys_read(KBDIN, (char *) readbuf, 1);
+    } while (*readbuf != (uint64_t) 1);
 }

@@ -3,7 +3,6 @@
 #include <memoryManager.h>
 #include <string.h>
 
-
 /**
  * Represents a structure prepended to all allocated memory chunks to track said memory chunks.
  *
@@ -13,23 +12,25 @@ typedef struct memoryBlockNode {
     size_t size;
     size_t leftoverSize;
     size_t checksum;
-    struct memoryBlockNode* previous;
-    struct memoryBlockNode* next;
+    struct memoryBlockNode *previous;
+    struct memoryBlockNode *next;
 } TMemoryBlockNode;
 
 static size_t totalMemory;
 static size_t usedMemory;
 static unsigned int memoryChunks;
 
-static TMemoryBlockNode* firstBlock = NULL;
+static TMemoryBlockNode *firstBlock = NULL;
 
-static void calcNodeChecksum(const TMemoryBlockNode* node, size_t* result) {
-    *result = node->size ^ node->leftoverSize ^ (size_t)node->previous ^ (size_t)node->next;
+static void
+calcNodeChecksum(const TMemoryBlockNode *node, size_t *result) {
+    *result = node->size ^ node->leftoverSize ^ (size_t) node->previous ^ (size_t) node->next;
 }
 
-void my_init(void* memoryStart, size_t memorySize) {
+void
+my_init(void *memoryStart, size_t memorySize) {
     // word-allign memoryStart by rounding up to a multiple of 8.
-    void* actualStart = (void*)WORD_ALIGN_UP(memoryStart);
+    void *actualStart = (void *) WORD_ALIGN_UP(memoryStart);
     memorySize -= (actualStart - memoryStart);
     memorySize = WORD_ALIGN_DOWN(memorySize);
 
@@ -38,7 +39,7 @@ void my_init(void* memoryStart, size_t memorySize) {
     memoryChunks = 1;
 
     // Allocate space for a first TMemoryBlockNode at the start of our segment.
-    firstBlock = (TMemoryBlockNode*)actualStart;
+    firstBlock = (TMemoryBlockNode *) actualStart;
     memorySize -= sizeof(TMemoryBlockNode);
 
     firstBlock->size = 0;
@@ -48,13 +49,14 @@ void my_init(void* memoryStart, size_t memorySize) {
     calcNodeChecksum(firstBlock, &firstBlock->checksum);
 }
 
-void* my_malloc(size_t size) {
+void *
+my_malloc(size_t size) {
     if (firstBlock == NULL || size == 0)
         return NULL;
 
     size = WORD_ALIGN_UP(size);
 
-    TMemoryBlockNode* node = firstBlock;
+    TMemoryBlockNode *node = firstBlock;
     size_t totalSizeWithNode = size + sizeof(TMemoryBlockNode);
 
     // Find the first available node with enough size to fulfill the request.
@@ -73,10 +75,10 @@ void* my_malloc(size_t size) {
         node->leftoverSize -= size;
         calcNodeChecksum(node, &node->checksum);
         usedMemory += size;
-        return (void*)node + sizeof(TMemoryBlockNode);
+        return (void *) node + sizeof(TMemoryBlockNode);
     }
 
-    TMemoryBlockNode* newNode = (TMemoryBlockNode*)((void*)node + sizeof(TMemoryBlockNode) + node->size);
+    TMemoryBlockNode *newNode = (TMemoryBlockNode *) ((void *) node + sizeof(TMemoryBlockNode) + node->size);
     newNode->size = size;
     newNode->leftoverSize = node->leftoverSize - sizeof(TMemoryBlockNode) - newNode->size;
     newNode->previous = node;
@@ -94,10 +96,11 @@ void* my_malloc(size_t size) {
 
     memoryChunks++;
     usedMemory += totalSizeWithNode;
-    return (void*)newNode + sizeof(TMemoryBlockNode);
+    return (void *) newNode + sizeof(TMemoryBlockNode);
 }
 
-void* my_realloc(void* ptr, size_t size) {
+void *
+my_realloc(void *ptr, size_t size) {
     size = WORD_ALIGN_UP(size);
 
     if (ptr == NULL)
@@ -108,7 +111,7 @@ void* my_realloc(void* ptr, size_t size) {
         return NULL;
     }
 
-    TMemoryBlockNode* node = (TMemoryBlockNode*)(ptr - sizeof(TMemoryBlockNode));
+    TMemoryBlockNode *node = (TMemoryBlockNode *) (ptr - sizeof(TMemoryBlockNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -135,7 +138,7 @@ void* my_realloc(void* ptr, size_t size) {
         return ptr;
     }
 
-    void* newPtr = my_malloc(size);
+    void *newPtr = my_malloc(size);
     if (newPtr != NULL) {
         memcpy(newPtr, ptr, node->size);
         my_free(ptr);
@@ -143,11 +146,12 @@ void* my_realloc(void* ptr, size_t size) {
     return newPtr;
 }
 
-int my_free(void* ptr) {
+int
+my_free(void *ptr) {
     if (ptr == NULL)
         return 0;
 
-    TMemoryBlockNode* node = (TMemoryBlockNode*)(ptr - sizeof(TMemoryBlockNode));
+    TMemoryBlockNode *node = (TMemoryBlockNode *) (ptr - sizeof(TMemoryBlockNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -175,7 +179,8 @@ int my_free(void* ptr) {
     return 0;
 }
 
-int my_getState(TMemoryState* memoryState) {
+int
+my_getState(TMemoryState *memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = NODE;
