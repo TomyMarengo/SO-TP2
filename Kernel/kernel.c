@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <scheduler.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -19,8 +20,6 @@ static void *const userCodeModuleAddress = (void *) 0x400000;
 static void *const userDataModuleAddress = (void *) 0x500000;
 static void *const startHeapAddress = (void *) 0xF00000;
 static void *const endHeapAddress = (void *) 0x2000000;
-
-typedef int (*EntryPoint)();
 
 void
 clearBSS(void *bssAddress, uint64_t bssSize) {
@@ -46,8 +45,12 @@ initializeKernelBinary() {
 int
 main() {
     load_idt();
+    
     my_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
-    ((EntryPoint) userCodeModuleAddress)();
+
+    sch_init();
+
+    ((ProcessStart)userCodeModuleAddress)(0, NULL);
 
     while (1)
         _hlt();

@@ -9,16 +9,16 @@ typedef struct memoryListNode {
     size_t checksum;
     struct memoryListNode *previous;
     struct memoryListNode *next;
-} TMemoryListNode;
+} MemoryListNode;
 
 static size_t totalMemory;
 static size_t usedMemory;
 static unsigned int memoryChunks;
 
-static TMemoryListNode *firstBlock = NULL;
+static MemoryListNode *firstBlock = NULL;
 
 static void
-calcNodeChecksum(const TMemoryListNode *node, size_t *result) {
+calcNodeChecksum(const MemoryListNode *node, size_t *result) {
     *result = node->size ^ node->leftoverSize ^ (size_t) node->previous ^ (size_t) node->next;
 }
 
@@ -29,11 +29,11 @@ my_init(void *memoryStart, size_t memorySize) {
     memorySize = WORD_ALIGN_DOWN(memorySize);
 
     totalMemory = memorySize;
-    usedMemory = sizeof(TMemoryListNode);
+    usedMemory = sizeof(MemoryListNode);
     memoryChunks = 1;
 
-    firstBlock = (TMemoryListNode *) actualStart;
-    memorySize -= sizeof(TMemoryListNode);
+    firstBlock = (MemoryListNode *) actualStart;
+    memorySize -= sizeof(MemoryListNode);
 
     firstBlock->size = 0;
     firstBlock->leftoverSize = memorySize;
@@ -49,8 +49,8 @@ my_malloc(size_t size) {
 
     size = WORD_ALIGN_UP(size);
 
-    TMemoryListNode *node = firstBlock;
-    size_t totalSizeWithNode = size + sizeof(TMemoryListNode);
+    MemoryListNode *node = firstBlock;
+    size_t totalSizeWithNode = size + sizeof(MemoryListNode);
 
     while ((node->size != 0 || node->leftoverSize < size) && node->leftoverSize < totalSizeWithNode) {
         node = node->next;
@@ -64,12 +64,12 @@ my_malloc(size_t size) {
         node->leftoverSize -= size;
         calcNodeChecksum(node, &node->checksum);
         usedMemory += size;
-        return (void *) node + sizeof(TMemoryListNode);
+        return (void *) node + sizeof(MemoryListNode);
     }
 
-    TMemoryListNode *newNode = (TMemoryListNode *) ((void *) node + sizeof(TMemoryListNode) + node->size);
+    MemoryListNode *newNode = (MemoryListNode *) ((void *) node + sizeof(MemoryListNode) + node->size);
     newNode->size = size;
-    newNode->leftoverSize = node->leftoverSize - sizeof(TMemoryListNode) - newNode->size;
+    newNode->leftoverSize = node->leftoverSize - sizeof(MemoryListNode) - newNode->size;
     newNode->previous = node;
     newNode->next = node->next;
     node->leftoverSize = 0;
@@ -85,7 +85,7 @@ my_malloc(size_t size) {
 
     memoryChunks++;
     usedMemory += totalSizeWithNode;
-    return (void *) newNode + sizeof(TMemoryListNode);
+    return (void *) newNode + sizeof(MemoryListNode);
 }
 
 void *
@@ -100,7 +100,7 @@ my_realloc(void *ptr, size_t size) {
         return NULL;
     }
 
-    TMemoryListNode *node = (TMemoryListNode *) (ptr - sizeof(TMemoryListNode));
+    MemoryListNode *node = (MemoryListNode *) (ptr - sizeof(MemoryListNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -140,7 +140,7 @@ my_free(void *ptr) {
     if (ptr == NULL)
         return 0;
 
-    TMemoryListNode *node = (TMemoryListNode *) (ptr - sizeof(TMemoryListNode));
+    MemoryListNode *node = (TMemoryListNode *) (ptr - sizeof(MemoryListNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -153,9 +153,9 @@ my_free(void *ptr) {
         usedMemory -= node->size;
         calcNodeChecksum(node, &node->checksum);
     } else {
-        node->previous->leftoverSize += node->size + node->leftoverSize + sizeof(TMemoryListNode);
+        node->previous->leftoverSize += node->size + node->leftoverSize + sizeof(MemoryListNode);
         node->previous->next = node->next;
-        usedMemory -= node->size + sizeof(TMemoryListNode);
+        usedMemory -= node->size + sizeof(MemoryListNode);
         memoryChunks--;
         calcNodeChecksum(node->previous, &node->previous->checksum);
 
@@ -169,7 +169,7 @@ my_free(void *ptr) {
 }
 
 int
-my_getState(TMemoryState *memoryState) {
+my_getState(MemoryState *memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = NODE;

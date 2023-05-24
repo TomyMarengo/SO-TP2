@@ -20,6 +20,7 @@ EXTERN timerIntHandler
 EXTERN keyboardIntHandler
 EXTERN exceptionHandler
 EXTERN syscallHandler
+EXTERN sch_switchProcess
 
 SECTION .text
 
@@ -137,6 +138,10 @@ timerIntRoutine:
     pushState
 
 	call timerIntHandler
+
+	mov rdi, rsp
+	call sch_switchProcess
+	mov rsp, rax
 
 	endHardwareInterrupt
 	popState

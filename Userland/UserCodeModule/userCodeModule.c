@@ -266,7 +266,7 @@ getCommand(char command[READBUF_LENGTH], char parameters[MAX_PARAMETERS][LENGTH_
 }
 
 int
-main() {
+main(int argc, char * argv[]) {
     getScreenSize(&width, &height);
 
     clearscreen();

@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <types.h>
+#include <defs.h>
 #include <video.h>
 
 /**
@@ -50,6 +50,6 @@ void *my_realloc(void *ptr, size_t size);
  *
  * @returns 0 if the operation is successful.
  */
-int my_getState(TMemoryState *memoryState);
+int my_getState(MemoryState *memoryState);
 
 #endif
