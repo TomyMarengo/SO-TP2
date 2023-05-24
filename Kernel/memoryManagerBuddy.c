@@ -140,7 +140,7 @@ initialize_heap() {
 
 // Function for allocating memory
 void *
-my_malloc(size_t request) {
+mm_malloc(size_t request) {
     size_t original_bucket, bucket;
 
     // Check if the request size is larger than maximum allocation size
@@ -198,7 +198,7 @@ my_malloc(size_t request) {
 
 // Function for freeing memory
 int
-my_free(void *ptr) {
+mm_free(void *ptr) {
     size_t bucket, i;
 
     // If the pointer is NULL, then there is nothing to free
@@ -226,25 +226,17 @@ my_free(void *ptr) {
 }
 
 void
-my_init(void *memoryStart, size_t memorySize) {
+mm_init(void *memoryStart, size_t memorySize) { //TODO
     return;
 }
 
-void *
-my_realloc(void *ptr, size_t size) {
+void * 
+mm_realloc(void *ptr, size_t size) { //TODO
     return NULL;
 }
 
-// Function for getting memory information
-void
-mem_info() {
-    scr_print("Total memory: ");
-    scr_print(" bytes\n");
-
-    scr_print("Memory in use: ");
-    scr_print(" bytes\n");
-
-    scr_print("Free memory: ");
-    scr_print(" bytes\n");
+int mm_getState(MemoryState *memoryState) { //TODO
+    return 0;
 }
+
 #endif

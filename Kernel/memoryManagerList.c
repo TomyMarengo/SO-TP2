@@ -23,7 +23,7 @@ calcNodeChecksum(const MemoryListNode *node, size_t *result) {
 }
 
 void
-my_init(void *memoryStart, size_t memorySize) {
+mm_init(void *memoryStart, size_t memorySize) {
     void *actualStart = (void *) WORD_ALIGN_UP(memoryStart);
     memorySize -= (actualStart - memoryStart);
     memorySize = WORD_ALIGN_DOWN(memorySize);
@@ -43,7 +43,7 @@ my_init(void *memoryStart, size_t memorySize) {
 }
 
 void *
-my_malloc(size_t size) {
+mm_malloc(size_t size) {
     if (firstBlock == NULL || size == 0)
         return NULL;
 
@@ -89,7 +89,7 @@ my_malloc(size_t size) {
 }
 
 void *
-my_realloc(void *ptr, size_t size) {
+mm_realloc(void *ptr, size_t size) {
     size = WORD_ALIGN_UP(size);
 
     if (ptr == NULL)
@@ -136,7 +136,7 @@ my_realloc(void *ptr, size_t size) {
 }
 
 int
-my_free(void *ptr) {
+mm_free(void *ptr) {
     if (ptr == NULL)
         return 0;
 
@@ -169,7 +169,7 @@ my_free(void *ptr) {
 }
 
 int
-my_getState(MemoryState *memoryState) {
+mm_getState(MemoryState *memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = NODE;

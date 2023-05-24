@@ -46,7 +46,7 @@ int
 main() {
     load_idt();
     
-    my_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
+    mm_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
 
     sch_init();
 

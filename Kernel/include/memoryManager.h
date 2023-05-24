@@ -13,7 +13,7 @@
  * @param memoryStart The initial location of the memory segment utilized by the memory manager.
  * @param memorySize The total number of bytes allocated for the memory manager starting from the initial address.
  */
-void my_init(void *memoryStart, size_t memorySize);
+void mm_init(void *memoryStart, size_t memorySize);
 
 /**
  * @brief Request the memory manager to reserve a chunk of memory.
@@ -22,7 +22,7 @@ void my_init(void *memoryStart, size_t memorySize);
  *
  * @return - A pointer to the reserved memory, or NULL if the operation failed.
  */
-void *my_malloc(size_t size);
+void *mm_malloc(size_t size);
 
 /**
  * @brief Notifies the memory manager that a previously allocated memory segment, reserved by my_malloc(),
@@ -32,7 +32,7 @@ void *my_malloc(size_t size);
  *
  * @return 0 if the operation is successful, 1 otherwise.
  */
-int my_free(void *ptr);
+int mm_free(void *ptr);
 
 /**
  * @brief Instructs the memory manager to modify the size of a previously allocated block of memory.
@@ -43,13 +43,13 @@ int my_free(void *ptr);
  *
  * @return A pointer to the resized memory block, or NULL if the operation failed.
  */
-void *my_realloc(void *ptr, size_t size);
+void *mm_realloc(void *ptr, size_t size);
 
 /**
  * @brief Retrieves the current status of the system memory.
  *
  * @returns 0 if the operation is successful.
  */
-int my_getState(MemoryState *memoryState);
+int mm_getState(MemoryState *memoryState);
 
 #endif

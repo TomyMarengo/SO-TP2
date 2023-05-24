@@ -107,17 +107,17 @@ sys_inforeg_handler(uint64_t reg[17]) {
 
 void *
 sys_malloc_handler(size_t size) {
-    return my_malloc(size);
+    return mm_malloc(size);
 }
 
 int
 sys_free_handler(void *ptr) {
-    return my_free(ptr);
+    return mm_free(ptr);
 }
 
 void *
 sys_realloc_handler(void *ptr, size_t size) {
-    return my_realloc(ptr, size);
+    return mm_realloc(ptr, size);
 }
 
 // These function pointer casts are safe, provided all syscall handler functions take up to 5 parameters and they
