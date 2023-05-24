@@ -67,6 +67,9 @@
 #define KBDIN  3
 
 /* --- Kernel types --- */
+/* -------------------- */
+
+/* --- Memory Management */
 
 /**
  * @brief Represents the various categories of supported memory managers.
@@ -82,6 +85,8 @@ typedef struct {
     MemoryManagerType type;
     unsigned int chunks;
 } MemoryState;
+
+/* --- Processes --- */
 
 /**
  * @brief Maximum length for the name of a system resource, for example a process.
@@ -142,6 +147,16 @@ typedef struct {
     ProcessStatus status;
 } ProcessInfo;
 
+/* --- Pipes --- */
 
+/**
+ * @brief Represents information of a process at particular time.
+ */
+typedef struct {
+    void* buffer;
+    size_t bufferSize;
+    size_t readOffset;
+    size_t remainingBytes;
+} PipeInfo;
 
 #endif

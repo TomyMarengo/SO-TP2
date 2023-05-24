@@ -40,3 +40,11 @@ memcpy(void *destination, const void *source, size_t length) {
 
     return destination;
 }
+
+uint64_t
+strlen(const char *s) {
+    int l;
+    for (l = 0; *s != 0; s++, l++)
+        ;
+    return l;
+}

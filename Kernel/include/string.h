@@ -36,4 +36,12 @@ void *memset(void *destination, uint8_t c, size_t length);
  */
 void *memcpy(void *destination, const void *source, size_t length);
 
+/**
+ * @brief Calculates the length of the string `s` (excluding the null-terminating character) and returns the length as a `uint64_t` value.
+ *
+ * @param s Pointer to the input string.
+ * @return - Length of the string.
+ */
+uint64_t strlen(const char *s);
+
 #endif
