@@ -2,6 +2,8 @@
 #define _VIDEO_H_
 
 #include <stdint.h>
+#include <process.h>
+#include <defs.h>
 
 /**
  * @brief The width of a character in pixels.
@@ -129,5 +131,15 @@ uint32_t scr_print(const char *s);
  * @return - The new pen position as a 32 bit number, where the 16 lowest bits are the x and the upper 16 bits are the y.
  */
 uint32_t scr_println(const char *s);
+
+/**
+ * @brief Add the screen into fd process table.
+ * 
+ * @param pid PID of the process.
+ * @param fd File descriptor to add.
+ * @param color Color resource to map to the screen.
+ * @returns The screen file descriptor, -1 in error cases.
+ */
+int scr_addFd(Pid pid, int fd, const Color* color);
 
 #endif

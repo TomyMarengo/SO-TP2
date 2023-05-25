@@ -33,4 +33,14 @@ void picMasterMask(uint8_t mask);
  */
 void picSlaveMask(uint8_t mask);
 
+/**
+ * @brief 
+ */
+void awakeScheduler(void);
+
+/**
+ * @brief 
+ */
+void _int81(void);
+
 #endif

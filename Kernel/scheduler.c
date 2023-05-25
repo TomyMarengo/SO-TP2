@@ -3,7 +3,6 @@
 #include <interrupts.h>
 
 #define QUANTUM 5
-#define MAX_PROCESSES 8
 
 // Pseudo PIDs for limit cases
 #define PSEUDOPID_KERNEL -1
@@ -143,7 +142,7 @@ int sch_setPriority(Pid pid, Priority newPriority) {
 
 void sch_yield() {
     currentQuantum = 0;
-    // TODO
+    _int81();
 }
 
 void* sch_switchProcess(void* currentRSP) {

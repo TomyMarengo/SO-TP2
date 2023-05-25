@@ -2,6 +2,7 @@
 #include <keyboard.h>
 #include <stdint.h>
 #include <string.h>
+#include <process.h>
 
 #define SCANCODE_BUFFER_MAXLENGTH 32
 
@@ -20,6 +21,9 @@ scancodeToAscii(uint8_t scancode) {
 
 static uint8_t scancodeBuffer[SCANCODE_BUFFER_MAXLENGTH];
 static unsigned int scancodeBufferLength = 0;
+
+static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
+static int fdCloseHandler(Pid pid, int fd, void* resource);
 
 void
 keyboardIntHandler(uint8_t scancode) {
@@ -65,4 +69,34 @@ kbd_readCharacters(char *buf, unsigned int n) {
     memcpy(scancodeBuffer, scancodeBuffer + scancodeIndex, scancodeBufferLength);
     _sti();
     return charsRead;
+}
+
+int kbd_addFd(Pid pid, int fd) {
+    int r = prc_addFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler);
+    if (r < 0)
+        return r;
+
+    // COMPLETE
+
+    return r;
+}
+
+static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
+    if (!prc_isForeground(pid))
+        return -1;
+
+    if (count == 0)
+        return 0;
+
+    if (count > SCANCODE_BUFFER_MAXLENGTH)
+        count = SCANCODE_BUFFER_MAXLENGTH;
+
+    // COMPLETE
+    return kbd_readCharacters(buf, count);
+}
+
+static int fdCloseHandler(Pid pid, int fd, void* resource) {
+    // COMPLETE
+
+    return 0;
 }

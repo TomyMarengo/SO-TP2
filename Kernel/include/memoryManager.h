@@ -48,6 +48,7 @@ void *mm_realloc(void *ptr, size_t size);
 /**
  * @brief Retrieves the current status of the system memory.
  *
+ * @param memoryState Out struct to save the data.
  * @returns 0 if the operation is successful.
  */
 int mm_getState(MemoryState *memoryState);

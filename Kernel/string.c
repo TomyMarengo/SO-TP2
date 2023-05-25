@@ -48,3 +48,25 @@ strlen(const char *s) {
         ;
     return l;
 }
+
+uint64_t
+itoa(uint64_t number, char *s) {
+    int digits = 1;
+    for (int n = number / 10; n != 0; digits++, n /= 10)
+        ;
+
+    if (digits == 1) {
+        s[0] = '0';
+        s[1] = number + '0';
+        s[2] = 0;
+        return digits;
+    }
+
+    s[digits] = 0;
+    for (int i = digits - 1; i >= 0; i--) {
+        s[i] = (number % 10) + '0';
+        number /= 10;
+    }
+
+    return digits;
+}

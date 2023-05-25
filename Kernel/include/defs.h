@@ -94,6 +94,11 @@ typedef struct {
 #define MAX_NAME_LENGTH 16
 
 /**
+ * @brief Maximum amount of process living at the same time.
+ */
+#define MAX_PROCESSES 8
+
+/**
  * @brief Represents a process id.
  */
 typedef int Pid;

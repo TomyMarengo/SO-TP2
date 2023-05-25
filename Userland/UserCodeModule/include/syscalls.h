@@ -156,4 +156,81 @@ int sys_free(void *ptr);
  */
 void *sys_realloc(void *ptr, size_t size);
 
+/**
+ * @brief Close a resource by its file descriptor.
+ *
+ * @return 0 if the operation succeeded.
+ */
+int sys_close(int fd);
+
+/**
+ * @brief Create a new pipe.
+ *
+ * @param pipefd Array of two positions for write and read pipe fd.
+ * @return 0 if the operation succeeded, 1 otherwise.
+ */
+int sys_pipe(int pipefd[2]);
+
+/**
+ * @brief Terminate a process.
+ *
+ * @param pid process' PID.
+ * @return 0 if the operation succeeded, 1 otherwise.
+ */
+int sys_kill(int pid);
+
+/**
+ * @brief Block a process.
+ *
+ * @param pid process' PID.
+ * @return 0 if the operation succeeded, 1 otherwise.
+ */
+int sys_block(int pid);
+
+/**
+ * @brief Unblock a process.
+ *
+ * @param pid Process' PID.
+ * @return 0 if the operation succeeded, 1 otherwise.
+ */
+int sys_unblock(int pid);
+
+/**
+ * @brief Unblock a process.
+ *
+ * @param argc Amount of parameters.
+ * @param argv Parameters.
+ * @return Process' PID.
+ */
+int sys_process(int argc, const char* argv[]);
+
+/**
+ * @brief Force processor to relinquish control of the current running process.
+ */
+void sys_yield();
+
+/**
+ * @brief Get the pid of the calling process.
+ *
+ * @return The pid of the calling process
+ */
+int sys_getpid();
+
+/**
+ * @brief Change the priority of a process.
+ *
+ * @param pid Process' PID.
+ * @param priority New priority.
+ * @return 0 if the operation is successful, 1 otherwise.
+ */
+int sys_priority(int pid, int priority);
+
+/**
+ * @brief Terminate the calling process.
+
+ * @return 0 if the operation is successful, 1 otherwise.
+ */
+int sys_exit();
+
+
 #endif

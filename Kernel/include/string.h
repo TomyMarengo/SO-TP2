@@ -44,4 +44,14 @@ void *memcpy(void *destination, const void *source, size_t length);
  */
 uint64_t strlen(const char *s);
 
+/**
+ * @brief Converts integers to strings.
+ *
+ * @param number Integer to convert.
+ * @param s Buffer to store the string.
+ * @return - Number of digits converted.
+ */
+uint64_t itoa(uint64_t number, char *s);
+
+
 #endif

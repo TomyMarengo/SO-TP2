@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <video.h>
+#include <stddef.h>
+#include <sys/types.h>
+#include <defs.h>
 
 struct vbe_mode_info_structure {
     uint16_t attributes;   // deprecated, only bit 7 should be of interest to you, and it indicates the mode supports a linear
@@ -49,8 +52,12 @@ getPtrToPixel(uint16_t x, uint16_t y) {
     return (void *) (screenData->framebuffer + 3 * (x + (y * (uint64_t) screenData->width)));
 }
 
+static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
+static int fdCloseHandler(Pid pid, int fd, void* resource);
+
 uint16_t penX = 0, penY = 0;
 Color penColor = {0x7F, 0x7F, 0x7F};
+Color gray = {0x90, 0x90, 0x90};
 
 uint16_t
 scr_getWidth(void) {
@@ -248,4 +255,31 @@ scr_println(const char *s) {
     scr_print(s);
     scr_printNewline();
     return penX | ((uint32_t) penY << 16);
+}
+
+int scr_addFd(Pid pid, int fd, const Color* color) {
+
+    int r = prc_addFd(pid, fd, (void*) color, NULL, &fdWriteHandler, &fdCloseHandler);
+    if (r < 0)
+        return r;
+
+    // COMPLETE
+
+    return r;
+}
+
+static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
+    if (!prc_isForeground(pid))
+        return -1;
+
+    for (size_t i = 0; i < count; i++)
+        scr_printChar(buf[i]);
+
+    return count;
+}
+
+static int fdCloseHandler(Pid pid, int fd, void* resource) {
+    // COMPLETE
+
+    return 0;
 }

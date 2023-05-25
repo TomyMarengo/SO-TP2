@@ -2,10 +2,13 @@
 #include <interrupts.h>
 #include <memoryManager.h>
 #include <moduleLoader.h>
+#include <video.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 #include <scheduler.h>
+#include <keyboard.h>
+#include <kernel.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -42,17 +45,34 @@ initializeKernelBinary() {
     return getStackBase();
 }
 
+void initializeShell(){
+    Color gray = {0x90, 0x90, 0x90};
+    Color red = {0x00, 0x00, 0xFF};
+    const char* args[] = {NULL};
+    Pid pid = prc_create((ProcessStart)userCodeModuleAddress, 0, args);
+
+    kbd_addFd(pid, STDIN);
+    scr_addFd(pid, STDOUT, &gray);
+    scr_addFd(pid, STDERR, &red);
+}
+
 int
 main() {
+    _cli();
+
     load_idt();
     
     mm_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
 
     sch_init();
 
-    ((ProcessStart)userCodeModuleAddress)(0, NULL);
+    initializeShell();
+
+    _sti();
 
     while (1)
-        _hlt();
+        sch_yield();
+        _hlt(); 
     return 0;
+
 }

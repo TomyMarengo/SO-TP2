@@ -33,8 +33,6 @@ static void setup_IDT_entry(int index, uint64_t offset);
 
 void
 load_idt(void) {
-    _cli();
-
     // Setup exception interrupts
     setup_IDT_entry(0x00, (uint64_t) &divideByZeroIntRoutine);
     setup_IDT_entry(0x06, (uint64_t) &invalidOpcodeIntRoutine);
@@ -47,12 +45,12 @@ load_idt(void) {
 
     // Setup syscall interrupt
     setup_IDT_entry(0x80, (uint64_t) &syscallIntRoutine);
+    setup_IDT_entry(0x81, (uint64_t) &awakeScheduler);
 
     // Enable timer tick and keyboard interruptions
     picMasterMask(0b11111100);
     picSlaveMask(0b11111111);
 
-    _sti();
 }
 
 static void

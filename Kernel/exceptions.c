@@ -3,6 +3,11 @@
 #include <stdint.h>
 #include <time.h>
 #include <video.h>
+#include <string.h>
+#include <kernel.h>
+#include <scheduler.h>
+#include <process.h>
+#include <defs.h>
 
 // From loader.asm, resets states and re-calls kernel main.
 extern void resetmain(void);
@@ -64,6 +69,8 @@ exceptionHandler(uint64_t code, const uint64_t regdata[17]) {
     Color gray = {0x90, 0x90, 0x90};
     Color red = {0x00, 0x00, 0xFF};
 
+    Pid pid = sch_getCurrentPID();
+
     // Draw the frame in which the error message will be shown.
     scr_drawRect(0, drawY, scrWidth, BORDER_SIZE, red);
     drawY += BORDER_SIZE;
@@ -87,6 +94,12 @@ exceptionHandler(uint64_t code, const uint64_t regdata[17]) {
     scr_print(" (code 0x");
     scr_print(hexbuf + 13);
     scr_print(")\n\n");
+
+    char pid_str[(int)MAX_PROCESSES/10+1];
+    itoa(pid, pid_str);
+    // Process Information.
+    scr_print("PID ");
+    scr_println(pid_str);
 
     // We print the RIP and RFLAGS values.
     scr_print(registerNames[16]);
@@ -118,16 +131,29 @@ exceptionHandler(uint64_t code, const uint64_t regdata[17]) {
     } while (rtc_getElapsedMilliseconds() - start_ms < 3000);
 
     kbd_clearBuffer();
-    scr_print("\nPress any key to restart.");
+    
 
-    // We wait until any key is pressed.
-    do {
-        _hlt();
-    } while (kbd_getBufferLength() == 0);
+    if (pid == 0) {
+        scr_print("\nPress any key to restart.");
+
+        kbd_clearBuffer();
+        do {
+            _hlt();
+            _cli();
+        } while (kbd_getBufferLength() == 0);
+
+        prc_kill(pid);
+        scr_clear();
+        initializeShell();
+    } else {
+        prc_kill(pid);
+    }
+
+    sch_yield();
 
     // We reset everything and load the kernel back up.
     kbd_clearBuffer();
     scr_clear();
     _cli();
-    resetmain();
+    // resetmain(); TEST
 }
