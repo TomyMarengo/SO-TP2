@@ -76,7 +76,7 @@ main() {
 
     initializeShell();
     // initializeShell();
-    scr_print("hola! Its the Kernel!");
+    // scr_print("hola! Its the Kernel!");
     
     _sti();
 

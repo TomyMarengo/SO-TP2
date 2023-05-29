@@ -5,7 +5,8 @@
 
 /* Local headers */
 #include <memoryManager.h>
-#include <lib.h>
+#include <string.h>
+#include <video.h>
 
 /**
  * Represents a structure prepended to all allocated memory chunks to track said memory chunks.
@@ -31,6 +32,7 @@ static void calcNodeChecksum(const TMemoryBlockNode* node, size_t* result) {
 }
 
 void mm_init(void* memoryStart, size_t memorySize) {
+    scr_print("  mm_init start  ");
     // word-allign memoryStart by rounding up to a multiple of 8.
     void* actualStart = (void*)WORD_ALIGN_UP(memoryStart);
     memorySize -= (actualStart - memoryStart);
@@ -49,6 +51,7 @@ void mm_init(void* memoryStart, size_t memorySize) {
     firstBlock->previous = NULL;
     firstBlock->next = NULL;
     calcNodeChecksum(firstBlock, &firstBlock->checksum);
+    scr_print("  mm_init finish  ");
 }
 
 void* mm_malloc(size_t size) {

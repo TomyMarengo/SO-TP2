@@ -158,9 +158,9 @@ int sch_setProcessPriority(TPid pid, TPriority newPriority) {
 }
 
 void sch_yieldProcess() {
-    scr_print(" I yield! ");
     quantums = 0;
     _int81();
+    scr_print(" I yield! ");
 }
 
 void* sch_switchProcess(void* currentRSP) {
@@ -192,10 +192,10 @@ void* sch_switchProcess(void* currentRSP) {
     }
 
     processStates[currentRunningPID].status = RUNNING;
-    scr_print(" . "  );
-    char buf[10];
-    itoa(currentRunningPID,buf);
-    scr_print(buf);
+    // scr_print(" . "  );
+    // char buf[10];
+    // itoa(currentRunningPID,buf);
+    // scr_print(buf);
     return processStates[currentRunningPID].currentRSP;
 }
 
