@@ -1,6 +1,7 @@
 #ifndef _SCHEDULER_H_
 #define _SCHEDULER_H_
 
+/* Local headers */
 #include <defs.h>
 
 /**
@@ -11,67 +12,68 @@ void sch_init();
 /**
  * @brief Called by process.c whenever a new process is created.
  *
- * @returns 0 if the operation is successful.
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-int sch_onProcessCreated(Pid pid, ProcessStart start, Priority priority, void* currentRSP, int argc, const char* const argv[]);
+int sch_onProcessCreated(TPid pid, TProcessEntryPoint entryPoint, TPriority priority, void* currentRSP, int argc, const char* const argv[]);
 
 /**
- * @brief Called by process.c when a process is being terminated. If the caller is the process itself, it is not immediately halted. 
- * To accomplish this, sch_yield() must be invoked.
+ * @brief Called by process.c whenever a process is being killed.
+ * If the caller is said process, it is not immediatelly stopped. For this to occur,
+ * sch_yieldProcess() must be called.
  *
- * @return 0 if the operation is successful, 1 otherwise.
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-int sch_onProcessKilled(Pid pid);
+int sch_onProcessKilled(TPid pid);
 
 /**
- * @brief Instructs the scheduler that a specific process should remain inactive until it is unblocked.
- * If the caller is the process itself, it is not immediately blocked. To accomplish this, sch_yield() 
- * must be called subsequently.
+ * @brief Instructs the scheduler that a given process should not run until it is unblocked.
+ * If the caller is said process, it is not immediately blocked. For this to occur,
+ * sch_yieldProcess() must be called afterwards.
  *
- * @return 0 if the operation is successful, 1 otherwise.
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-int sch_blockProcess(Pid pid);
+int sch_blockProcess(TPid pid);
 
 /**
- * @brief Put a process in READY state.
+ * @brief Instructs the scheduler that a process may be marked as ready and run.
  *
- * @returns 0 if the operation succeeded or if it was running or ready already, 1 otherwise.
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-int sch_unblockProcess(Pid pid);
+int sch_unblockProcess(TPid pid);
 
 /**
- * @brief Gets the PID of the running process.
+ * @brief Gets the PID of the currently-running or last was-running process
  *
- * @returns The PID or -1 if there is no current process.
+ * @returns PID or -1 if no process is currently running.
  */
-Pid sch_getCurrentPID();
+TPid sch_getCurrentPID();
 
 /**
- * @brief Sets a process priority.
+ * @brief Sets a process' priority.
  *
- * @returns 0 if the operation is successful, 1 otherwise.
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-int sch_setPriority(Pid pid, Priority newPriority);
+int sch_setProcessPriority(TPid pid, TPriority newPriority);
 
 /**
- * @brief Determines the next process to be executed with Round Robin algorithm.
+ * @brief Decides which process to run next
  *
- * @param currentRSP RSP (Stack Pointer) of the interrupted process.
- * @return RSP (Stack Pointer) of the next process to be executed.
+ * @param currentRSP RSP of the interrupted process
+ * @return RSP of the next process to run
  */
 void* sch_switchProcess(void* currentRSP);
 
 /**
- * @brief Populates the provided struct processInfo with the scheduler-related data of the requested process.
- * 
- * @return 0 if the operation is successful, 1 otherwise.
+ * @brief Yields control of the CPU to the next process on the ready list.
+ * If the caller is not a process or is one that exited, this function does not return.
  */
-int sch_getProcessInfo(Pid pid, ProcessInfo* processInfo);
+void sch_yieldProcess();
 
 /**
- * @brief Relinquishes CPU control to the next process on the ready list.
- * If the caller is not a process or has exited, this function does not return.
+ * @brief Fills the given struct with the scheduler-related data of the requested process.
+ * 
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-void sch_yield();
+int sch_getProcessInfo(TPid pid, TProcessInfo* info);
 
 #endif

@@ -1,39 +1,48 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
+
 #ifndef USE_BUDDY
 
+/* Local headers */
 #include <memoryManager.h>
-#include <string.h>
+#include <lib.h>
 
-typedef struct memoryListNode {
+/**
+ * Represents a structure prepended to all allocated memory chunks to track said memory chunks.
+ *
+ * The size of this struct must be a multiple of 8 in order to preserve word-alignment.
+ */
+typedef struct memoryBlockNode {
     size_t size;
     size_t leftoverSize;
+    struct memoryBlockNode* previous;
+    struct memoryBlockNode* next;
     size_t checksum;
-    struct memoryListNode *previous;
-    struct memoryListNode *next;
-} MemoryListNode;
+} TMemoryBlockNode;
 
 static size_t totalMemory;
 static size_t usedMemory;
 static unsigned int memoryChunks;
 
-static MemoryListNode *firstBlock = NULL;
+static TMemoryBlockNode* firstBlock = NULL;
 
-static void
-calcNodeChecksum(const MemoryListNode *node, size_t *result) {
-    *result = node->size ^ node->leftoverSize ^ (size_t) node->previous ^ (size_t) node->next;
+static void calcNodeChecksum(const TMemoryBlockNode* node, size_t* result) {
+    *result = node->size ^ node->leftoverSize ^ (size_t)node->previous ^ (size_t)node->next;
 }
 
-void
-mm_init(void *memoryStart, size_t memorySize) {
-    void *actualStart = (void *) WORD_ALIGN_UP(memoryStart);
+void mm_init(void* memoryStart, size_t memorySize) {
+    // word-allign memoryStart by rounding up to a multiple of 8.
+    void* actualStart = (void*)WORD_ALIGN_UP(memoryStart);
     memorySize -= (actualStart - memoryStart);
     memorySize = WORD_ALIGN_DOWN(memorySize);
 
     totalMemory = memorySize;
-    usedMemory = sizeof(MemoryListNode);
+    usedMemory = sizeof(TMemoryBlockNode);
     memoryChunks = 1;
 
-    firstBlock = (MemoryListNode *) actualStart;
-    memorySize -= sizeof(MemoryListNode);
+    // Allocate space for a first TMemoryBlockNode at the start of our segment.
+    firstBlock = (TMemoryBlockNode*)actualStart;
+    memorySize -= sizeof(TMemoryBlockNode);
 
     firstBlock->size = 0;
     firstBlock->leftoverSize = memorySize;
@@ -42,16 +51,19 @@ mm_init(void *memoryStart, size_t memorySize) {
     calcNodeChecksum(firstBlock, &firstBlock->checksum);
 }
 
-void *
-mm_malloc(size_t size) {
+void* mm_malloc(size_t size) {
     if (firstBlock == NULL || size == 0)
         return NULL;
 
     size = WORD_ALIGN_UP(size);
 
-    MemoryListNode *node = firstBlock;
-    size_t totalSizeWithNode = size + sizeof(MemoryListNode);
+    TMemoryBlockNode* node = firstBlock;
+    size_t totalSizeWithNode = size + sizeof(TMemoryBlockNode);
 
+    // Find the first available node with enough size to fulfill the request.
+    // A valid node needs to have enough leftoverSize for the requested space, plus the
+    // TMemoryBlockNode placed at the start of the chunk. A node may however have a size
+    // if 0, in which case it may be used 'as is' and creating a new node isn't necessary.
     while ((node->size != 0 || node->leftoverSize < size) && node->leftoverSize < totalSizeWithNode) {
         node = node->next;
 
@@ -64,12 +76,12 @@ mm_malloc(size_t size) {
         node->leftoverSize -= size;
         calcNodeChecksum(node, &node->checksum);
         usedMemory += size;
-        return (void *) node + sizeof(MemoryListNode);
+        return (void*)node + sizeof(TMemoryBlockNode);
     }
 
-    MemoryListNode *newNode = (MemoryListNode *) ((void *) node + sizeof(MemoryListNode) + node->size);
+    TMemoryBlockNode* newNode = (TMemoryBlockNode*)((void*)node + sizeof(TMemoryBlockNode) + node->size);
     newNode->size = size;
-    newNode->leftoverSize = node->leftoverSize - sizeof(MemoryListNode) - newNode->size;
+    newNode->leftoverSize = node->leftoverSize - sizeof(TMemoryBlockNode) - newNode->size;
     newNode->previous = node;
     newNode->next = node->next;
     node->leftoverSize = 0;
@@ -85,22 +97,21 @@ mm_malloc(size_t size) {
 
     memoryChunks++;
     usedMemory += totalSizeWithNode;
-    return (void *) newNode + sizeof(MemoryListNode);
+    return (void*)newNode + sizeof(TMemoryBlockNode);
 }
 
-void *
-mm_realloc(void *ptr, size_t size) {
+void* mm_realloc(void* ptr, size_t size) {
     size = WORD_ALIGN_UP(size);
 
     if (ptr == NULL)
-        return my_malloc(size);
+        return mm_malloc(size);
 
     if (size == 0) {
-        my_free(ptr);
+        mm_free(ptr);
         return NULL;
     }
 
-    MemoryListNode *node = (MemoryListNode *) (ptr - sizeof(MemoryListNode));
+    TMemoryBlockNode* node = (TMemoryBlockNode*)(ptr - sizeof(TMemoryBlockNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -127,20 +138,19 @@ mm_realloc(void *ptr, size_t size) {
         return ptr;
     }
 
-    void *newPtr = my_malloc(size);
+    void* newPtr = mm_malloc(size);
     if (newPtr != NULL) {
         memcpy(newPtr, ptr, node->size);
-        my_free(ptr);
+        mm_free(ptr);
     }
     return newPtr;
 }
 
-int
-mm_free(void *ptr) {
+int mm_free(void* ptr) {
     if (ptr == NULL)
         return 0;
 
-    MemoryListNode *node = (TMemoryListNode *) (ptr - sizeof(MemoryListNode));
+    TMemoryBlockNode* node = (TMemoryBlockNode*)(ptr - sizeof(TMemoryBlockNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -153,9 +163,9 @@ mm_free(void *ptr) {
         usedMemory -= node->size;
         calcNodeChecksum(node, &node->checksum);
     } else {
-        node->previous->leftoverSize += node->size + node->leftoverSize + sizeof(MemoryListNode);
+        node->previous->leftoverSize += node->size + node->leftoverSize + sizeof(TMemoryBlockNode);
         node->previous->next = node->next;
-        usedMemory -= node->size + sizeof(MemoryListNode);
+        usedMemory -= node->size + sizeof(TMemoryBlockNode);
         memoryChunks--;
         calcNodeChecksum(node->previous, &node->previous->checksum);
 
@@ -168,8 +178,7 @@ mm_free(void *ptr) {
     return 0;
 }
 
-int
-mm_getState(MemoryState *memoryState) {
+int mm_getState(TMemoryState* memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = NODE;

@@ -149,7 +149,7 @@ exceptionHandler(uint64_t code, const uint64_t regdata[17]) {
         prc_kill(pid);
     }
 
-    sch_yield();
+    sch_yieldProcess();
 
     // We reset everything and load the kernel back up.
     kbd_clearBuffer();

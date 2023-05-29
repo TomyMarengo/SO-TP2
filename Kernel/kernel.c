@@ -1,14 +1,15 @@
+#include <defs.h>
 #include <idtLoader.h>
 #include <interrupts.h>
+#include <kernel.h>
+#include <keyboard.h>
 #include <memoryManager.h>
 #include <moduleLoader.h>
-#include <video.h>
+#include <scheduler.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <scheduler.h>
-#include <keyboard.h>
-#include <kernel.h>
+#include <video.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -28,6 +29,8 @@ void
 clearBSS(void *bssAddress, uint64_t bssSize) {
     memset(bssAddress, 0, bssSize);
 }
+typedef int (*EntryPoint)();
+
 
 void *
 getStackBase() {
@@ -45,15 +48,17 @@ initializeKernelBinary() {
     return getStackBase();
 }
 
-void initializeShell(){
+void
+initializeShell() {
     Color gray = {0x90, 0x90, 0x90};
     Color red = {0x00, 0x00, 0xFF};
-    const char* args[] = {NULL};
-    Pid pid = prc_create((ProcessStart)userCodeModuleAddress, 0, args);
 
-    kbd_addFd(pid, STDIN);
-    scr_addFd(pid, STDOUT, &gray);
-    scr_addFd(pid, STDERR, &red);
+    TProcessCreateInfo info = {"shell", (TProcessEntryPoint) userCodeModuleAddress, 1, MAX_PRIORITY, 0, NULL};
+    TPid pid = prc_create(&info);
+
+    kbd_mapToProcessFd(pid, STDIN);          // Map STDIN
+    scr_mapToProcessFd(pid, STDOUT, &gray);  // Map STDOUT
+    scr_mapToProcessFd(pid, STDERR, &red);   // Map STDERR
 }
 
 int
@@ -61,18 +66,23 @@ main() {
     _cli();
 
     load_idt();
-    
+    scr_clear();
     mm_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
-
+    kbd_init();
     sch_init();
+    // sem_init();
+    // shm_init();
+	// ((EntryPoint)userCodeModuleAddress)();
 
     initializeShell();
-
+    // initializeShell();
+    scr_print("hola! Its the Kernel!");
+    
     _sti();
 
-    while (1)
-        sch_yield();
-        _hlt(); 
+    while (1) {
+        sch_yieldProcess();
+        _hlt();
+    }
     return 0;
-
 }

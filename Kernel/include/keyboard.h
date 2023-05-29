@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <defs.h>
+#include <queueADT.h>
 
 #define BIT_SCANCODE_UP   0b10000000
 #define BIT_SCANCODE_DOWN 0b00000000

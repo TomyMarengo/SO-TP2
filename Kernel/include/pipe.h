@@ -1,59 +1,73 @@
 #ifndef _PIPE_H_
 #define _PIPE_H_
 
-#include <stdint.h>
-#include <stddef.h>
+/* Standard library */
 #include <sys/types.h>
+
+/* Local headers */
 #include <defs.h>
 
-typedef struct PipeData* Pipe;
+typedef int TPipe;
 
 /**
- * @brief Generates a new pipe.
+ * @brief Creates a new pipe.
  * 
- * @returns The newly generated pipe, otherwise NULL.
+ * @returns The newly created pipe, or -1 if the operation failed.
  */
-Pipe pipe_create();
+TPipe pipe_create();
 
 /**
- * @brief Releases all resources used by a pipe.
+ * @brief Gets the pipe with the given name, or creates it if it doesn't exist.
  * 
- * @param pipe Pipe to be freed, returned in pipe_create().
- * @returns 0 if the operation is successful.
+ * @returns The named pipe, or -1 if the operation failed.
  */
-int pipe_free(Pipe pipe);
+TPipe pipe_open(const char* name);
 
 /**
- * @brief Writes up to count bytes from the provided buffer into a pipe.
+ * @brief Unnames a named pipe, making the name available for future pipes.
+ * The pipe is not disposed until no more processes are using it.
  * 
- * @param pipe Pipe to be written, returned in pipe_create().
- * @param buf Buffer containing the data to be written.
- * @param count Amount of bytes to write.
- * @returns The number of bytes written, -1 in error cases.
+ * @returns 0 if the operation succeeded, != 0 if not.
  */
-ssize_t pipe_write(Pipe pipe, const void* buf, size_t count);
+int pipe_unlink(const char* name);
 
 /**
- * @brief Reads up to count bytes from the provided pipe into the buffer.
+ * @brief Frees all resources used by a pipe. Using a pipe after it was
+ * freed results in undefined behaviour.
  * 
- * @param pipe Pipe to be read, returned in pipe_create().
- * @param buf Buffer containing the after read data.
- * @param count Amount of bytes to read.
- * @returns The number of bytes read, -1 in error cases.
+ * @returns 0 if the operation was successful, != 0 if not.
  */
-ssize_t pipe_read(Pipe pipe, void* buf, size_t count);
+int pipe_free(TPipe pipe);
 
 /**
- * @brief Add the pipe into fd process table.
+ * @brief Writes up to count bytes from the given buffer into a pipe.
+ * This is a non-blocking operation, and will returns 0 if the pipe was full.
  * 
- * @param pid Process' PID.
- * @param fd FD of the pipe.
- * @param pipe Pipe itself, returned in pipe_create().
- * @param allowRead Allow the pipe to be read.
- * @param allowWrite Allow the pipe to be written.
- * @returns The pipe file descriptor, -1 in error cases.
+ * @returns The amount of bytes written, or -1 if an error occurred.
  */
-int pipe_addFd(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite);
+ssize_t pipe_write(TPipe pipe, const void* buf, size_t count);
 
+/**
+ * @brief Reads up to count bytes from a pipe into the given buffer.
+ * This is a non-blocking operation, and will return 0 if the pipe was empty.
+ * 
+ * @returns The amount of bytes read, or -1 if an error occurred.
+ */
+ssize_t pipe_read(TPipe pipe, void* buf, size_t count);
+
+/**
+ * @brief Maps a pipe onto a process' I/O table.
+ *  
+ * @returns The file descriptor on which the pipe was mapped for the process,
+ * or -1 if an error occurred.
+ */
+int pipe_mapToProcessFd(TPid pid, int fd, TPipe pipe, int allowRead, int allowWrite);
+
+/**
+ * @brief Gets the information of up to maxPipes pipes.
+ * 
+ * @returns the amount of pipes read.
+ */
+int pipe_listPipes(TPipeInfo* array, int maxPipes);
 
 #endif

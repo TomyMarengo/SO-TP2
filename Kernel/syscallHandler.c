@@ -2,31 +2,29 @@
 #include <interrupts.h>
 #include <keyboard.h>
 #include <memoryManager.h>
+#include <pipe.h>
+#include <scheduler.h>
 #include <stdint.h>
 #include <time.h>
 #include <video.h>
-#include <scheduler.h>
-#include <pipe.h>
-#include <defs.h>
 
 extern uint8_t hasRegdump;
 extern const uint64_t regdump[17];
 
+// static uint64_t
+// sys_write_handler(uint64_t fd, const char *buf, uint64_t count) {
+//     if (fd != STDOUT)  // Ignore any file handle that isn't STDOUT
+//         return 0;
+
+//     for (int i = 0; i < count; i++)
+//         scr_printChar(buf[i]);
+//     return count;
+// }
 
 static uint64_t
-sys_write_handler(uint64_t fd, const char *buf, uint64_t count) {
-    if (fd != STDOUT)  // Ignore any file handle that isn't STDOUT
-        return 0;
-
-    for (int i = 0; i < count; i++)
-        scr_printChar(buf[i]);
-    return count;
-}
-/*
-static uint64_t
-sys_write_handler(uint64_t fd, const char* buff, uint64_t count) {
+sys_write_handler(uint64_t fd, const char *buff, uint64_t count) {
     return prc_handleWriteFd(sch_getCurrentPID(), fd, buff, count);
-}*/
+}
 
 static uint64_t
 sys_time_handler() {
@@ -64,6 +62,7 @@ sys_screensize_handler() {
 
 static uint64_t
 sys_pollread_handler(uint64_t fd, char *buf, uint64_t count, uint64_t timeout_ms) {
+    scr_print("sys_PollReadHandler");
     // Any file descriptor that isnt STDIN or KBDIN gets ignored
     if (fd != STDIN && fd != KBDIN)
         return 0;
@@ -84,14 +83,16 @@ sys_pollread_handler(uint64_t fd, char *buf, uint64_t count, uint64_t timeout_ms
     return totalRead;
 }
 
-static uint64_t
-sys_read_handler(uint64_t fd, char *buf, uint64_t count) {
-    return sys_pollread_handler(fd, buf, count, 0xFFFFFFFFFFFFFFFF);
-}
+// static uint64_t
+// sys_read_handler(uint64_t fd, char *buf, uint64_t count) {
+//     return sys_pollread_handler(fd, buf, count, 0xFFFFFFFFFFFFFFFF);
+// }
 
-/*ssize_t sys_read_handler(int fd, char* buffer, size_t count) {
+ssize_t
+sys_read_handler(int fd, char *buffer, size_t count) {
+    scr_print("sys_readHandler");
     return prc_handleReadFd(sch_getCurrentPID(), fd, buffer, count);
-}*/
+}
 
 static void
 sys_drawpoint_handler(uint16_t x, uint16_t y, Color color) {
@@ -133,24 +134,24 @@ sys_realloc_handler(void *ptr, size_t size) {
     return mm_realloc(ptr, size);
 }
 
-int 
+int
 sys_close_handler(int fd) {
-    return prc_deleteFd(sch_getCurrentPID(), fd);
+    return prc_unmapFd(sch_getCurrentPID(), fd);
 }
 
-int 
+int
 sys_pipe_handler(int pipefd[2]) {
-    Pid pid = sch_getCurrentPID();
+    TPid pid = sch_getCurrentPID();
 
-    Pipe pipe;
+    TPipe pipe;
     int readFd = -1, writeFd = -1;
 
-    if ((pipe = pipe_create()) == NULL || (readFd = pipe_addFd(pid, -1, pipe, 1, 0)) < 0
-        || (writeFd = pipe_addFd(pid, -1, pipe, 0, 1)) < 0) {
-        if (pipe != NULL)
-            pipe_free(pipe);
+    if ((pipe = pipe_create()) < 0 || (readFd = pipe_mapToProcessFd(pid, -1, pipe, 1, 0)) < 0 ||
+        (writeFd = pipe_mapToProcessFd(pid, -1, pipe, 0, 1)) < 0) {
         if (readFd >= 0)
-            prc_deleteFd(pid, readFd);
+            prc_unmapFd(pid, readFd);
+        if (pipe >= 0)
+            pipe_free(pipe);
         return 1;
     }
 
@@ -159,54 +160,75 @@ sys_pipe_handler(int pipefd[2]) {
     return 0;
 }
 
-int sys_kill_handler(Pid pid){
+int
+sys_kill_handler(Pid pid) {
     int result = prc_kill(pid);
     if (pid == sch_getCurrentPID())
-        sch_yield();
+        sch_yieldProcess();
     return result;
 }
 
-int sys_block_handler(Pid pid){
+int
+sys_block_handler(Pid pid) {
     int result = sch_blockProcess(pid);
     if (pid == sch_getCurrentPID())
-        sch_yield();
+        sch_yieldProcess();
     return result;
 }
 
-int sys_unblock_handler(Pid pid){
+int
+sys_unblock_handler(Pid pid) {
     return sch_unblockProcess(pid);
 }
 
-Pid sys_createProcess_handler(ProcessStart start, int argc, const char* argv[]){
-    Pid pid = prc_create(start, argc, argv);
+TPid
+sys_createProcess_handler(int stdinMapFd, int stdoutMapFd, int stderrMapFd, const TProcessCreateInfo *createInfo) {
 
     Color gray = {0x90, 0x90, 0x90};
     Color red = {0x00, 0x00, 0xFF};
 
-    // COMPLETE
-    if (pid >= 0) {
-        kbd_addFd(pid, STDIN);      
-        scr_addFd(pid, STDOUT, &gray); 
-        scr_addFd(pid, STDERR, &red);
-    }
-    return pid;
+    TPid callerPid = sch_getCurrentPID();
+    TPid newPid = prc_create(createInfo);
+
+    if (newPid < 0)
+        return newPid;
+
+    if (stdinMapFd < 0)
+        kbd_mapToProcessFd(newPid, STDIN);
+    else
+        prc_dupFd(callerPid, newPid, stdinMapFd, STDIN);
+
+    if (stdoutMapFd < 0)
+        scr_mapToProcessFd(newPid, STDOUT, &gray);
+    else
+        prc_dupFd(callerPid, newPid, stdoutMapFd, STDOUT);
+
+    if (stderrMapFd < 0)
+        scr_mapToProcessFd(newPid, STDERR, &red);
+    else
+        prc_dupFd(callerPid, newPid, stderrMapFd, STDERR);
+
+    return newPid;
 }
 
-void sys_yield_handler(){
-    sch_yield();
+void
+sys_yield_handler() {
+    sch_yieldProcess();
 }
 
-Pid sys_getCurrentPid_handler(){
+Pid
+sys_getCurrentPid_handler() {
     return sch_getCurrentPID();
 }
 
-int sys_setPriority_handler(Pid pid, Priority priority){
-    return sch_setPriority(pid, priority);
+int sys_setPriority_handler(Pid pid, TPriority priority){
+    return sch_setProcessPriority(pid, priority);
 }
 
-int sys_exit_handler() {
+int
+sys_exit_handler() {
     prc_kill(sch_getCurrentPID());
-    sch_yield();
+    sch_yieldProcess();
     return 1;
 }
 
@@ -237,8 +259,8 @@ static uint64_t (*syscall_handlers[])(uint64_t rdi, uint64_t rsi, uint64_t rdx, 
     sys_createProcess_handler,  // 21
     sys_yield_handler,          // 22
     sys_getCurrentPid_handler,  // 23
-    sys_setPriority_handler,    // 24
-    sys_exit_handler            // 25
+    sys_setPriority_handler,    // 24 (nice handler)
+    sys_exit_handler  // 25
 };
 
 uint64_t

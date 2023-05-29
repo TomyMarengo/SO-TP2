@@ -1,8 +1,8 @@
 GLOBAL createProcessStack
 
-start:
+entryPoint:
     call rdx
-    mov rax, 0x42
+    mov rax, 0x18 ; esto es el syscall de exit
     int 80h
 
 createProcessStack:
@@ -14,7 +14,7 @@ createProcessStack:
     push rdx     ; RSP
     push 0x202   ; RFLAGS
     push 0x8     ; CS
-    push start
+    push entryPoint
     
     push 0x01    ; RBX
     push 0x02    ; RCX

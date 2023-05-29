@@ -1,56 +1,52 @@
 #ifndef _MEMORY_MANAGER_H_
 #define _MEMORY_MANAGER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
+/* Local headers */
 #include <defs.h>
-#include <video.h>
 
 /**
- * @brief Initializes the memory manager
+ * @brief Initializes the memory manager with a given memory segment
  *
- * @param memoryStart The initial location of the memory segment utilized by the memory manager.
- * @param memorySize The total number of bytes allocated for the memory manager starting from the initial address.
+ * @param memoryStart the starting address of the segment of memory to be used by the memory manager
+ * @param memorySize the amount of bytes available for the memory manager from initial address
  */
-void mm_init(void *memoryStart, size_t memorySize);
+void mm_init(void* memoryStart, size_t memorySize);
 
 /**
  * @brief Request the memory manager to reserve a chunk of memory.
  *
- * @param size - The desired amount of memory requested.
+ * @param size the amount of memory requested
  *
- * @return - A pointer to the reserved memory, or NULL if the operation failed.
+ * @return pointer to the reserved memory, or NULL if the operation failed
  */
-void *mm_malloc(size_t size);
+void* mm_malloc(size_t size);
 
 /**
- * @brief Notifies the memory manager that a previously allocated memory segment, reserved by my_malloc(),
- *        is now available to be marked as free and used elsewhere.
+ * @brief Instructs the memory manager that a chunk of memory previously reserved by mm_malloc()
+ *        may now be marked as available and used elsewhere.
  *
- * @param ptr Pointer to the memory segment to be released.
+ * @param ptr pointer to the memory zone to be released
  *
- * @return 0 if the operation is successful, 1 otherwise.
+ * @return 0 if the operation succeeds, 1 otherwise
  */
-int mm_free(void *ptr);
+int mm_free(void* ptr);
 
 /**
- * @brief Instructs the memory manager to modify the size of a previously allocated block of memory.
+ * @brief Request the memory manager to change the size of a reserved chunk of memory.
  *
- * @param ptr Pointer to the memory block that was previously allocated and needs to be resized.
+ * @param ptr pointer to the memory chunk previously reserved to be resized
  *
- * @param size The new size for the memory block.
+ * @param size the new size for the memory chunk
  *
- * @return A pointer to the resized memory block, or NULL if the operation failed.
+ * @return pointer to the reserved memory, or NULL if the operation failed
  */
-void *mm_realloc(void *ptr, size_t size);
+void* mm_realloc(void* ptr, size_t size);
 
 /**
- * @brief Retrieves the current status of the system memory.
- *
- * @param memoryState Out struct to save the data.
- * @returns 0 if the operation is successful.
+ * @brief Gets the status of the system memory.
+ * 
+ * @returns 0 if the operation succeeded.
  */
-int mm_getState(MemoryState *memoryState);
+int mm_getState(TMemoryState* memoryState);
 
 #endif

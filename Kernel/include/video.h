@@ -140,6 +140,6 @@ uint32_t scr_println(const char *s);
  * @param color Color resource to map to the screen.
  * @returns The screen file descriptor, -1 in error cases.
  */
-int scr_addFd(Pid pid, int fd, const Color* color);
+int scr_addFd(TPid pid, int fd, const Color* color);
 
 #endif

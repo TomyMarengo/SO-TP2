@@ -47,121 +47,128 @@
 /* ---  File Descriptors --- */
 
 /**
- * @brief Standard Input File Descriptor.
+ * @brief Represents the different types of supported memory managers.
  */
-#define STDIN  0
+typedef enum { NODE, BUDDY } TMemoryManagerType;
 
 /**
- * @brief Standard Output File Descriptor.
- */
-#define STDOUT 1
-
-/**
- * @brief Standard Error File Descriptor.
- */
-#define STDERR 2
-
-/**
- * @brief Keyboard Input File Descriptor.
- */
-#define KBDIN  3
-
-/* --- Kernel types --- */
-/* -------------------- */
-
-/* --- Memory Management */
-
-/**
- * @brief Represents the various categories of supported memory managers.
- */
-typedef enum { LIST, BUDDY } MemoryManagerType;
-
-/**
- * @brief Reflects the condition of the system memory at a specific moment.
+ * @brief Represents the state of the system memory at a given point in time.
  */
 typedef struct {
     size_t total;
     size_t used;
-    MemoryManagerType type;
+    TMemoryManagerType type;
     unsigned int chunks;
-} MemoryState;
-
-/* --- Processes --- */
+} TMemoryState;
 
 /**
- * @brief Maximum length for the name of a system resource, for example a process.
+ * @brief Defines the maximum length for the name of a system resource.
  */
 #define MAX_NAME_LENGTH 16
 
 /**
- * @brief Maximum amount of process living at the same time.
+ * @brief Defines the maximum amount of TPid-s that can be returned by an embedded array in a query.
  */
-#define MAX_PROCESSES 8
+#define MAX_PID_ARRAY_LENGTH 8
 
 /**
- * @brief Represents a process id.
+ * @brief Represents a process status.
  */
+typedef enum { READY = 0, RUNNING, BLOCKED, KILLED } TProcessStatus;
+
+/**
+ * @brief Represents process' ID.
+ */
+typedef int TPid;
 typedef int Pid;
 
 /**
- * @brief Represents a process priority.
+ * @brief Represents process' priority.
  */
-typedef int8_t Priority;
+typedef int8_t TPriority;
 
 /**
- * @brief Default priority for a created process.
+ * @brief Defines the default priority for a newly created process.
  */
-#define PRIORITY_DEFAULT 0
+#define DEFAULT_PRIORITY 0
 
 /**
- * @brief Lowest priority limit reached for a process.
+ * @brief Defines the lowest priority for a process.
  */
-#define PRIORITY_MIN 10
+#define MIN_PRIORITY 10
 
 /**
- * @brief Highest priority limit reached for a process.
+ * @brief Defines the highest priority for a process.
  */
-#define PRIORITY_MAX -10
+#define MAX_PRIORITY -10
 
 /**
- * @brief Lowest priority to be considered a process that will run next after unblock.
+ * @brief Defines the lowest priority at which a process is considered real-time.
  */
-#define PRIORITY_IMPORTANT -5
+#define PRIORITY_REALTIME -5
 
 /**
- * @brief Process start function.
+ * @brief Represents a process' entrypoint function.
  */
-typedef void (*ProcessStart)(int argc, char* argv[]);
+typedef void (*TProcessEntryPoint)(int argc, char* argv[]);
 
 /**
- * @brief Represents the various categories of supported process status.
- */
-typedef enum { READY = 0, RUNNING = 1, BLOCKED = 2, KILLED = 3 } ProcessStatus;
-
-/**
- * @brief Represents information of a process at particular time.
+ * @brief Represents a process' information at a point in time.
  */
 typedef struct {
-    Pid pid;
-    int isForeground;
-    Priority priority;
+    TPid pid;
     char name[MAX_NAME_LENGTH + 1];
     void* stackEnd;
     void* stackStart;
+    int isForeground;
+    TPriority priority;
+    TProcessStatus status;
     void* currentRSP;
-    ProcessStatus status;
-} ProcessInfo;
-
-/* --- Pipes --- */
+} TProcessInfo;
 
 /**
- * @brief Represents information of a process at particular time.
+ * @brief Represents the information needed for a create process request.
  */
 typedef struct {
-    void* buffer;
-    size_t bufferSize;
-    size_t readOffset;
+    const char* name;
+    TProcessEntryPoint entryPoint;
+    int isForeground;
+    TPriority priority;
+    int argc;
+    const char* const* argv;
+} TProcessCreateInfo;
+
+/**
+ * @brief Represents a pipe's state information at a point in time.
+ */
+typedef struct {
     size_t remainingBytes;
-} PipeInfo;
+    unsigned int readerFdCount;
+    unsigned int writerFdCount;
+    TPid readBlockedPids[MAX_PID_ARRAY_LENGTH + 1];
+    TPid writeBlockedPids[MAX_PID_ARRAY_LENGTH + 1];
+    char name[MAX_NAME_LENGTH + 1];
+} TPipeInfo;
+
+/**
+ * @brief Represents a semaphore.
+ */
+typedef int8_t TSem;
+
+/**
+ * @brief Represents a semaphore's state information at a point in time
+ */
+typedef struct {
+    int value;
+    int linkedProcesses; 
+    char name[MAX_NAME_LENGTH+1];
+    TPid waitingProcesses[MAX_PID_ARRAY_LENGTH+1];
+} TSemaphoreInfo;
+
+
+#define STDERR 2
+#define KBDIN  3
+#define STDIN 1
+#define STDOUT 0
 
 #endif

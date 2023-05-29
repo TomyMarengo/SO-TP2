@@ -41,6 +41,8 @@ memcpy(void *destination, const void *source, size_t length) {
     return destination;
 }
 
+
+
 uint64_t
 strlen(const char *s) {
     int l;
@@ -69,4 +71,39 @@ itoa(uint64_t number, char *s) {
     }
 
     return digits;
+}
+
+
+int strcmp(const char* s1, const char* s2) {
+    int i;
+    for (i = 0; s1[i] && s1[i] == s2[i]; i++);
+    return s1[i] - s2[i];
+}
+
+char* strcpy(char* dest, const char* src) {
+    char* w;
+    for (w = dest; *src != '\0'; *(w++) = *(src++))
+        ;
+    *w = '\0';
+    return dest;
+}
+
+char* strcat(char* dest, const char* src) {
+    char *rdest = dest;
+
+	while (*dest)
+		dest++;
+	while ((*dest++ = *src++));
+	return rdest;
+}
+
+char* strncpy(char* dest, const char* src, size_t size) {
+    int i = 0;
+    char* ret = dest;
+    while (*src && i < size) {
+        *(dest++) = *(src++);
+        i++;
+    }
+    *dest = '\0';
+    return ret;
 }

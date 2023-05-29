@@ -52,8 +52,8 @@ getPtrToPixel(uint16_t x, uint16_t y) {
     return (void *) (screenData->framebuffer + 3 * (x + (y * (uint64_t) screenData->width)));
 }
 
-static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void* resource);
+static ssize_t fdWriteHandler(TPid pid, int fd, void* resource, const char* buf, size_t count);
+static int fdDupHandler(TPid pidFrom, TPid pidTo, int fdFrom, int fdTo, void* resource);
 
 uint16_t penX = 0, penY = 0;
 Color penColor = {0x7F, 0x7F, 0x7F};
@@ -257,20 +257,17 @@ scr_println(const char *s) {
     return penX | ((uint32_t) penY << 16);
 }
 
-int scr_addFd(Pid pid, int fd, const Color* color) {
-
-    int r = prc_addFd(pid, fd, (void*) color, NULL, &fdWriteHandler, &fdCloseHandler);
-    if (r < 0)
-        return r;
-
-    // COMPLETE
-
-    return r;
+int scr_mapToProcessFd(TPid pid, int fd, const Color* color) {
+    // Use the color as resource. Convert it to an uint64_t and put the last bit as 1
+    // so the color black doesn't get seen as NULL.
+    uint64_t col = color->r | (color->g << 8) | (color->b << 16) | (1 << sizeof(Color));
+    return prc_mapFd(pid, fd, (void*)col, NULL, &fdWriteHandler, NULL, &fdDupHandler);
 }
 
-static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
-    if (!prc_isForeground(pid))
-        return -1;
+static ssize_t fdWriteHandler(TPid pid, int fd, void* resource, const char* buf, size_t count) {
+    // Only foreground processes are allowed to write to the screen.
+    // if (!prc_isForeground(pid))
+    //    return -1;
 
     for (size_t i = 0; i < count; i++)
         scr_printChar(buf[i]);
@@ -278,8 +275,6 @@ static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, 
     return count;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) {
-    // COMPLETE
-
-    return 0;
+static int fdDupHandler(TPid pidFrom, TPid pidTo, int fdFrom, int fdTo, void* resource) {
+    return scr_mapToProcessFd(pidTo, fdTo, (const Color*)&resource);
 }

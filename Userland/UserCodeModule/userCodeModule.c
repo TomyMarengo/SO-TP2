@@ -267,9 +267,12 @@ getCommand(char command[READBUF_LENGTH], char parameters[MAX_PARAMETERS][LENGTH_
 
 int
 main(int argc, char * argv[]) {
+   
+    print("USERCODEMODULE",5,green);
     getScreenSize(&width, &height);
 
     clearscreen();
+    print("USERCODEMODULE",5,green);
     print("Welcome to Shell! Type \"HELP\" for a list of commands.\n\n", 55, green);
 
     int i = 4;
