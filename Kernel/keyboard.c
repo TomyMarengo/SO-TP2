@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <process.h>
+#include <scheduler.h>
+#include <video.h>
 
 #define SCANCODE_BUFFER_MAXLENGTH 32
 
@@ -19,16 +21,26 @@ scancodeToAscii(uint8_t scancode) {
     return scancode < SCANCODE_ARR_LENGTH ? scancodeToAsciiTable[scancode] : '\0';
 }
 
+static TWaitQueue processReadWaitQueue;
+
 static uint8_t scancodeBuffer[SCANCODE_BUFFER_MAXLENGTH];
 static unsigned int scancodeBufferLength = 0;
 
 static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
 static int fdCloseHandler(Pid pid, int fd, void* resource);
+static int fdDupHandler(TPid pidFrom, TPid pidTo, int fdFrom, int fdTo, void* resource);
+
+void kbd_init() {
+    processReadWaitQueue = wq_new();
+}
 
 void
 keyboardIntHandler(uint8_t scancode) {
-    if (scancodeBufferLength < SCANCODE_BUFFER_MAXLENGTH)
+    if (scancodeBufferLength < SCANCODE_BUFFER_MAXLENGTH){
         scancodeBuffer[scancodeBufferLength++] = scancode;
+        wq_unblockAll(processReadWaitQueue);
+        // scr_print("KEYBOARD!");
+    }
 }
 
 unsigned int
@@ -52,17 +64,20 @@ kbd_readScancodes(uint8_t *buf, unsigned int n) {
     _sti();
     return n;
 }
+// BRB
 
 unsigned int
 kbd_readCharacters(char *buf, unsigned int n) {
     _cli();
     unsigned int charsRead = 0;
     unsigned int scancodeIndex;
+    scr_print(" readCharacter ");
     for (scancodeIndex = 0; scancodeIndex < scancodeBufferLength && charsRead < n; scancodeIndex++) {
         uint8_t sc = scancodeBuffer[scancodeIndex];
         char c;
-        if ((sc & 0b10000000) == BIT_SCANCODE_DOWN && (c = scancodeToAscii(sc)) != 0)
+        if ((sc & 0b10000000) == BIT_SCANCODE_DOWN && (c = scancodeToAscii(sc)) != 0){
             buf[charsRead++] = c;
+            scr_print(" readChar ");}
     }
 
     scancodeBufferLength -= scancodeIndex;
@@ -71,17 +86,14 @@ kbd_readCharacters(char *buf, unsigned int n) {
     return charsRead;
 }
 
-int kbd_addFd(Pid pid, int fd) {
-    int r = prc_addFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler);
-    if (r < 0)
-        return r;
-
-    // COMPLETE
-
-    return r;
+int kbd_mapToProcessFd(TPid pid, int fd) {
+    scr_print(" MAPPING KBD -> PRC! ");
+    return prc_mapFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler, &fdDupHandler);
 }
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
+static ssize_t fdReadHandler(TPid pid, int fd, void* resource, char* buf, size_t count) {
+    scr_print(" startReadHandle ");
+    // Only foreground processes are allowed to read from the keyboard.
     if (!prc_isForeground(pid))
         return -1;
 
@@ -91,12 +103,22 @@ static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t 
     if (count > SCANCODE_BUFFER_MAXLENGTH)
         count = SCANCODE_BUFFER_MAXLENGTH;
 
-    // COMPLETE
-    return kbd_readCharacters(buf, count);
+    int read;
+    scr_print(" readHandler! ");
+    while ((read = kbd_readCharacters(buf, count)) == 0) {
+        wq_add(processReadWaitQueue, pid);
+        sch_blockProcess(pid);
+        sch_yieldProcess();
+    }
+
+    return read;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) {
-    // COMPLETE
-
+static int fdCloseHandler(TPid pid, int fd, void* resource) {
+    wq_remove(processReadWaitQueue, pid);
     return 0;
+}
+
+static int fdDupHandler(TPid pidFrom, TPid pidTo, int fdFrom, int fdTo, void* resource) {
+    return kbd_mapToProcessFd(pidTo, fdTo);
 }
