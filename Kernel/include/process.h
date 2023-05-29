@@ -144,4 +144,6 @@ int prc_dupFd(TPid pidFrom, TPid pidTo, int fdFrom, int fdTo);
  */
 int prc_unblockOnKilled(TPid pidToUnblock, TPid pidToWait);
 
+
+void test_print();
 #endif

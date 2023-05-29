@@ -11,20 +11,20 @@
 extern uint8_t hasRegdump;
 extern const uint64_t regdump[17];
 
-// static uint64_t
-// sys_write_handler(uint64_t fd, const char *buf, uint64_t count) {
-//     if (fd != STDOUT)  // Ignore any file handle that isn't STDOUT
-//         return 0;
-
-//     for (int i = 0; i < count; i++)
-//         scr_printChar(buf[i]);
-//     return count;
-// }
-
 static uint64_t
-sys_write_handler(uint64_t fd, const char *buff, uint64_t count) {
-    return prc_handleWriteFd(sch_getCurrentPID(), fd, buff, count);
+sys_write_handler(uint64_t fd, const char *buf, uint64_t count) {
+    if (fd != STDOUT)  // Ignore any file handle that isn't STDOUT
+        return 0;
+
+    for (int i = 0; i < count; i++)
+        scr_printChar(buf[i]);
+    return count;
 }
+
+// static uint64_t
+// sys_write_handler(uint64_t fd, const char *buff, uint64_t count) {
+//     return prc_handleWriteFd(sch_getCurrentPID(), fd, buff, count);
+// }
 
 static uint64_t
 sys_time_handler() {
@@ -62,7 +62,7 @@ sys_screensize_handler() {
 
 static uint64_t
 sys_pollread_handler(uint64_t fd, char *buf, uint64_t count, uint64_t timeout_ms) {
-    scr_print("sys_PollReadHandler");
+    // scr_print("sys_PollReadHandler");
     // Any file descriptor that isnt STDIN or KBDIN gets ignored
     if (fd != STDIN && fd != KBDIN)
         return 0;
@@ -83,16 +83,16 @@ sys_pollread_handler(uint64_t fd, char *buf, uint64_t count, uint64_t timeout_ms
     return totalRead;
 }
 
-// static uint64_t
-// sys_read_handler(uint64_t fd, char *buf, uint64_t count) {
-//     return sys_pollread_handler(fd, buf, count, 0xFFFFFFFFFFFFFFFF);
-// }
-
-ssize_t
-sys_read_handler(int fd, char *buffer, size_t count) {
-    scr_print("sys_readHandler");
-    return prc_handleReadFd(sch_getCurrentPID(), fd, buffer, count);
+static uint64_t
+sys_read_handler(uint64_t fd, char *buf, uint64_t count) {
+    return sys_pollread_handler(fd, buf, count, 0xFFFFFFFFFFFFFFFF);
 }
+
+// ssize_t
+// sys_read_handler(int fd, char *buffer, size_t count) {
+//     // scr_print("sys_readHandler");
+//     return prc_handleReadFd(sch_getCurrentPID(), fd, buffer, count);
+// }
 
 static void
 sys_drawpoint_handler(uint16_t x, uint16_t y, Color color) {

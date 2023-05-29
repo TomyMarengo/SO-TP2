@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <video.h>
+#include <test_mm.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -53,7 +54,7 @@ initializeShell() {
     Color gray = {0x90, 0x90, 0x90};
     Color red = {0x00, 0x00, 0xFF};
 
-    TProcessCreateInfo info = {"shell", (TProcessEntryPoint) userCodeModuleAddress, 1, MAX_PRIORITY, 0, NULL};
+    TProcessCreateInfo info = {"shell", userCodeModuleAddress, 1, MAX_PRIORITY, 0, NULL};
     TPid pid = prc_create(&info);
 
     kbd_mapToProcessFd(pid, STDIN);          // Map STDIN
@@ -68,21 +69,25 @@ main() {
     load_idt();
     scr_clear();
     mm_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
-    kbd_init();
+    // kbd_init();
     sch_init();
     // sem_init();
     // shm_init();
 	// ((EntryPoint)userCodeModuleAddress)();
 
-    initializeShell();
+    // initializeShell();
     // initializeShell();
     // scr_print("hola! Its the Kernel!");
     
+    char *argv[] = {"10"};
+    test_mm(1,argv);
+    test_processes(1,argv);
+
     _sti();
 
-    while (1) {
-        sch_yieldProcess();
-        _hlt();
-    }
+    // while (1) {
+    //     sch_yieldProcess();
+    //     _hlt();
+    // }
     return 0;
 }

@@ -92,7 +92,7 @@ int kbd_mapToProcessFd(TPid pid, int fd) {
 }
 
 static ssize_t fdReadHandler(TPid pid, int fd, void* resource, char* buf, size_t count) {
-    scr_print(" startReadHandle ");
+    // scr_print(" startReadHandle ");
     // Only foreground processes are allowed to read from the keyboard.
     if (!prc_isForeground(pid))
         return -1;
@@ -104,7 +104,7 @@ static ssize_t fdReadHandler(TPid pid, int fd, void* resource, char* buf, size_t
         count = SCANCODE_BUFFER_MAXLENGTH;
 
     int read;
-    scr_print(" readHandler! ");
+    // scr_print(" readHandler! ");
     while ((read = kbd_readCharacters(buf, count)) == 0) {
         wq_add(processReadWaitQueue, pid);
         sch_blockProcess(pid);

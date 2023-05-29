@@ -78,6 +78,10 @@ void sch_init() {
     quantums = 0;
 }
 
+void test_print(){
+    scr_print("creatingProcessStack!");
+}
+
 int sch_onProcessCreated(TPid pid, TProcessEntryPoint entryPoint, TPriority priority, void* currentRSP, int argc, const char* const argv[]) {
     if (priority < MAX_PRIORITY || priority > MIN_PRIORITY)
         priority = DEFAULT_PRIORITY;
@@ -85,12 +89,12 @@ int sch_onProcessCreated(TPid pid, TProcessEntryPoint entryPoint, TPriority prio
     // Processes, by default, are created in the state READY.
     processStates[pid].priority = priority;
     processStates[pid].status = READY;
-    scr_print(" about to call createProcessStack ");
+    // scr_print(" about to call createProcessStack ");
     processStates[pid].currentRSP = createProcessStack(argc, argv, currentRSP, entryPoint);
-    scr_print("  processCreated ");
-    char bufaux[10];
-    itoa(pid, bufaux);
-    scr_print(bufaux);
+    // scr_print("  processCreated ");
+    // char bufaux[10];
+    // itoa(pid, bufaux);
+    // scr_print(bufaux);
     return 0;
 }
 

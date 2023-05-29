@@ -1,8 +1,11 @@
 GLOBAL createProcessStack
+EXTERN test_print
 
 entryPoint:
+    call test_print
     call rdx
-    mov rax, 0x18 ; esto es el syscall de exit
+    call test_print
+    mov rax, 0x25 ; esto es el syscall de exit
     int 80h
 
 createProcessStack:
