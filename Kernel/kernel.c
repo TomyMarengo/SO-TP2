@@ -48,8 +48,8 @@ initializeKernelBinary() {
 void initializeShell(){
     Color gray = {0x90, 0x90, 0x90};
     Color red = {0x00, 0x00, 0xFF};
-    const char* args[] = {NULL};
-    Pid pid = prc_create((ProcessStart)userCodeModuleAddress, 0, args);
+    ProcessCreateInfo shellInfo = {"shell", (ProcessStart)userCodeModuleAddress, 1, PRIORITY_MAX, 0, NULL};
+    Pid pid = prc_create(&shellInfo);
 
     kbd_addFd(pid, STDIN);
     scr_addFd(pid, STDOUT, &gray);
@@ -62,7 +62,7 @@ main() {
 
     load_idt();
     
-    mm_init(startHeapAddress, (size_t) (endHeapAddress - startHeapAddress));
+    mm_init(startHeapAddress, (size_t)(endHeapAddress - startHeapAddress));
 
     sch_init();
 
@@ -70,9 +70,11 @@ main() {
 
     _sti();
 
-    while (1)
+    while (1) {
         sch_yield();
         _hlt(); 
+    }
+
     return 0;
 
 }

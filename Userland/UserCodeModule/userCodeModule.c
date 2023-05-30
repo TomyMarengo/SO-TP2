@@ -272,35 +272,8 @@ main(int argc, char * argv[]) {
     clearscreen();
     print("Welcome to Shell! Type \"HELP\" for a list of commands.\n\n", 55, green);
 
-    int i = 4;
     while (1) {
         print("$ ", 2, magenta);
-        char readbuf[READBUF_LENGTH] = {0};
-
-        int *p;
-        int *q;
-        p = sys_malloc(i * sizeof(int));
-        printf("dir: %x - aloc: %d ", p, i * sizeof(int));
-        q = sys_malloc(i * sizeof(int));
-        printf("dir: %x - aloc: %d ", q, i * sizeof(int));
-        i += 4;
-
-        scanf(readbuf, READBUF_LENGTH);
-
-        sys_free(p);
-        sys_free(q);
-
-        char command[READBUF_LENGTH] = {0};
-        char parameters[MAX_PARAMETERS][LENGTH_PARAMETERS] = {{0}};
-        getCommand(command, parameters, readbuf);
-
-        int index;
-        if ((index = indexCommand(command)) >= 0) {
-            commands_functions[index](parameters);
-        } else {
-            print(command, strlen(command), gray);
-            print(": command not found\n", 20, gray);
-        }
     }
 
     return 420;

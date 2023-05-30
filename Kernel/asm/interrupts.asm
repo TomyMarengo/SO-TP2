@@ -147,18 +147,17 @@ timerIntRoutine:
 	mov rsp, rax
 
 	endHardwareInterrupt
+
 	popState
 	iretq
 
 awakeScheduler:
 	pushState
+
 	mov rdi, rsp
 	call sch_switchProcess
 	mov rsp, rax
 
-	; signal pic EOI (End of Interrupt)
-	mov al, 20h
-	out 20h, al
 	popState
 	iretq
 

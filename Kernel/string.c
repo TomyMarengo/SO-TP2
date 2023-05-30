@@ -70,3 +70,21 @@ itoa(uint64_t number, char *s) {
 
     return digits;
 }
+
+char *
+strcpy(char *dest, const char *src) {
+    char *w;
+    for (w = dest; *src != '\0'; *(w++) = *(src++))
+        ;
+    *w = '\0';
+    return dest;
+}
+
+char *
+strncpy(char *dest, const char *src, uint64_t n) {
+    char *w;
+    for (w = dest; *src != '\0' && n != 0; *(w++) = *(src++), n--)
+        ;
+    *w = '\0';
+    return dest;
+}
