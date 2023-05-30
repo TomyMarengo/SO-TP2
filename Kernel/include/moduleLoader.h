@@ -1,12 +1,6 @@
-#ifndef _MODULELOADER_H_
-#define _MODULELOADER_H_
+#ifndef _MODULE_LOADER_H
+#define _MODULE_LOADER_H
 
-/**
- * @brief Initializes kernel binaries.
- *
- * @param payloadStart Address to begin the load.
- * @param moduleTargetAddress Addresses of the modules to load.
- */
-void loadModules(void *payloadStart, void **moduleTargetAddress);
+void loadModules(void* payloadStart, void** moduleTargetAddress);
 
 #endif

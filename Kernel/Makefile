@@ -1,32 +1,43 @@
 include Makefile.inc
 
-MM=USE_BUDDY
-
 KERNEL=kernel.bin
-SOURCES=$(wildcard [^_]*.c)
+
+SOURCES=$(wildcard *.c)
+SOURCES_INTERRUPTIONS=$(wildcard interruptions/*.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
+
 OBJECTS=$(SOURCES:%.c=obj/%.o)
+OBJECTS_INTERRUPTIONS=$(SOURCES_INTERRUPTIONS:interruptions/%.c=obj/%.o)
 OBJECTS_ASM=$(SOURCES_ASM:asm/%.asm=obj/%.asm.o)
+
 LOADERSRC=loader.asm
 
 LOADEROBJECT=$(LOADERSRC:%.asm=obj/%.asm.o)
 STATICLIBS=
 
-all: $(KERNEL)
-$(KERNEL): $(LOADEROBJECT) $(OBJECTS) $(STATICLIBS) $(OBJECTS_ASM)
-	$(LD) $(LDFLAGS) -T kernel.ld -o $(KERNEL) $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(STATICLIBS)
+ALL_OBJECTS= $(LOADEROBJECT) $(OBJECTS) $(OBJECTS_ASM) $(OBJECTS_INTERRUPTIONS)
 
-obj/%.o: %.c
-	$(GCC) $(GCCFLAGS) -D$(MM) -I./include -c $< -o $@
+all: $(KERNEL)
+
+$(KERNEL): $(STATICLIBS) $(ALL_OBJECTS)
+	$(LD) $(LDFLAGS) -T kernel.ld -o $@ $^
+	$(LD) $(LDFLAGS) -T kernel.ld -o kernel.elf --oformat=elf64-x86-64 $^
+
+obj/%.o: interruptions/%.c
+	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -c $< -o $@
 
 obj/%.asm.o : asm/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
 
+obj/%.o: %.c
+	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -c $< -o $@
+
 $(LOADEROBJECT):
-	mkdir obj
+	mkdir -p obj
 	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
 
 clean:
 	rm -rf obj
+	rm *.bin *.elf | true
 
 .PHONY: all clean

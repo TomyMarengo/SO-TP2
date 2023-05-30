@@ -1,96 +1,94 @@
-#include <interrupts.h>
-#include <keyboard.h>
+/* Standard library */
 #include <stdint.h>
-#include <string.h>
-#include <process.h>
 
-#define SCANCODE_BUFFER_MAXLENGTH 32
+/* Local headers */
+#include <keyboard.h>
 
-static char scancodeToAsciiTable[] = {0,   27,  '1', '2', '3', '4', '5', '6', '7',  '8', '9', '0',  '-',  '=', '\b', '\t',
-                                      'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o',  'p', '[', ']',  '\n', 0,   'a',  's',
-                                      'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`', 0,   '\\', 'z',  'x', 'c',  'v',
-                                      'b', 'n', 'm', ',', '.', '/', 0,   ' ', 0,    ' ', 0,   0,    0,    0,   0,    0,
-                                      0,   0,   0,   0,   0,   0,   0,   0,   0,    0,   '-', 0,    0,    0,   '+'};
+#define LEFT_SHIFT 0x2A
+#define RIGHT_SHIFT 0x36
+#define BUFFER_LENGTH 256
+#define CAPTURE_REGISTERS '-'
 
-#define SCANCODE_ARR_LENGTH (sizeof(scancodeToAsciiTable) / sizeof(scancodeToAsciiTable[0]))
+// libasm.asm
+extern void save_registers();
+extern unsigned int kbd_readKey();
 
-char
-scancodeToAscii(uint8_t scancode) {
-    return scancode < SCANCODE_ARR_LENGTH ? scancodeToAsciiTable[scancode] : '\0';
-}
+static uint8_t keyMapRow = 0;
+static uint8_t buffer[BUFFER_LENGTH];
 
-static uint8_t scancodeBuffer[SCANCODE_BUFFER_MAXLENGTH];
-static unsigned int scancodeBufferLength = 0;
+uint16_t buffer_start = 0;
+uint16_t buffer_end = 0;
+uint16_t buffer_current_size = 0;
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void* resource);
+// Us International QWERTY
+// https://stanislavs.org/helppc/make_codes.html
+// https://stanislavs.org/helppc/scan_codes.html
 
-void
-keyboardIntHandler(uint8_t scancode) {
-    if (scancodeBufferLength < SCANCODE_BUFFER_MAXLENGTH)
-        scancodeBuffer[scancodeBufferLength++] = scancode;
-}
+static uint8_t scancodeLToAscii[] = {
+    0,   27, '1', '2', '3', '4', '5', '6', '7', '8', '9',  '0', '-', '=',
+   '\b', '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',  '[', ']',
+   '\n',    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
+    0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',    0, '*',
+    0,  ' ',   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,    0,   0,
+    0,    0,   38,   0, '-',   37,   0,   39, '+',   0,   40,   0,    0,   0,
+    0,    0,   0,   0,   0,   0,   0,   0,  0,    0,   0,   0,    0,   0,
+};
 
-unsigned int
-kbd_getBufferLength() {
-    return scancodeBufferLength;
-}
+static uint8_t scancodeUToAscii[] = {
+    0,   27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
+   '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}',
+   '\n',    0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
+    0, '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?',   0, '*',
+    0, ' ',    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+    0,   0,    0,   0, '-',   0,   0,   0, '+',   0,   0,   0,   0,   0,
+    0,   0,    0,   0,   0,   0
+};
 
-void
-kbd_clearBuffer() {
-    scancodeBufferLength = 0;
-}
+static uint8_t* keyMap[] = {scancodeLToAscii, scancodeUToAscii};
 
-unsigned int
-kbd_readScancodes(uint8_t *buf, unsigned int n) {
-    _cli();
-    if (scancodeBufferLength < n)
-        n = scancodeBufferLength;
-    memcpy(buf, scancodeBuffer, n);
-    scancodeBufferLength -= n;
-    memcpy(scancodeBuffer, scancodeBuffer + n, scancodeBufferLength);
-    _sti();
-    return n;
-}
+static void addBuffer(uint8_t c) {
 
-unsigned int
-kbd_readCharacters(char *buf, unsigned int n) {
-    _cli();
-    unsigned int charsRead = 0;
-    unsigned int scancodeIndex;
-    for (scancodeIndex = 0; scancodeIndex < scancodeBufferLength && charsRead < n; scancodeIndex++) {
-        uint8_t sc = scancodeBuffer[scancodeIndex];
-        char c;
-        if ((sc & 0b10000000) == BIT_SCANCODE_DOWN && (c = scancodeToAscii(sc)) != 0)
-            buf[charsRead++] = c;
+    buffer[buffer_end++] = c;
+    buffer_current_size++;
+
+    if (buffer_end == BUFFER_LENGTH) {
+        buffer_end = 0;
     }
-
-    scancodeBufferLength -= scancodeIndex;
-    memcpy(scancodeBuffer, scancodeBuffer + scancodeIndex, scancodeBufferLength);
-    _sti();
-    return charsRead;
+    return;
 }
 
-int kbd_addFd(Pid pid, int fd) {
-    return prc_addFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler); 
+void kbd_interruptHandler() {
+
+    unsigned char code = kbd_readKey();
+    if (code < 0x80) { // Key pressed
+        if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
+            keyMapRow |= 0x01;
+        }
+        // Inforeg - if it's the special key that save registers
+        else if (keyMap[keyMapRow][code] == CAPTURE_REGISTERS) {
+            save_registers();
+            return;
+        } else if (keyMap[keyMapRow][code] != 0) {
+            addBuffer(keyMap[keyMapRow][code]);
+        }
+
+    } else { // Key released
+        code -= 0x80;
+        if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
+            keyMapRow &= 0xFE;
+        }
+    }
+    return;
 }
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
-    if (!prc_isForeground(pid))
+void kbd_clearBuffer() {
+    buffer_end = buffer_start = buffer_current_size = 0;
+}
+
+int kbd_getChar() {
+    if (buffer_current_size == 0)
         return -1;
 
-    if (count == 0)
-        return 0;
-
-    if (count > SCANCODE_BUFFER_MAXLENGTH)
-        count = SCANCODE_BUFFER_MAXLENGTH;
-
-    // COMPLETE
-    return kbd_readCharacters(buf, count);
-}
-
-static int fdCloseHandler(Pid pid, int fd, void* resource) {
-    // COMPLETE
-
-    return 0;
+    buffer_current_size--;
+    return buffer[buffer_start++];
 }

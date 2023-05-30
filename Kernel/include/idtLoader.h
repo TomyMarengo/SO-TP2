@@ -1,9 +1,6 @@
-#ifndef _IDTLOADER_H_
-#define _IDTLOADER_H_
+#ifndef _IDT_LOADER_H_
+#define _IDT_LOADER_H_
 
-/**
- * @brief Sets up the Interrupt Descriptor Table.
- */
-void load_idt(void);
+void load_idt();
 
 #endif
