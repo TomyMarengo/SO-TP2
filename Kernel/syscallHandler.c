@@ -12,7 +12,7 @@
 extern uint8_t hasRegdump;
 extern const uint64_t regdump[17];
 
-
+/*
 static uint64_t
 sys_write_handler(uint64_t fd, const char *buf, uint64_t count) {
     if (fd != STDOUT)  // Ignore any file handle that isn't STDOUT
@@ -21,12 +21,12 @@ sys_write_handler(uint64_t fd, const char *buf, uint64_t count) {
     for (int i = 0; i < count; i++)
         scr_printChar(buf[i]);
     return count;
-}
-/*
+}*/
+
 static uint64_t
 sys_write_handler(uint64_t fd, const char* buff, uint64_t count) {
     return prc_handleWriteFd(sch_getCurrentPID(), fd, buff, count);
-}*/
+}
 
 static uint64_t
 sys_time_handler() {
@@ -177,8 +177,8 @@ int sys_unblock_handler(Pid pid){
     return sch_unblockProcess(pid);
 }
 
-Pid sys_createProcess_handler(ProcessStart start, int argc, const char* argv[]){
-    Pid pid = prc_create(start, argc, argv);
+Pid sys_createProcess_handler(ProcessCreateInfo* createInfo){
+    Pid pid = prc_create(createInfo);
 
     Color gray = {0x90, 0x90, 0x90};
     Color red = {0x00, 0x00, 0xFF};

@@ -53,5 +53,23 @@ uint64_t strlen(const char *s);
  */
 uint64_t itoa(uint64_t number, char *s);
 
+/**
+ * @brief Copies the string `src` to `dest` including the null-terminating character and returns a pointer to `dest`.
+ *
+ * @param dest Pointer to the destination string.
+ * @param src Pointer to the source string.
+ * @return - Pointer to the destination string.
+ */
+char *strcpy(char *dest, const char *src);
+
+/**
+ * @brief Copies at most `n` characters from the string `src` to `dest` and returns a pointer to `dest`.
+ *
+ * @param dest Pointer to the destination string.
+ * @param src Pointer to the source string.
+ * @param n Maximum number of characters to copy.
+ * @return - Pointer to the destination string.
+ */
+char *strncpy(char *dest, const char *src, uint64_t n);
 
 #endif

@@ -152,6 +152,18 @@ typedef struct {
     ProcessStatus status;
 } ProcessInfo;
 
+/**
+ * @brief Represents the information needed for a create process request.
+ */
+typedef struct {
+    const char* name;
+    ProcessStart start;
+    int isForeground;
+    Priority priority;
+    int argc;
+    const char* const* argv;
+} ProcessCreateInfo;
+
 /* --- Pipes --- */
 
 /**

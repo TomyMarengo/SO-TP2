@@ -34,7 +34,7 @@ typedef int (*TFdCloseHandler)(Pid pid, int fd, void* resource);
  * 
  * @returns The newly created TProcess, or -1 if process creation failed.
  */
-Pid prc_create(ProcessStart start, int argc, const char* const argv[]);
+Pid prc_create(const ProcessCreateInfo* createInfo);
 
 /**
  * @brief Kills a process and frees associated resources. Using a process after

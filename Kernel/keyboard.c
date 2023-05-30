@@ -72,13 +72,7 @@ kbd_readCharacters(char *buf, unsigned int n) {
 }
 
 int kbd_addFd(Pid pid, int fd) {
-    int r = prc_addFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler);
-    if (r < 0)
-        return r;
-
-    // COMPLETE
-
-    return r;
+    return prc_addFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler); 
 }
 
 static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {

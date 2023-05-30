@@ -20,6 +20,7 @@ typedef struct {
 	int isForeground;
 	void* stackStart;
     void* stackEnd;
+    char* name;
     FDEntry* fdTable;
 	unsigned int fdTableSize;
 	char** argv;
@@ -38,35 +39,74 @@ static int getProcessByPid(Pid pid, Process** outProcess) {
     return 1;
 }
 
-Pid prc_create(ProcessStart start, int argc, const char* const argv[]) {
+static int isNameValid(const char* name) {
+    if (name == NULL)
+        return 0;
+
+    for (int i = 0; i <= MAX_NAME_LENGTH; i++) {
+        char c = name[i];
+        if (c == '\0')
+            return 1;
+
+        // The first character must be a letter. Subsequent characters may be a letter or a number.
+        if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_') {
+            if (i == 0 || c < '0' || c > '9')
+                return 0;
+        }
+    }
+
+    return 0;
+}
+
+Pid prc_create(const ProcessCreateInfo* createInfo) {
     Pid pid = 0;
     for (; pid < MAX_PROCESSES && processes[pid].stackEnd != NULL; pid++);
 
-    if (pid == MAX_PROCESSES)
+    if (createInfo->argc < 0 || pid == MAX_PROCESSES || !isNameValid(createInfo->name))
         return -1;
+
+    void* stackEnd = NULL;
+    char* nameCopy = NULL;
+    char** argvCopy = NULL;
+    if ((stackEnd = mm_malloc(PROCESS_STACK_SIZE)) == NULL
+        || (nameCopy = mm_malloc(strlen(createInfo->name) + 1)) == NULL
+        || (createInfo->argc != 0 && (argvCopy = mm_malloc(sizeof(char*) * createInfo->argc)) == NULL)) {
+        mm_free(stackEnd);
+        mm_free(nameCopy);
+        return -1;
+    }
+
+    for (int i = 0; i < createInfo->argc; ++i) {
+        size_t length = strlen(createInfo->argv[i]) + 1;
+
+        if ((argvCopy[i] = mm_malloc(length)) == NULL) {
+            mm_free(stackEnd);
+            mm_free(nameCopy);
+            while (i > 0) {
+                i--;
+                mm_free(argvCopy[i]);
+            }
+            mm_free(argvCopy);
+            return -1;
+        }
+
+        memcpy(argvCopy[i], createInfo->argv[i], length);
+    }
+
+    strcpy(nameCopy, createInfo->name);
 
     Process* process = &processes[pid];
 
-    if ((process->stackEnd = mm_malloc(PROCESS_STACK_SIZE)) == NULL)
-        return -1;
-
-	process->isForeground = 1;
-    process->stackStart = process->stackEnd + PROCESS_STACK_SIZE;
-    process->fdTable = NULL;
-    process->fdTableSize = 0;
-
-	void* currentRSP = process->stackStart;
-
-	char** argvCopy = mm_malloc(sizeof(char *) * argc);
-    for(int i = 0; i < argc; ++i){
-        size_t length = strlen(argv[i])+1;
-        argvCopy[i] = mm_malloc(length);
-        memcpy(argvCopy[i], argv[i], length);
-    }
-    process->argc = argc;
+    memset(process, 0, sizeof(Process));
+    process->stackEnd = stackEnd;
+    process->stackStart = stackEnd + PROCESS_STACK_SIZE;
+    process->isForeground = createInfo->isForeground;
+    process->name = nameCopy;
     process->argv = argvCopy;
+    process->argc = createInfo->argc;
 
-	sch_onProcessCreated(pid, start, 1, currentRSP, argc, (const char* const*)argvCopy); //TEST
+
+	sch_onProcessCreated(pid, createInfo->start, createInfo->priority, process->stackStart, createInfo->argc, (const char* const*)argvCopy);
 
     return pid;
 }
@@ -141,6 +181,7 @@ int prc_addFd(Pid pid, int fd, void* resource, TFdReadHandler readHandler, TFdWr
         if (newFdTable == NULL)
             return -1;
 
+        memset(&newFdTable[process->fdTableSize], 0, sizeof(FDEntry) * (newFdTableSize - process->fdTableSize));
         process->fdTable = newFdTable;
         process->fdTableSize = newFdTableSize;
     }
