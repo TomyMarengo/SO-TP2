@@ -191,7 +191,7 @@ int prc_addFd(Pid pid, int fd, void* resource, TFdReadHandler readHandler, TFdWr
     process->fdTable[fd].writeHandler = writeHandler;
     process->fdTable[fd].closeHandler = closeHandler;
 
-    return 1;
+    return fd;
 }
 
 int prc_deleteFd(Pid pid, int fd) {
