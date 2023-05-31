@@ -1,36 +1,48 @@
 #ifndef _GRAPHICS_H_
 #define _GRAPHICS_H_
 
-/* Standard Library */
 #include <stdint.h>
+#include <defs.h>
 
 /**
  * @struct color 
- * @brief stores the color of a pixel
+ * @brief Stores the color of a pixel in RGB format.
  */
 typedef struct color {
     uint8_t R; /// < Red
     uint8_t G; /// < Green
     uint8_t B; /// < Black
-} TColor;
+} Color;
 
 /* From graphicMode.c */
-extern const TColor RED;
-extern const TColor WHITE;
-extern const TColor BLACK;
+extern const Color RED;
+extern const Color GREEN;
+extern const Color BLUE;
+extern const Color WHITE;
+extern const Color GRAY;
+extern const Color BLACK;
 
-void scr_init();
+void initializeScreen();
+void clearScreen();
+void printLine();
+void printChar(char c);
+void printCharFormat(char c, const Color* charColor, const Color* bgColor);
+void print(const char* string);
+void printDec(uint64_t value);
+void printHex(uint64_t value);
+void printBin(uint64_t value);
+void printBase(uint64_t value, uint32_t base);
+void printRegisterFormat(uint64_t reg);
+void restartCursor();
 
-void scr_clear();
-void scr_printLine();
-void scr_printChar(char c);
-void scr_printCharFormat(char c, const TColor* charColor, const TColor* bgColor);
-void scr_print(const char* string);
-void scr_printDec(uint64_t value);
-void scr_printHex(uint64_t value);
-void scr_printBin(uint64_t value);
-void scr_printBase(uint64_t value, uint32_t base);
-void scr_printRegisterFormat(uint64_t reg);
-void scr_restartCursor();
+/**
+ * @brief Add the screen into fd process table.
+ * 
+ * @param pid PID of the process.
+ * @param fd File descriptor to add.
+ * @param color Color resource to map to the screen.
+ * @returns The screen file descriptor, -1 in error cases.
+ */
+int scrAddFd(Pid pid, int fd, const Color* color);
 
 #endif

@@ -1,7 +1,4 @@
-/* Standard library */
 #include <stdint.h>
-
-/* Local headers */
 #include <time.h>
 #include <lib.h>
 
@@ -12,57 +9,56 @@
 #define MONTH 0x08
 #define YEAR 0x09
 
-/** Defined in time.asm */
-extern uint8_t rtc_readValue(uint8_t mode);
+extern uint8_t readValue(uint8_t mode);
 
 static unsigned long ticks = 0;
 
-void rtc_interruptHandler() {
+void rtcInterruptHandler() {
     ticks++;
 }
 
-unsigned long rtc_getElapsedTicks() {
+unsigned long getElapsedTicks() {
     return ticks;
 }
 
-unsigned long rtc_getElapsedSeconds() {
+unsigned long getElapsedSeconds() {
     return TICKS_TO_SECONDS(ticks);
 }
 
-uint8_t rtc_getCurrentSeconds() {
-    return bcdToDec(rtc_readValue(SECONDS));
+uint8_t getCurrentSeconds() {
+    return bcdToDec(readValue(SECONDS));
 }
 
-uint8_t rtc_getCurrentMinutes() {
-    return bcdToDec(rtc_readValue(MINUTES));
+uint8_t getCurrentMinutes() {
+    return bcdToDec(readValue(MINUTES));
 }
 
-uint8_t rtc_getCurrentHours() {
-    return bcdToDec(rtc_readValue(HOURS));
+uint8_t getCurrentHours() {
+    return bcdToDec(readValue(HOURS));
 }
 
-uint8_t rtc_getCurrentDay() {
-    return bcdToDec(rtc_readValue(DAY));
+uint8_t getCurrentDay() {
+    return bcdToDec(readValue(DAY));
 }
 
-uint8_t rtc_getCurrentMonth() {
-    return bcdToDec(rtc_readValue(MONTH));
+uint8_t getCurrentMonth() {
+    return bcdToDec(readValue(MONTH));
 }
 
-uint8_t rtc_getCurrentYear() {
-    return bcdToDec(rtc_readValue(YEAR));
+uint8_t getCurrentYear() {
+    return bcdToDec(readValue(YEAR));
 }
 
-void rtc_getCurrentDateString(char* buffer) {
+void getCurrentDateString(char* buffer) {
     char date[] = {'0', '0', '/', '0', '0', '/', '0', '0', 0};
 
-    int t = rtc_getCurrentDay();
+    int t = getCurrentDay();
     date[0] += t / 10;
     date[1] += t % 10;
-    t = rtc_getCurrentMonth();
+    t = getCurrentMonth();
     date[3] += t / 10;
     date[4] += t % 10;
-    t = rtc_getCurrentYear();
+    t = getCurrentYear();
     date[6] += t / 10;
     date[7] += t % 10;
 
@@ -73,16 +69,16 @@ void rtc_getCurrentDateString(char* buffer) {
     buffer[i] = 0;
 }
 
-void rtc_getCurrentTimeString(char* buffer) {
+void getCurrentTimeString(char* buffer) {
     char time[] = {'0', '0', ':', '0', '0', ':', '0', '0', 0};
 
-    int t = rtc_getCurrentHours();
+    int t = getCurrentHours();
     time[0] += t / 10;
     time[1] += t % 10;
-    t = rtc_getCurrentMinutes();
+    t = getCurrentMinutes();
     time[3] += t / 10;
     time[4] += t % 10;
-    t = rtc_getCurrentSeconds();
+    t = getCurrentSeconds();
     time[6] += t / 10;
     time[7] += t % 10;
 

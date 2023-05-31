@@ -1,24 +1,32 @@
-GLOBAL _cli
-GLOBAL _sti
+GLOBAL cli
+GLOBAL sti
+GLOBAL hlt
+GLOBAL haltcpu
+
 GLOBAL picMasterMask
 GLOBAL picSlaveMask
-GLOBAL haltcpu
-GLOBAL _hlt
 
-GLOBAL _irq00Handler
-GLOBAL _irq01Handler
-GLOBAL _irq02Handler	
-GLOBAL _irq03Handler	
-GLOBAL _irq04Handler
-GLOBAL _irq05Handler
-GLOBAL _exception0Handler
-GLOBAL _exception6Handler
-GLOBAL _sysCallHandler
+GLOBAL irq00Handler
+GLOBAL irq01Handler
+GLOBAL irq02Handler	
+GLOBAL irq03Handler	
+GLOBAL irq04Handler
+GLOBAL irq05Handler
+GLOBAL exception0Handler
+GLOBAL exception6Handler
+GLOBAL exception0DHandler
+GLOBAL exception0EHandler
+
+GLOBAL awakeScheduler
+GLOBAL int81
+
+GLOBAL syscallHandler
 
 EXTERN irqDispatcher
-EXTERN sysCallDispatcher
-EXTERN print_registers
+EXTERN syscallDispatcher
+EXTERN printRegisters
 EXTERN exceptionDispatcher
+EXTERN switchProcess
 
 SECTION .text
 
@@ -62,7 +70,7 @@ SECTION .text
 	push rsp
 	pushState
 
-	mov rdi, %1 ; pasaje de parametro
+	mov rdi, %1 
 	call irqDispatcher
 
 	; signal pic EOI (End of Interrupt)
@@ -77,9 +85,9 @@ SECTION .text
 %macro exceptionHandler 1
 	pushState
 
-	call print_registers
+	call printRegisters
 
-	mov rdi, %1 ; pasaje de parametro
+	mov rdi, %1 
 	call exceptionDispatcher
 
 	popState
@@ -87,77 +95,101 @@ SECTION .text
 
 %endmacro
 
-_hlt:
-	sti
-	hlt
-	ret
-
-_cli:
+haltcpu:
 	cli
-	ret
-
-_sti:
-	sti
+	hlt
 	ret
 
 picMasterMask:
 	push rbp
     mov rbp, rsp
     mov ax, di
-    out	21h,al
+    out	21h, al
     pop rbp
     retn
 
 picSlaveMask:
-	push    rbp
-    mov     rbp, rsp
-    mov     ax, di  ; ax = mascara de 16 bits
-    out	0A1h,al
-    pop     rbp
+	push rbp
+    mov rbp, rsp
+    mov ax, di  ; ax is a 16 bits mask
+    out	0A1h, al
+    pop rbp
     retn
 
 ; 8254 Timer (Timer Tick)
-_irq00Handler:
-	irqHandlerMaster 0
+irq00Handler:
+	pushState
 
-; Keyboard
-_irq01Handler:
-	irqHandlerMaster 1
+	mov rdi, 0
+	call irqDispatcher
+	
+	mov rdi, rsp
+	call switchProcess
+	mov rsp, rax
 
-; Cascade pic never called
-_irq02Handler:
-	irqHandlerMaster 2
-
-; Serial Port 2 and 4
-_irq03Handler:
-	irqHandlerMaster 3
-
-; Serial Port 1 and 3
-_irq04Handler:
-	irqHandlerMaster 4
-
-; USB
-_irq05Handler:
-	irqHandlerMaster 5
-
-
-; Zero Division Exception
-_exception0Handler:
-	exceptionHandler 0
-
-; Invalid Operand Exception
-_exception6Handler:
-	exceptionHandler 6
-
-_sysCallHandler:
-	mov rcx, r10
-	mov r9, rax
-	call sysCallDispatcher
+	; signal pic EOI (End of Interrupt)
+	mov al, 20h
+	out 20h, al
+	
+	popState
 	iretq
 
-haltcpu:
-	cli
+; Keyboard
+irq01Handler:
+	irqHandlerMaster 1
+
+; Zero Division Exception
+exception0Handler:
+	exceptionHandler 00h
+
+; Invalid Operand Exception
+exception6Handler:
+	exceptionHandler 06h
+
+; General Protection Exception
+exception0DHandler:
+	exceptionHandler 0Dh
+
+; Page Fault Exception
+exception0EHandler:
+	exceptionHandler 0Eh
+
+syscallHandler:
+	mov rcx, r10
+	mov r9, rax
+	call syscallDispatcher
+	iretq
+
+; To avoid ticking unnecesarily (e.g. when a process yields the CPU)
+awakeScheduler:
+	pushState
+	
+	mov rdi, rsp
+	call switchProcess
+	mov rsp, rax
+
+	; signal pic EOI (End of Interrupt)
+	mov al, 20h
+	out 20h, al
+	
+	popState
+	iretq
+
+int81:
+	int 81h
+	ret
+
+hlt:
+	sti
 	hlt
+	ret
+
+cli:
+	cli
+	ret
+
+sti:
+	sti
 	ret
 
 SECTION .bss

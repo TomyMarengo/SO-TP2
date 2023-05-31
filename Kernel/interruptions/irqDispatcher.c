@@ -1,16 +1,13 @@
-/* Standard library */
 #include <stdint.h>
-
-/* Local headers */
 #include <time.h>
 #include <keyboard.h>
 
-typedef void (*TVoidFunction)(void);
+typedef void (*VoidFunction)(void);
 
-static TVoidFunction interruptions[255] = {&rtc_interruptHandler, &kbd_interruptHandler};
+static VoidFunction interruptions[255] = {&rtcInterruptHandler, &kbdInterruptHandler};
 
 void irqDispatcher(uint64_t irq) {
-    TVoidFunction interruption = interruptions[irq];
+    VoidFunction interruption = interruptions[irq];
     if (interruption != 0) {
         interruption();
     }

@@ -7,17 +7,17 @@
 #define TICKS_TO_SECONDS(x) ((x) * 5 / 91)
 #define TICKS_TO_MILLISECONDS(x) ((x) * 5000 / 91)
 
-void rtc_interruptHandler();
-unsigned long rtc_getElapsedTicks();
-unsigned long rtc_getElapsedSeconds();
+void rtcInterruptHandler();
+unsigned long getElapsedTicks();
+unsigned long getElapsedSeconds();
 
-uint8_t rtc_getCurrentSeconds();
-uint8_t rtc_getCurrentMinutes();
-uint8_t rtc_getCurrentHours();
-uint8_t rtc_getCurrentDay();
-uint8_t rtc_getCurrentMonth();
-uint8_t rtc_getCurrentYear();
-void rtc_getCurrentDateString(char* buffer);
-void rtc_getCurrentTimeString(char* buffer);
+uint8_t getCurrentSeconds();
+uint8_t getCurrentMinutes();
+uint8_t getCurrentHours();
+uint8_t getCurrentDay();
+uint8_t getCurrentMonth();
+uint8_t getCurrentYear();
+void getCurrentDateString(char* buffer);
+void getCurrentTimeString(char* buffer);
 
 #endif

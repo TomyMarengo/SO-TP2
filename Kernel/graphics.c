@@ -1,10 +1,10 @@
-/* Standard library */
 #include <stdint.h>
-
-/* Local headers */
+#include <stddef.h>
 #include <graphics.h>
 #include <fonts.h>
 #include <lib.h>
+#include <defs.h>
+#include <process.h>
 
 // Retrieved from https://wiki.osdev.org/VESA_Video_Modes
 struct vbe_mode_info_structure {
@@ -45,9 +45,12 @@ struct vbe_mode_info_structure {
     uint8_t reserved1[206];
 } __attribute__((packed));
 
-const TColor RED = {0xFF, 0x00, 0x00};
-const TColor WHITE = {0xFF, 0xFF, 0xFF};
-const TColor BLACK = {0x00, 0x00, 0x00};
+const Color RED = {0xFF, 0x00, 0x00};
+const Color GREEN = {0x00, 0xFF, 0x00};
+const Color BLUE = {0x00, 0x00, 0xFF};
+const Color WHITE = {0xFF, 0xFF, 0xFF};
+const Color GRAY = {0xAA, 0xAA, 0xAA};
+const Color BLACK = {0x00, 0x00, 0x00};
 
 static uint8_t current_i, current_j;
 static uint8_t width, height;
@@ -59,11 +62,14 @@ static void getNextPosition();
 static void checkSpace();
 static void scrollUp();
 
+static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
+static int fdCloseHandler(Pid pid, int fd, void* resource);
+
 static void* getPixelAddress(int i, int j) {
     return (void*)((size_t)graphicModeInfo->framebuffer + 3 * (graphicModeInfo->width * i + j));
 }
 
-static void drawPixel(int i, int j, const TColor* color) {
+static void drawPixel(int i, int j, const Color* color) {
     uint8_t* pixel = getPixelAddress(i, j);
     pixel[0] = color->B;
     pixel[1] = color->G;
@@ -71,27 +77,27 @@ static void drawPixel(int i, int j, const TColor* color) {
 }
 
 // Default screen
-void scr_init() {
+void initializeScreen() {
     current_i = 0;
     current_j = 0;
     width = graphicModeInfo->width / CHAR_WIDTH;
     height = graphicModeInfo->height / CHAR_HEIGHT;
-    scr_clear();
+    clearScreen();
 }
 
-void scr_printCharFormat(char c, const TColor* charColor, const TColor* bgColor) {
+void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
 
     // Backspace
     if (c == '\b') {
         if (current_j == 0) {
             current_i -= 1;
             current_j = width - 1;
-            scr_printCharFormat(' ', charColor, bgColor);
+            printCharFormat(' ', charColor, bgColor);
             current_i -= 1;
             current_j = width - 1;
         } else {
             current_j = (current_j - 1) % width;
-            scr_printCharFormat(' ', charColor, bgColor);
+            printCharFormat(' ', charColor, bgColor);
             current_j = (current_j - 1) % width;
         }
         return;
@@ -101,7 +107,7 @@ void scr_printCharFormat(char c, const TColor* charColor, const TColor* bgColor)
 
     // scr_printLine
     if (c == '\n') {
-        scr_printLine();
+        printLine();
         return;
     }
 
@@ -126,52 +132,51 @@ void scr_printCharFormat(char c, const TColor* charColor, const TColor* bgColor)
     getNextPosition();
 }
 
-void scr_printChar(char c) {
-    scr_printCharFormat(c, &WHITE, &BLACK);
+void printChar(char c) {
+    printCharFormat(c, &WHITE, &BLACK);
 }
 
-void scr_print(const char* string) {
+void print(const char* string) {
     for (int i = 0; string[i] != 0; ++i) {
-        scr_printChar(string[i]);
+        printChar(string[i]);
     }
 }
 
-void scr_printLine() {
+void printLine() {
     current_j = 0;
     current_i += 1;
 }
 
-void scr_restartCursor() {
+void restartCursor() {
     current_i = 0;
     current_j = 0;
 }
 
-void scr_clear() {
+void clearScreen() {
     void* p = (void*)(size_t)graphicModeInfo->framebuffer;
     memset(p, 0, (size_t)graphicModeInfo->width * graphicModeInfo->height * 3);
     current_i = 0;
     current_j = 0;
 }
 
-void scr_printDec(uint64_t value) {
-    scr_printBase(value, 10);
+void printDec(uint64_t value) {
+    printBase(value, 10);
 }
 
-void scr_printHex(uint64_t value) {
-    scr_printBase(value, 16);
+void printHex(uint64_t value) {
+    printBase(value, 16);
 }
 
-void scr_printBin(uint64_t value) {
-    scr_printBase(value, 2);
+void printBin(uint64_t value) {
+    printBase(value, 2);
 }
 
-void scr_printBase(uint64_t value, uint32_t base) {
+void printBase(uint64_t value, uint32_t base) {
     uintToBase(value, buffer, base);
-    scr_print(buffer);
+    print(buffer);
 }
 
-// Function to print in register format
-void scr_printRegisterFormat(uint64_t reg) {
+void printRegisterFormat(uint64_t reg) {
 
     uint64_t aux = reg;
     uint64_t count = 16;
@@ -182,11 +187,11 @@ void scr_printRegisterFormat(uint64_t reg) {
     }
 
     for (int i = 0; i < count; i++) {
-        scr_printChar('0');
+        printChar('0');
     }
 
     if (reg) {
-        scr_printHex(reg);
+        printHex(reg);
     }
 }
 
@@ -212,4 +217,27 @@ static void scrollUp() {
         }
     }
     current_i -= 1;
+}
+
+int scrAddFd(Pid pid, int fd, const Color* color) { //TODO
+
+    int r = prcAddFd(pid, fd, (void*) color, NULL, &fdWriteHandler, &fdCloseHandler);
+    if (r < 0)
+        return r;
+
+    return r;
+}
+
+static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
+    if (!isForeground(pid))
+        return -1;
+
+    for (size_t i = 0; i < count; i++)
+        printCharFormat(buf[i], (const Color*) resource, &BLACK);
+
+    return count;
+}
+
+static int fdCloseHandler(Pid pid, int fd, void* resource) { //TODO
+    return 0;
 }

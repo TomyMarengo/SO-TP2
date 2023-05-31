@@ -1,8 +1,8 @@
-GLOBAL kbd_readKey
+GLOBAL readKey
 
 section .text
 
-kbd_readKey:
+readKey:
 	xor rax, rax
 .loop:
 	in al, 0x64      ; Read 8042 status register. Can be read at any time.

@@ -1,66 +1,28 @@
-GLOBAL print_registers
-GLOBAL give_control_to_user
+GLOBAL printRegisters
+GLOBAL giveControlToUser
 
-EXTERN scr_print
-EXTERN scr_printRegisterFormat
-EXTERN scr_printLine
-EXTERN main
-EXTERN getStackBase
+EXTERN print
+EXTERN printRegisterFormat
+EXTERN printLine
 
 section .text
 
-give_control_to_user:
-    call getStackBase	        ; Get thet stack address
-	mov rsp, rax				; Set up the stack with the returned address
-	call main
- 
-    ;   Retrieved from https://os.phil-opp.com/handling-exceptions/ 
-    ;   The function must print the registers mentioned below in the following order:
-    ;   RAX R15 R14 R13 R12 R11 R10 R9 R8 RSI RDI RBP RDX RCX RBX RIP CS RFLAGS RSP SS
-    ;   because they were pushed to the stack in reverse order (checked using GDB).
-    ;   Notice that RIP will point to the instruction that caused the exception.
-
-    ;   -- lower part of the stack --
-    ;	RBP
-    ;   RIP    -> calling function 
-    ;   RAX
-    ;   R15
-    ;   R14
-    ;   R13
-    ;   R12
-    ;   R11
-    ;   R10
-    ;   R9
-    ;   R8
-    ;   RSI
-    ;   RDI
-    ;   RBP
-    ;   RDX
-    ;   RCX
-    ;   RBX
-    ;   RIP     -> instruction that caused the exception
-    ;   CS
-    ;   RFLAGS
-    ;   RSP
-    ;   SS  
-    ;   -- upper part of the stack --
-
-print_registers:
+printRegisters:
     push rbp
     mov rbp, rsp
 
     xor r10, r10
 
-.loop_registers:
+.loopRegisters:
       
     mov rdi, [registers+r10]
-    call scr_print
+    call print
     add r10, 8
     mov rdi, [rbp+r10+8]
-    call scr_printRegisterFormat
-    call scr_printLine
+    call printRegisterFormat
+    call printLine
     cmp r10, length
-    jne .loop_registers
+    jne .loopRegisters
 
     mov rsp, rbp
     pop rbp

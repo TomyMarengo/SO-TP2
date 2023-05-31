@@ -1,27 +1,53 @@
 #ifndef _INTERRUPTS_H_
 #define _INTERRUPTS_H_
 
-/* Standard library */
 #include <stdint.h>
 
-void _irq00Handler(void);
-void _irq01Handler(void);
-void _irq02Handler(void);
-void _irq03Handler(void);
-void _irq04Handler(void);
-void _irq05Handler(void);
+/**
+ * @brief Clear Interrupt Flag.
+ */
+void cli(void);
 
-void _exception6Handler(void);
-void _exception0Handler(void);
+/**
+ * @brief Set Interrupt Flag.
+ */
+void sti(void);
 
-void _sysCallHandler(void);
-void _cli(void);
-void _sti(void);
-void _hlt(void);
+/**
+ * @brief Halts the central processing unit (CPU) until the next external interrupt is fired.
+ */
+void hlt(void);
+
+/**
+ * @brief Clear Interrupt Flag and Halt.
+ */
+void haltCPU(void);
+
+/**
+ * @brief Pic Master Mask.
+ */
 void picMasterMask(uint8_t mask);
+
+/**
+ * @brief Pic Slave Mask.
+ */
 void picSlaveMask(uint8_t mask);
 
-// Termina la ejecución de la cpu.
-void haltcpu(void);
+
+/* --- Interrupt and Exception Handlers --- */
+
+void irq00Handler(void);
+void irq01Handler(void);
+void exception0Handler(void);
+void exception6Handler(void);
+void exception0DHandler(void);
+void exception0EHandler(void);
+
+/* --- Scheduler Handlers --- */
+void awakeScheduler(void);
+void int81(void);
+
+/* --- Syscall Handlers --- */
+void syscallHandler(void);
 
 #endif

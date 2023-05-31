@@ -1,7 +1,4 @@
-/* Standard library */
 #include <stdint.h>
-
-/* Local headers */
 #include <idtLoader.h>
 #include <defs.h>
 #include <interrupts.h>
@@ -21,33 +18,31 @@ typedef struct {
 
 DESCR_INT* idt = (DESCR_INT*)0; // 255 entry IDT
 
-static void setup_IDT_entry(int index, uint64_t offset);
+static void setupIDTEntry(int index, uint64_t offset);
 
-void load_idt() {
-
-    // Disable interrupts
-    _cli();
+void loadIDT() {
 
     // Exceptions
-    setup_IDT_entry(0x00, (uint64_t)&_exception0Handler);
-    setup_IDT_entry(0x06, (uint64_t)&_exception6Handler);
+    setupIDTEntry(0x00, (uint64_t)&exception0Handler);
+    setupIDTEntry(0x06, (uint64_t)&exception6Handler);
+    setupIDTEntry(0x0D, (uint64_t)&exception0DHandler);
+    setupIDTEntry(0x0E, (uint64_t)&exception0EHandler);
 
     // Hardware Interrupts
-    setup_IDT_entry(0x20, (uint64_t)&_irq00Handler); // timer tick
-    setup_IDT_entry(0x21, (uint64_t)&_irq01Handler); // keyboard
+    setupIDTEntry(0x20, (uint64_t)&irq00Handler); // timer tick
+    setupIDTEntry(0x21, (uint64_t)&irq01Handler); // keyboard
 
     // Software Interrupts
-    setup_IDT_entry(0x80, (uint64_t)&_sysCallHandler);
+    setupIDTEntry(0x80, (uint64_t)&syscallHandler);
+    setupIDTEntry(0x81, (uint64_t)&awakeScheduler);
 
     // 1111 1100 timer-tick and keyboard
     picMasterMask(0xFC);
     picSlaveMask(0xFF);
 
-    // Enable interrupts
-    _sti();
 }
 
-static void setup_IDT_entry(int index, uint64_t offset) {
+static void setupIDTEntry(int index, uint64_t offset) {
     idt[index].selector = 0x08;
     idt[index].offset_l = offset & 0xFFFF;
     idt[index].offset_m = (offset >> 16) & 0xFFFF;

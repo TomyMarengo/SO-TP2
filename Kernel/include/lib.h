@@ -1,43 +1,40 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-/* Standard library */
 #include <stdint.h>
 #include <stddef.h>
 
 /**
- * @brief Word aligns the given integer value down to the nearest multiple of 8.
+ * @brief Aligns the provided integer value downwards to the closest multiple of 8.
  */
-#define WORD_ALIGN_DOWN(value) ((value) & (~(size_t)0x07))
+#define WORD_ALIGN_DOWN(value) ((value) & (~(size_t) 0x07))
 
 /**
- * @brief Word aligns the given integer value up to the nearest multiple of 8.
+ * @brief Aligns the provided integer value upwards to the closest multiple of 8.
  */
-#define WORD_ALIGN_UP(value) (WORD_ALIGN_DOWN((size_t)(value) + 7))
-
-size_t strlen(const char* s);
+#define WORD_ALIGN_UP(value) (WORD_ALIGN_DOWN((size_t) (value) + 7))
 
 /**
- * @brief fills the first n bytes of the memory area pointed to by s with the constant byte c
+ * @brief Fills a block of memory with a specified value.
  *
- * @param s memory area
- * @param c constant byte
- * @param n bytes to fill
+ * @param destination Pointer to the destination memory block.
+ * @param c The value to be set (interpreted as an unsigned char).
+ * @param length Number of bytes to be set.
  *
- * @return a pointer to the memory area s
+ * @return A pointer to the destination memory block (dest).
  */
-void* memset(void* s, int32_t c, size_t n);
+void* memset(void* destination, int32_t c, size_t length);
 
 /**
- * @brief copies n bytes from memory area source to memory area destination. The memory areas must not overlap
+ * @brief Copies a block of memory from a source location to a destination location.
  *
- * @param src memory area source
- * @param dest memory area destination
- * @param n bytes to copy
+ * @param destination Pointer to the destination memory block.
+ * @param source Pointer to the source memory block.
+ * @param length Number of bytes to be copied.
  *
- * @return a pointer to dest
+ * @return A pointer to the destination memory block (dest).
  */
-void* memcpy(void* dest, const void* src, size_t n);
+void* memcpy(void* destination, const void* source, size_t length);
 
 /**
  * @brief Returns he output from executing the cpuid instruction (a 12-character representation of the processor’s manufacturer)

@@ -1,14 +1,5 @@
-/* Standard library */
 #include <stdint.h>
-
-/* Local headers */
 #include <lib.h>
-
-size_t strlen(const char* s) {
-    size_t l;
-    for (l = 0; *s != 0; s++, l++);
-    return l;
-}
 
 void* memset(void* destination, int32_t c, size_t length) {
     uint8_t chr = (uint8_t)c;
@@ -21,19 +12,6 @@ void* memset(void* destination, int32_t c, size_t length) {
 }
 
 void* memcpy(void* destination, const void* source, size_t length) {
-    /*
-     * memcpy does not support overlapping buffers, so always do it
-     * forwards. (Don't change this without adjusting memmove.)
-     *
-     * For speedy copying, optimize the common case where both pointers
-     * and the length are word-aligned, and copy word-at-a-time instead
-     * of byte-at-a-time. Otherwise, copy by bytes.
-     *
-     * The alignment logic below should be portable. We rely on
-     * the compiler to be reasonably intelligent about optimizing
-     * the divides and modulos out. Fortunately, it is.
-     */
-
     uint64_t i;
 
     if ((uint64_t)destination % sizeof(uint32_t) == 0 &&
@@ -61,16 +39,13 @@ uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base) {
     char* p2;
     uint32_t digits = 0;
 
-    // Calculate characters for each digit
     do {
         uint32_t remainder = value % base;
         *p++ = (remainder < 10) ? remainder + '0' : remainder + 'A' - 10;
         digits++;
     } while (value /= base);
 
-    // Terminate string in buffer.
     *p = 0;
-    // Reverse string in buffer.
     p1 = buffer;
     p2 = p - 1;
     while (p1 < p2) {
@@ -83,7 +58,6 @@ uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base) {
     return digits;
 }
 
-// Retrieved from https://stackoverflow.com/questions/28133020/how-to-convert-bcd-to-decimal
 uint8_t bcdToDec(uint8_t time) {
     return (time >> 4) * 10 + (time & 0x0F);
 }

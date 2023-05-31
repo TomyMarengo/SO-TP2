@@ -1,7 +1,4 @@
-/* Standard library */
 #include <stdint.h>
-
-/* Local headers */
 #include <fonts.h>
 
 static uint8_t pixel_chars[] = {

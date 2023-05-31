@@ -1,8 +1,7 @@
 GLOBAL cpuVendor
-GLOBAL save_registers
+GLOBAL saveRegisters
 
-; systemCalls.c
-EXTERN store_registers
+EXTERN storeRegisters
 
 section .text
 
@@ -25,13 +24,13 @@ cpuVendor:
 	ret
 
 ; Save registers for inforeg
-save_registers:
+saveRegisters:
 	push rbp
 	mov rbp, rsp
 
 	mov rdi, rsp
 	add rdi, 112		; 14*8 = 112
-	call store_registers
+	call storeRegisters
 
     mov rsp, rbp
 	pop rbp
