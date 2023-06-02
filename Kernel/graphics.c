@@ -218,7 +218,7 @@ static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, 
     //    return -1;
 
     for (size_t i = 0; i < count; i++)
-        printCharFormat(buf[i], (const Color*) resource, &BLACK);
+        printCharFormat(buf[i], (const Color*)&resource, &BLACK);
 
     return count;
 }
