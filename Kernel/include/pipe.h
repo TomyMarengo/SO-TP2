@@ -6,14 +6,29 @@
 #include <sys/types.h>
 #include <defs.h>
 
-typedef struct PipeData* Pipe;
+typedef int Pipe;
 
 /**
  * @brief Generates a new pipe.
  * 
  * @returns The newly generated pipe, otherwise NULL.
  */
-Pipe pipeCreate();
+Pipe createPipe();
+
+/**
+ * @brief Gets the pipe with the given name, or creates it if it doesn't exist.
+ * 
+ * @returns The named pipe, or -1 if the operation failed.
+ */
+Pipe openPipe(const char* name);
+
+/**
+ * @brief Unnames a named pipe, making the name available for future pipes.
+ * The pipe is not disposed until no more processes are using it.
+ * 
+ * @returns 0 if the operation succeeded, != 0 if not.
+ */
+int unlinkPipe(const char* name);
 
 /**
  * @brief Releases all resources used by a pipe.
@@ -21,7 +36,7 @@ Pipe pipeCreate();
  * @param pipe Pipe to be freed, returned in pipe_create().
  * @returns 0 if the operation is successful.
  */
-int pipeFree(Pipe pipe);
+int freePipe(Pipe pipe);
 
 /**
  * @brief Writes up to count bytes from the provided buffer into a pipe.
@@ -31,7 +46,7 @@ int pipeFree(Pipe pipe);
  * @param count Amount of bytes to write.
  * @returns The number of bytes written, -1 in error cases.
  */
-ssize_t pipeWrite(Pipe pipe, const void* buf, size_t count);
+ssize_t writePipe(Pipe pipe, const void* buf, size_t count);
 
 /**
  * @brief Reads up to count bytes from the provided pipe into the buffer.
@@ -41,7 +56,7 @@ ssize_t pipeWrite(Pipe pipe, const void* buf, size_t count);
  * @param count Amount of bytes to read.
  * @returns The number of bytes read, -1 in error cases.
  */
-ssize_t pipeRead(Pipe pipe, void* buf, size_t count);
+ssize_t readPipe(Pipe pipe, void* buf, size_t count);
 
 /**
  * @brief Add the pipe into fd process table.
@@ -53,6 +68,13 @@ ssize_t pipeRead(Pipe pipe, void* buf, size_t count);
  * @param allowWrite Allow the pipe to be written.
  * @returns The pipe file descriptor, -1 in error cases.
  */
-int pipeAddFd(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite);
+int addFdPipe(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite);
+
+/**
+ * @brief Gets the information of up to maxPipes pipes.
+ * 
+ * @returns The amount of pipes read.
+ */
+int listPipes(PipeInfo* array, int maxPipes);
 
 #endif

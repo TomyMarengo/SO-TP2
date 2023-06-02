@@ -44,10 +44,12 @@ void exception0DHandler(void);
 void exception0EHandler(void);
 
 /* --- Scheduler Handlers --- */
+
 void awakeScheduler(void);
 void int81(void);
 
 /* --- Syscall Handlers --- */
+
 void syscallHandler(void);
 
 #endif

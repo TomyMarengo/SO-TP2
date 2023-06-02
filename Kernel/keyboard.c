@@ -1,15 +1,15 @@
 #include <stdint.h>
-#include <keyboard.h>
 #include <lib.h>
 #include <defs.h>
 #include <process.h>
+#include <keyboard.h>
+#include <scheduler.h>
+#include <waitingQueue.h>
 
 #define LEFT_SHIFT 0x2A
 #define RIGHT_SHIFT 0x36
 #define BUFFER_MAX_SIZE 256
-#define CAPTURE_REGISTERS '-'
 
-extern void saveRegisters();
 extern unsigned int readKey();
 
 static uint8_t keyMapRow = 0;
@@ -42,24 +42,29 @@ static uint8_t* keyMap[] = {scancodeLToAscii, scancodeUToAscii};
 
 static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
 static int fdCloseHandler(Pid pid, int fd, void* resource);
+static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
-void kbdInterruptHandler() {
+static WaitingQueue processReadWQ;
+
+void initializeKeyboard() {
+    processReadWQ = newWQ();
+}
+
+void interruptHandlerKeyboard() {
     unsigned char code = readKey();
-    if (code < 0x80) { // Key pressed
+    if (code < 0x80) {
         if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
             keyMapRow |= 0x01;
         } else {
             uint8_t keyChar = keyMap[keyMapRow][code];
-            if (keyChar == CAPTURE_REGISTERS) {
-                // Inforeg - if it's the special key that save registers
-                saveRegisters();
-            } else if (keyChar != 0 && bufferSize < BUFFER_MAX_SIZE) {
+            if (keyChar != 0 && bufferSize < BUFFER_MAX_SIZE) {
                 uint16_t bufferEnd = (bufferStart + bufferSize) % BUFFER_MAX_SIZE;
                 buffer[bufferEnd] = keyChar;
                 bufferSize++;
+                unblockAllWQ(processReadWQ);
             }
         }
-    } else { // Key released
+    } else {
         code -= 0x80;
         if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
             keyMapRow &= 0xFE;
@@ -103,15 +108,11 @@ void clearKeyboard() {
     bufferSize = 0;
 }
 
-int kbdAddFd(Pid pid, int fd) { //TODO
-    int r = prcAddFd(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler);
-    if (r < 0)
-        return r;
-
-    return r;
+int addFdKeyboard(Pid pid, int fd) {
+    return addFdProcess(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler, &fdDupHandler);
 }
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) { //TODO
+static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
     if (!isForeground(pid))
         return -1;
 
@@ -121,11 +122,21 @@ static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t 
     if (count > BUFFER_MAX_SIZE)
         count = BUFFER_MAX_SIZE;
 
+    int read;
+    while ((read = readChars(buf, count)) == 0) {
+        addWQ(processReadWQ, pid);
+        block(pid);
+        yield();
+    }
 
-    return readChars(buf, count);
+    return read;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) { //TODO
-
+static int fdCloseHandler(Pid pid, int fd, void* resource) {
+    removeWQ(processReadWQ, pid);
     return 0;
+}
+
+static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
+    return addFdKeyboard(pidTo, fdTo);
 }

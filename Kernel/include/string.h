@@ -49,4 +49,13 @@ char* strncpy(char* dest, const char* src, size_t n);
  */
 int strcmp(const char* s1, const char* s2);
 
+/**
+ * @brief Appends the s1 string to the s2 string.
+ *  
+ * @param s1 A string.
+ * @param s2 A string.
+ * @return - A pointer to the resulting string dest.
+ */   
+char* strcat(char* s1, const char* s2);
+
 #endif

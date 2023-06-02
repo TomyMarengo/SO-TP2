@@ -4,6 +4,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* --- File descriptors --- */
+
+#define STDIN 0
+
+#define STDOUT 1
+
+#define STDERR 2
+
 /* ---  Flags for access rights of the segments --- */
 
 /**
@@ -89,6 +97,11 @@ typedef struct {
 /* --- Processes --- */
 
 /**
+ * @brief Defines the maximum amount of Pids that can be returned by an embedded array in a query.
+ */
+#define MAX_PID_ARRAY_LENGTH 8
+
+/**
  * @brief Maximum length for the name of a system resource, for example a process.
  */
 #define MAX_NAME_LENGTH 16
@@ -170,10 +183,28 @@ typedef struct {
  * @brief Represents information of a process at particular time.
  */
 typedef struct {
-    void* buffer;
-    size_t bufferSize;
-    size_t readOffset;
     size_t remainingBytes;
+    unsigned int readerFdCount;
+    unsigned int writerFdCount;
+    Pid readBlockedPids[MAX_PID_ARRAY_LENGTH + 1];
+    Pid writeBlockedPids[MAX_PID_ARRAY_LENGTH + 1];
+    char name[MAX_NAME_LENGTH + 1];
 } PipeInfo;
 
+/* --- Semaphores --- */
+
+/**
+ * @brief Represents a semaphore.
+ */
+typedef int8_t Sem;
+
+/**
+ * @brief Represents information of a semaphore at particular time.
+ */
+typedef struct {
+    int value;
+    int linkedProcesses; 
+    char name[MAX_NAME_LENGTH+1];
+    Pid processesWQ[MAX_PID_ARRAY_LENGTH+1];
+} SemaphoreInfo;
 #endif

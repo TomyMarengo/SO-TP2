@@ -13,6 +13,15 @@ int strcmp(const char* s1, const char* s2) {
     return s1[i] - s2[i];
 }
 
+char* strcat(char* dest, const char* src) {
+    char *rdest = dest;
+
+	while (*dest)
+		dest++;
+	while ((*dest++ = *src++));
+	return rdest;
+}
+
 char* strcpy(char* dest, const char* src) {
     char* w;
     for (w = dest; *src != '\0'; *(w++) = *(src++));

@@ -10,8 +10,8 @@
 #include <process.h>
 #include <scheduler.h>
 #include <keyboard.h>
-#include <syscalls.h>
 #include <kernel.h>
+#include <sem.h>
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -31,8 +31,7 @@ void clearBSS(void* bssAddress, uint64_t bssSize) {
 }
 
 void* getStackBase() {
-    return (void*)((uint64_t)&endOfKernel + PageSize * 8 // The size of the stack itself, 32KiB
-                   - sizeof(uint64_t)                    // Begin at the top of the stack
+    return (void*)((uint64_t)&endOfKernel + PageSize * 8 - sizeof(uint64_t)                    
     );
 }
 
@@ -51,11 +50,11 @@ void* initializeKernelBinary() {
 
 void initializeShell() {
     ProcessCreateInfo shellInfo = {"shell", (ProcessStart)sampleCodeModuleAddress, 1, PRIORITY_MAX, 0, NULL};
-    Pid pid = prcCreate(&shellInfo);
+    Pid pid = createProcess(&shellInfo);
 
-    kbdAddFd(pid, STDIN);
-    scrAddFd(pid, STDOUT, &WHITE);
-    scrAddFd(pid, STDERR, &RED);
+    addFdKeyboard(pid, STDIN);
+    addFdScreen(pid, STDOUT, &WHITE);
+    addFdScreen(pid, STDERR, &RED);
 }
 
 int main() {
@@ -66,12 +65,19 @@ int main() {
     loadIDT();
     initializeScreen();
     initializeMemory(startHeapAddres, (size_t)(endHeapAddres - startHeapAddres));
+    initializeKeyboard();
     initializeScheduler();
+    initializeSem();
+
     initializeShell();
 
     // Enable interrupts
     sti();
-    yield();
+
+    while (1) {
+        yield();
+        hlt();
+    }
 
     return 0;
 }

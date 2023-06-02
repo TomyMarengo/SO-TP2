@@ -37,12 +37,15 @@ void* memset(void* destination, int32_t c, size_t length);
 void* memcpy(void* destination, const void* source, size_t length);
 
 /**
- * @brief Returns he output from executing the cpuid instruction (a 12-character representation of the processor’s manufacturer)
+ * @brief Returns the output from executing the cpuid instruction.
  */
 char* cpuVendor(char* result);
 
 uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base);
 
+/**
+ * @brief Converts a binary-coded decimal number into a decimal number in terms of representation.
+ */
 uint8_t bcdToDec(uint8_t time);
 
 #endif

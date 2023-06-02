@@ -1,76 +1,64 @@
 #include <graphics.h>
 #include <keyboard.h>
-#include <exceptions.h>
 #include <scheduler.h>
 #include <process.h>
 #include <kernel.h>
 #include <interrupts.h>
 #include <defs.h>
 
-typedef void (*Exception)(void);
-
-static void zeroDivision();
-static void invalidOpcode();
-static void generalProtection();
-static void pageFault();
-static void exceptionHandler(int exception, const char* msg);
-
-static Exception exceptions[] = {
-    /* 0x00 */ &zeroDivision, 0, 0, 0, 0, 0,
-    /* 0x06 */ &invalidOpcode, 0, 0, 0, 0, 0, 0,
-    /* 0x0D */ &generalProtection,
-    /* 0x0E */ &pageFault
+static const char* exceptionMessages[] = {
+    /* 0x00 */ "Divide by Zero",
+    /* 0x01 */ 0,
+    /* 0x02 */ 0,
+    /* 0x03 */ 0,
+    /* 0x04 */ 0,
+    /* 0x05 */ 0,
+    /* 0x06 */ "Invalid Opcode",
+    /* 0x07 */ 0,
+    /* 0x08 */ 0,
+    /* 0x09 */ 0,
+    /* 0x0A */ 0,
+    /* 0x0B */ 0,
+    /* 0x0C */ 0,
+    /* 0x0D */ "General Protection",
+    /* 0x0E */ "Page Fault",
 };
 
-void exceptionDispatcher(int exception) {
-    Exception ex = exceptions[exception];
-    if (ex == 0) {
-        exceptionHandler(exception, "Unknown exception");
-    } else {
-        ex();
-    }
-}
+static const char* registerNames[18] = {
+    "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RIP", "RFLAGS"
+};
 
-static void exceptionHandler(int exception, const char* msg) {
+void exceptionDispatcher(uint64_t exception, const uint64_t regdata[18]) {
     Pid pid = getpid();
-    if (isForeground(pid)) {
-        print(msg);
-        print(" (0x");
-        printDec(exception);
-        printChar(')');
-        printLine();
-        print("Presione enter para continuar");
+    print("PID ");
+    printDec(pid);
+    print(" CRASHED! Unhandled exception: (0x");
+    printHex(exception);
+    print(") ");
+    print(exception < (sizeof(exceptionMessages) / sizeof(exceptionMessages[0])) ? exceptionMessages[exception] : "Unknown");
+    printLine();
 
-        clearKeyboard();
-        int c;
-        do {
-            hlt(); // halts the central processing unit until the next external interrupt is fired.
-        } while ((c = getChar()) != '\n');
-        cli();
+    for (int i = 0; i < (sizeof(registerNames) / sizeof(registerNames[0])); i++) {
+        print(registerNames[i]);
+        print(": ");
+        printRegisterFormat(regdata[i]);
+        print(i % 4 == 3 ? "\n" : "    ");
     }
 
-    kill(pid);
+    if (pid == 0) {
+        print("\nPress ENTER to restart the shell.");
+        clearKeyboard();
+        do {
+            hlt(); 
+            cli();
+        } while (getChar() != '\n');
 
-    if (pid == 0) { // TO DO: check if shell PID is ALWAYS 0.
+        kill(pid);
         clearScreen();
         initializeShell();
+    } else {
+        kill(pid);
     }
 
     yield();
-}
-
-static void zeroDivision() {
-    exceptionHandler(0x00, "Zero Division Exception");
-}
-
-static void invalidOpcode() {
-    exceptionHandler(0x06, "Invalid Opcode Exception");
-}
-
-static void generalProtection() {
-    exceptionHandler(0x0D, "General Protection Exception");
-}
-
-static void pageFault() {
-    exceptionHandler(0x0E, "Page Fault Exception");
 }

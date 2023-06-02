@@ -1,7 +1,4 @@
 GLOBAL cpuVendor
-GLOBAL saveRegisters
-
-EXTERN storeRegisters
 
 section .text
 
@@ -21,17 +18,4 @@ cpuVendor:
 	mov rax, rdi
 
 	pop rbx
-	ret
-
-; Save registers for inforeg
-saveRegisters:
-	push rbp
-	mov rbp, rsp
-
-	mov rdi, rsp
-	add rdi, 112		; 14*8 = 112
-	call storeRegisters
-
-    mov rsp, rbp
-	pop rbp
 	ret

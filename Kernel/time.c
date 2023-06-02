@@ -13,7 +13,7 @@ extern uint8_t readValue(uint8_t mode);
 
 static unsigned long ticks = 0;
 
-void rtcInterruptHandler() {
+void interruptHandlerRTC() {
     ticks++;
 }
 

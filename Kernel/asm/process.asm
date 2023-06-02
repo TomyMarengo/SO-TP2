@@ -1,33 +1,39 @@
 GLOBAL createProcessStack
 
+start:
+    call rdx
+    mov rax, 0x42
+    int 80h
+
 createProcessStack:
     push rbp
     mov rbp, rsp
     
-    mov rsp, rdx ; rsp 
-    push 0x0     ; SS
-    push rdx     ; RSP
-    push 0x202   ; RFLAGS
-    push 0x8     ; CS
-    push rcx     ; entryPoint
+    mov rsp, rdx
+    push 0x0
+    push rdx
+    push 0x202
+    push 0x8
+    push start   
     
-    push 0x01    ; RBX
-    push 0x02    ; RCX
-    push 0x03    ; RDX
-    push rdx     ; RBP
-	push rdi     ; RDI (argc)
-	push rsi     ; RSI (argv)
-	push 0x08    ; R8   
-	push 0x09    ; r9
-	push 0x0A    ; r10
-	push 0x0B    ; r11
-	push 0x0C    ; r12
-	push 0x0D    ; r13
-	push 0x0E    ; r14
-	push 0x0F    ; r15    
-	push 0x10    ; rax
+    push 0x01
+    push 0x02
+    push rcx
+    push rdx
+	push rdi
+	push rsi
+	push 0x08
+	push 0x09
+	push 0x0A
+	push 0x0B
+	push 0x0C
+	push 0x0D
+	push 0x0E
+	push 0x0F   
+	push 0x10
 
     mov rax, rsp
+
     mov rsp, rbp
     pop rbp
     ret 

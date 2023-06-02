@@ -24,7 +24,6 @@ GLOBAL syscallHandler
 
 EXTERN irqDispatcher
 EXTERN syscallDispatcher
-EXTERN printRegisters
 EXTERN exceptionDispatcher
 EXTERN switchProcess
 
@@ -67,32 +66,46 @@ SECTION .text
 %endmacro
 
 %macro irqHandlerMaster 1
-	push rsp
 	pushState
 
 	mov rdi, %1 
 	call irqDispatcher
 
-	; signal pic EOI (End of Interrupt)
 	mov al, 20h
 	out 20h, al
 
 	popState
-	pop rsp
 	iretq
 %endmacro
 
 %macro exceptionHandler 1
-	pushState
+	mov [regdata], rax
+	mov [regdata+8], rbx
+	mov [regdata+16], rcx
+	mov [regdata+24], rdx
+	mov [regdata+32], rsi
+	mov [regdata+40], rdi
+	mov [regdata+48], rbp
+	mov [regdata+64], r8
+	mov [regdata+72], r9
+	mov [regdata+80], r10
+	mov [regdata+88], r11
+	mov [regdata+96], r12
+	mov [regdata+104], r13
+	mov [regdata+112], r14
+	mov [regdata+120], r15
 
-	call printRegisters
+	mov rax, [rsp+24]
+	mov [regdata+56], rax
+	mov rax, [rsp]
+	mov [regdata+128], rax
+	mov rax, [rsp+16]
+	mov [regdata+136], rax
 
-	mov rdi, %1 
+	mov rdi, %1
+	mov rsi, regdata
 	call exceptionDispatcher
-
-	popState
-	iretq
-
+	jmp haltcpu
 %endmacro
 
 haltcpu:
@@ -111,12 +124,11 @@ picMasterMask:
 picSlaveMask:
 	push rbp
     mov rbp, rsp
-    mov ax, di  ; ax is a 16 bits mask
+    mov ax, di
     out	0A1h, al
     pop rbp
     retn
 
-; 8254 Timer (Timer Tick)
 irq00Handler:
 	pushState
 
@@ -127,7 +139,6 @@ irq00Handler:
 	call switchProcess
 	mov rsp, rax
 
-	; signal pic EOI (End of Interrupt)
 	mov al, 20h
 	out 20h, al
 	
@@ -168,10 +179,6 @@ awakeScheduler:
 	call switchProcess
 	mov rsp, rax
 
-	; signal pic EOI (End of Interrupt)
-	mov al, 20h
-	out 20h, al
-	
 	popState
 	iretq
 
@@ -193,4 +200,4 @@ sti:
 	ret
 
 SECTION .bss
-	aux resq 1
+regdata	resq	18

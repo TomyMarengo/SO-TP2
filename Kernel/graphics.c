@@ -46,6 +46,7 @@ struct vbe_mode_info_structure {
 } __attribute__((packed));
 
 const Color RED = {0xFF, 0x00, 0x00};
+const Color ORANGE = {0xFF, 0x66, 0x18};
 const Color GREEN = {0x00, 0xFF, 0x00};
 const Color BLUE = {0x00, 0x00, 0xFF};
 const Color WHITE = {0xFF, 0xFF, 0xFF};
@@ -55,15 +56,13 @@ const Color BLACK = {0x00, 0x00, 0x00};
 static uint8_t current_i, current_j;
 static uint8_t width, height;
 
-static char buffer[64] = {'0'};
 static const struct vbe_mode_info_structure* graphicModeInfo = (struct vbe_mode_info_structure*)0x5C00;
 
 static void getNextPosition();
-static void checkSpace();
-static void scrollUp();
+static void scrollIfNecessary();
 
 static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void* resource);
+static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
 static void* getPixelAddress(int i, int j) {
     return (void*)((size_t)graphicModeInfo->framebuffer + 3 * (graphicModeInfo->width * i + j));
@@ -76,7 +75,6 @@ static void drawPixel(int i, int j, const Color* color) {
     pixel[2] = color->R;
 }
 
-// Default screen
 void initializeScreen() {
     current_i = 0;
     current_j = 0;
@@ -86,8 +84,6 @@ void initializeScreen() {
 }
 
 void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
-
-    // Backspace
     if (c == '\b') {
         if (current_j == 0) {
             current_i -= 1;
@@ -103,9 +99,8 @@ void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
         return;
     }
 
-    checkSpace();
+    scrollIfNecessary();
 
-    // scr_printLine
     if (c == '\n') {
         printLine();
         return;
@@ -113,7 +108,6 @@ void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
 
     uint8_t* character = getCharMapping(c);
 
-    // Upper left pixel of the current character
     uint16_t write_i = (current_i)*CHAR_HEIGHT;
     uint16_t write_j = (current_j)*CHAR_WIDTH;
 
@@ -172,6 +166,7 @@ void printBin(uint64_t value) {
 }
 
 void printBase(uint64_t value, uint32_t base) {
+    static char buffer[65] = {'\0'};
     uintToBase(value, buffer, base);
     print(buffer);
 }
@@ -200,32 +195,22 @@ static void getNextPosition() {
     current_j = (current_j + 1) % width;
 }
 
-static void checkSpace() {
-    if (current_i == height) {
-        scrollUp();
-    }
+static void scrollIfNecessary() {
+    if (current_i < height)
+        return;
+
+    void* dst = (void*)((size_t)graphicModeInfo->framebuffer);
+    void* src = (void*)(dst + 3 * (CHAR_HEIGHT * (size_t)graphicModeInfo->width));
+    size_t len = 3 * ((size_t)graphicModeInfo->width * (graphicModeInfo->height - CHAR_HEIGHT));
+    memcpy(dst, src, len);
+    memset(dst+len, 0, 3 * (size_t)graphicModeInfo->width * CHAR_HEIGHT);
+
+    current_i--;
 }
 
-static void scrollUp() {
-    for (int i = 1; i < height * CHAR_HEIGHT; ++i) {
-
-        uint8_t* start = getPixelAddress(i, 0);
-        uint8_t* next = getPixelAddress(CHAR_HEIGHT + i, 0);
-
-        for (int j = 0; j < width * CHAR_WIDTH * 3; ++j) {
-            start[j] = next[j];
-        }
-    }
-    current_i -= 1;
-}
-
-int scrAddFd(Pid pid, int fd, const Color* color) { //TODO
-
-    int r = prcAddFd(pid, fd, (void*) color, NULL, &fdWriteHandler, &fdCloseHandler);
-    if (r < 0)
-        return r;
-
-    return r;
+int addFdScreen(Pid pid, int fd, const Color* color) {
+    uint64_t col = color->R | (color->G << 8) | (color->B << 16) | (1 << sizeof(Color));
+    return addFdProcess(pid, fd, (void*)col, NULL, &fdWriteHandler, NULL, &fdDupHandler);
 }
 
 static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
@@ -238,6 +223,6 @@ static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, 
     return count;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) { //TODO
-    return 0;
+static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
+    return addFdScreen(pidTo, fdTo, (const Color*)&resource);
 }

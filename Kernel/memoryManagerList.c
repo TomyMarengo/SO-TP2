@@ -169,7 +169,7 @@ realloc(void *ptr, size_t size) {
 }
 
 int
-getState(MemoryState *memoryState) {
+getStateMemory(MemoryState *memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = LIST;

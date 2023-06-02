@@ -8,26 +8,33 @@
 #include <graphics.h>
 #include <lib.h>
 #include <string.h>
+#include <waitingQueue.h>
 
 #define FD_TABLE_CHUNK_SIZE 8
 #define FD_TABLE_MAX_ENTRIES 64
+#define MEM_TABLE_CHUNK_SIZE 16
+#define MAX_NAME_LENGTH 16
 
 typedef struct {
     void* resource;
     FdReadHandler readHandler;
     FdWriteHandler writeHandler;
     FdCloseHandler closeHandler;
+    FdDupHandler dupHandler;
 } FDEntry;
 
 typedef struct {
-	int isForeground;
-    void* stackStart;
     void* stackEnd;
+    void* stackStart;
+    int isForeground;
     char* name;
     FDEntry* fdTable;
-	unsigned int fdTableSize;
-	char** argv;
+    unsigned int fdTableSize;
+    void** memory;
+    unsigned int memoryCount, memoryBufSize;
+    char** argv;
     int argc;
+    WaitingQueue pidWQ;
 } Process;
 
 static Process processes[MAX_PROCESSES];
@@ -51,7 +58,6 @@ static int isNameValid(const char* name) {
         if (c == '\0')
             return 1;
 
-        // The first character must be a letter. Subsequent characters may be a letter or a number.
         if ((c < 'a' || c > 'z') && (c < 'A' || c > 'Z') && c != '_') {
             if (i == 0 || c < '0' || c > '9')
                 return 0;
@@ -60,7 +66,7 @@ static int isNameValid(const char* name) {
 
     return 0;
 }
-Pid prcCreate(const ProcessCreateInfo* createInfo) {
+Pid createProcess(const ProcessCreateInfo* createInfo) {
     Pid pid = 0;
     for (; pid < MAX_PROCESSES && processes[pid].stackEnd != NULL; pid++);
 
@@ -122,21 +128,101 @@ int kill(Pid pid) {
         if (process->fdTable[fd].resource != NULL)
             deleteFdUnchecked(process, pid, fd);
 
+    for (int i = 0; i < process->memoryCount; i++)
+        free(process->memory[i]);
+    free(process->memory);
+
     onProcessKilled(pid);
+
+    if (process->pidWQ != NULL) {
+        unblockAllWQ(process->pidWQ);
+        freeWQ(process->pidWQ);
+    }
 
 	for (int i = 0; i < process->argc; i++){
         free(process->argv[i]);
     }
+
     free(process->argv);
     free(process->stackEnd);
+    free(process->name);
     free(process->fdTable);
-    process->stackEnd = NULL;
-    process->stackStart = NULL;
-    process->fdTable = NULL;
-	process->fdTableSize = 0;
+    memset(process, 0, sizeof(Process));
 
     return 0;
 }
+
+void* handleMalloc(Pid pid, size_t size) {
+    Process* process;
+    if (!getProcessByPid(pid, &process))
+        return NULL;
+
+    if (process->memoryBufSize == process->memoryCount) {
+        size_t newBufSize = process->memoryBufSize + MEM_TABLE_CHUNK_SIZE;
+        void** newMemory = realloc(process->memory, newBufSize * sizeof(Process));
+        if (newMemory == NULL)
+            return NULL;
+
+        process->memory = newMemory;
+        process->memoryBufSize = newBufSize;
+    }
+
+    void* ptr = malloc(size);
+
+    if (ptr != NULL)
+        process->memory[process->memoryCount++] = ptr;
+
+    return ptr;
+}
+
+int handleFree(Pid pid, void* ptr) {
+    Process* process;
+    if (!getProcessByPid(pid, &process))
+        return 1;
+
+    int index = -1;
+    for (int i = 0; i < process->memoryCount; i++) {
+        if (process->memory[i] == ptr) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1)
+        return 1;
+
+    process->memoryCount--;
+    for (int i = index; i < process->memoryCount; i++)
+        process->memory[i] = process->memory[i + 1];
+
+    return free(ptr);
+}
+
+
+void* handleRealloc(Pid pid, void* ptr, size_t size) {
+    Process* process;
+    if (!getProcessByPid(pid, &process))
+        return NULL;
+
+    int index = -1;
+    for (int i = 0; i < process->memoryCount; i++) {
+        if (process->memory[i] == ptr) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1)
+        return NULL;
+
+    void* newPtr = realloc(ptr, size);
+
+    if (newPtr != NULL)
+        process->memory[index] = newPtr;
+
+    return newPtr;
+}
+
 
 int isForeground(Pid pid) {
     Process* process;
@@ -164,17 +250,14 @@ int toBackground(Pid pid) {
     return 0;
 }
 
-int prcAddFd(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdWriteHandler writeHandler, FdCloseHandler closeHandler) {
+int addFdProcess(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdWriteHandler writeHandler, FdCloseHandler closeHandler, FdDupHandler dupHandler) {
     Process* process;
     if (resource == NULL || !getProcessByPid(pid, &process))
         return -1;
 
-	if (fd < 0) {
-        // Look for the lowest available file descriptor.
-        for (fd = 0; fd < process->fdTableSize && process->fdTable[fd].resource != NULL; fd++);
-
+    if (fd < 0) {
+        for (fd = 3; fd < process->fdTableSize && process->fdTable[fd].resource != NULL; fd++);
     } else {
-        // Check that the requested fd is available.
         if (fd < process->fdTableSize && process->fdTable[fd].resource != NULL)
             return -1;
     }
@@ -201,11 +284,12 @@ int prcAddFd(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdWrite
     process->fdTable[fd].readHandler = readHandler;
     process->fdTable[fd].writeHandler = writeHandler;
     process->fdTable[fd].closeHandler = closeHandler;
+    process->fdTable[fd].dupHandler = dupHandler;
 
     return fd;
 }
 
-int prcDeleteFd(Pid pid, int fd) {
+int deleteFdProcess(Pid pid, int fd) {
     Process* process;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd || process->fdTable[fd].resource == NULL)
         return 1;
@@ -226,7 +310,15 @@ static int deleteFdUnchecked(Process* process, Pid pid, int fd) {
     return 0;
 }
 
-ssize_t prcHandleReadFd(Pid pid, int fd, char* buf, size_t count) {
+int dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
+    Process* processFrom;
+    if (fdFrom < 0 || !getProcessByPid(pidFrom, &processFrom) || processFrom->fdTableSize <= fdFrom || processFrom->fdTable[fdFrom].resource == NULL || processFrom->fdTable[fdFrom].dupHandler == NULL)
+        return -1;
+
+    return processFrom->fdTable[fdFrom].dupHandler(pidFrom, pidTo, fdFrom, fdTo, processFrom->fdTable[fdFrom].resource);
+}
+
+ssize_t handleReadFdProcess(Pid pid, int fd, char* buf, size_t count) {
     Process* process;
     FDEntry* entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd
@@ -236,7 +328,7 @@ ssize_t prcHandleReadFd(Pid pid, int fd, char* buf, size_t count) {
     return entry->readHandler(pid, fd, entry->resource, buf, count);
 }
 
-ssize_t prcHandleWriteFd(Pid pid, int fd, const char* buf, size_t count) {
+ssize_t handleWriteFdProcess(Pid pid, int fd, const char* buf, size_t count) {
     Process* process;
     FDEntry* entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd
@@ -244,6 +336,18 @@ ssize_t prcHandleWriteFd(Pid pid, int fd, const char* buf, size_t count) {
         return -1;
 
     return entry->writeHandler(pid, fd, entry->resource, buf, count);
+}
+
+int unblockOnKilled(Pid pidToUnblock, Pid pidToWait) {
+    Process* process;
+    if (!getProcessByPid(pidToWait, &process))
+        return 1;
+
+    if (process->pidWQ == NULL && (process->pidWQ = newWQ()) == NULL)
+        return -1;
+
+    addIfNotExistsWQ(process->pidWQ, pidToUnblock);
+    return 0;
 }
 
 uint8_t listProcesses(ProcessInfo* array, uint8_t maxProcesses) {
