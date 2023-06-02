@@ -1,10 +1,11 @@
+#include <stdint.h>
+#include <defs.h>
 #include <graphics.h>
 #include <keyboard.h>
 #include <scheduler.h>
 #include <process.h>
 #include <kernel.h>
 #include <interrupts.h>
-#include <defs.h>
 
 static const char* exceptionMessages[] = {
     /* 0x00 */ "Divide by Zero",

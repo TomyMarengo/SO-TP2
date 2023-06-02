@@ -214,8 +214,8 @@ int addFdScreen(Pid pid, int fd, const Color* color) {
 }
 
 static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
-    if (!isForeground(pid))
-        return -1;
+    //if (!isForeground(pid))
+    //    return -1;
 
     for (size_t i = 0; i < count; i++)
         printCharFormat(buf[i], (const Color*) resource, &BLACK);

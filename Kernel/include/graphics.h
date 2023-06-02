@@ -9,12 +9,11 @@
  * @brief Stores the color of a pixel in RGB format.
  */
 typedef struct color {
-    uint8_t R; /// < Red
-    uint8_t G; /// < Green
-    uint8_t B; /// < Black
+    uint8_t R;
+    uint8_t G;
+    uint8_t B;
 } Color;
 
-/* From graphicMode.c */
 extern const Color RED;
 extern const Color ORANGE;
 extern const Color GREEN;
@@ -99,7 +98,6 @@ void printRegisterFormat(uint64_t reg);
 
 /**
  * @brief Restarts screen cursor.
- * 
  */
 void restartCursor();
 

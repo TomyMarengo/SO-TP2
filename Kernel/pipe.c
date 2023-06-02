@@ -21,11 +21,9 @@ typedef struct {
     size_t bufferSize;
     size_t readOffset;
     size_t remainingBytes;
-    unsigned int readerFdCount;
-    unsigned int writerFdCount;
+    unsigned int readerFdCount, writerFdCount;
+    WaitingQueue readProcessWQ, writeProcessWQ;
     const char* name;
-    WaitingQueue readProcessWQ;
-    WaitingQueue writeProcessWQ;
 } PipeData;
 
 typedef struct {

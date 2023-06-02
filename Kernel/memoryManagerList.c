@@ -6,9 +6,9 @@
 typedef struct memoryListNode {
     size_t size;
     size_t leftoverSize;
-    size_t checksum;
     struct memoryListNode *previous;
     struct memoryListNode *next;
+    size_t checksum;
 } MemoryListNode;
 
 static size_t totalMemory;

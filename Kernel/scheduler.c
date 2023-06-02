@@ -9,9 +9,9 @@
 #define PSEUDOPID_NONE -2
 
 typedef struct {
-	void* currentRSP;
     Priority priority;
     ProcessStatus status;
+    void* currentRSP;
 } ProcessControlBlock;
 
 static void* mainRSP;

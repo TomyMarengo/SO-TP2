@@ -4,14 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* --- File descriptors --- */
-
-#define STDIN 0
-
-#define STDOUT 1
-
-#define STDERR 2
-
 /* ---  Flags for access rights of the segments --- */
 
 /**
@@ -156,13 +148,13 @@ typedef enum { READY = 0, RUNNING = 1, BLOCKED = 2, KILLED = 3 } ProcessStatus;
  */
 typedef struct {
     Pid pid;
-    int isForeground;
-    Priority priority;
     char name[MAX_NAME_LENGTH + 1];
     void* stackEnd;
     void* stackStart;
-    void* currentRSP;
+    int isForeground;
+    Priority priority;
     ProcessStatus status;
+    void* currentRSP;
 } ProcessInfo;
 
 /**

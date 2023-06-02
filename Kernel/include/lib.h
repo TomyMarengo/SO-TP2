@@ -41,6 +41,15 @@ void* memcpy(void* destination, const void* source, size_t length);
  */
 char* cpuVendor(char* result);
 
+/**
+ * @brief Transforms the value to a number in the base recived as parameter, and stores the result in the buffer. 
+ *
+ * @param value the number to transform.
+ * @param buffer memory area destination, where the number will be stored.
+ * @param base base to convert the numbre to.
+ *
+ * @return The digits of the number. 
+ */
 uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base);
 
 /**
