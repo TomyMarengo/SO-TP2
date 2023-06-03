@@ -103,6 +103,9 @@ typedef struct {
  */
 #define MAX_PROCESSES 8
 
+
+#define MAX_PARAMS 8
+
 /**
  * @brief Represents a process id.
  */

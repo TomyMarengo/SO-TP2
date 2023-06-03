@@ -61,4 +61,26 @@ int getLine(char* buffer, int maxSize);
  */
 int fgetLine(int fd, char* buffer, int maxSize);
 
+
+
+// thanks chatGPT!
+/**
+ * @brief Splits a string into tokens.
+ * 
+ * This function is a custom implementation of the standard C library function strtok.
+ * It splits the input string into tokens, which are sequences of characters separated by the specified delimiter.
+ * The function modifies the original string by replacing delimiters with null characters.
+ * 
+ * This function maintains static variables to keep track of its state between calls.
+ * When called with a non-null string, it initializes its state and starts tokenizing the string.
+ * When called with a null string, it continues tokenizing the string from the last position.
+ * 
+ * @param str The string to tokenize. If this parameter is null, the function continues tokenizing the last string from the last position.
+ * @param delim The character used as a delimiter to separate tokens.
+ * 
+ * @return A pointer to the next token, or null if there are no more tokens.
+ */
+char* my_strtok(char* str, const char delim);
+
+
 #endif

@@ -18,10 +18,16 @@ void testMM(int argc, char* argv[]) {
     uint64_t max_memory;
 
     if (argc != 1)
+    {
+        printf("insufficient parameters!\n");
         return;
+    }
 
     if ((max_memory = satoi(argv[0])) <= 0)
+    {
+        printf("Max memory must be positive integer\n");
         return;
+    }
 
     while (1) {
         rq = 0;
@@ -56,5 +62,8 @@ void testMM(int argc, char* argv[]) {
         for (i = 0; i < rq; i++)
             if (mm_rqs[i].address)
                 sys_free(mm_rqs[i].address);
+
     }
+
+    
 }
