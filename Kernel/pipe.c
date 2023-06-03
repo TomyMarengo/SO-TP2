@@ -77,7 +77,7 @@ Pipe createPipe() {
 }
 
 Pipe openPipe(const char* name) {
-    if (namedPipes == NULL && (namedPipes = newWQ()) == NULL)
+    if (namedPipes == NULL && (namedPipes = newNamer()) == NULL)
         return -1;
 
     Pipe pipe = (Pipe)(size_t)getResource(namedPipes, name) - 1;

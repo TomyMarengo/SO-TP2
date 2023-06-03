@@ -16,7 +16,7 @@ typedef int8_t Lock;
  * @returns SEM_SUCCES (0) if the operation succeeded, SEM_FAILED (-1) otherwise.
  *
  */
-int initialzeSem();
+int initializeSem();
 
 /**
  * @brief Creates a semaphore with the indicated name, or opens it if
