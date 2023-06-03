@@ -5,7 +5,7 @@
 #include <defs.h>
 
 /**
- * @brief Initializes the memory manager
+ * @brief Initializes the memory manager.
  *
  * @param memoryStart The initial location of the memory segment utilized by the memory manager.
  * @param memorySize The total number of bytes allocated for the memory manager starting from the initial address.
@@ -22,25 +22,24 @@ void initializeMemory(void *memoryStart, size_t memorySize);
 void *malloc(size_t size);
 
 /**
- * @brief Notifies the memory manager that a previously allocated memory segment, reserved by my_malloc(),
+ * @brief Notifies the memory manager that a previously allocated memory segment, reserved by malloc(),
  *        is now available to be marked as free and used elsewhere.
  *
- * @param ptr Pointer to the memory segment to be released.
+ * @param memorySegment Pointer to the memory segment to be released.
  *
- * @return 0 if the operation is successful, 1 otherwise.
+ * @return - 0 if the operation is successful, 1 otherwise.
  */
-int free(void *ptr);
+int free(void *memorySegment);
 
 /**
  * @brief Instructs the memory manager to modify the size of a previously allocated block of memory.
  *
- * @param ptr Pointer to the memory block that was previously allocated and needs to be resized.
- *
+ * @param memorySegment Pointer to the memory block that was previously allocated and needs to be resized.
  * @param size The new size for the memory block.
  *
- * @return A pointer to the resized memory block, or NULL if the operation failed.
+ * @return - A pointer to the resized memory block, or NULL if the operation failed.
  */
-void *realloc(void *ptr, size_t size);
+void *realloc(void *memorySegment, size_t size);
 
 /**
  * @brief Retrieves the current status of the system memory.

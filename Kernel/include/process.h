@@ -13,21 +13,21 @@
  *
  * @returns The amount of bytes read, -1 in error cases.
  */
-typedef ssize_t (*FdReadHandler)(Pid pid, int fd, void* resource, char* buf, size_t count);
+typedef ssize_t (*ReadHandler)(Pid pid, int fd, void* resource, char* buf, size_t count);
 
 /**
  * @brief Defines a function that will handle a file descriptor write operation.
  *
  * @returns The amount of bytes written, -1 in error cases.
  */
-typedef ssize_t (*FdWriteHandler)(Pid pid, int fd, void* resource, const char* buf, size_t count);
+typedef ssize_t (*WriteHandler)(Pid pid, int fd, void* resource, const char* buf, size_t count);
 
 /**
  * @brief Defines a function that will handle a file descriptor close operation.
  *
  * @returns 0 if the operation succeeded.
  */
-typedef int (*FdCloseHandler)(Pid pid, int fd, void* resource);
+typedef int (*CloseHandler)(Pid pid, int fd, void* resource);
 
 /**
  * @brief Represents a function that will handle a file descriptor dup operation.
@@ -36,7 +36,7 @@ typedef int (*FdCloseHandler)(Pid pid, int fd, void* resource);
  * @returns The file descriptor on which the resource was mapped for the process,
  * or -1 if an error occurred.
  */
-typedef int (*FdDupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+typedef int (*DupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
 /**
  * @brief Creates a new process from a given entry point and arguments list.
@@ -72,29 +72,37 @@ void* handleRealloc(Pid pid, void* ptr, size_t size);
  * @returns The file descriptor on which the resource was mapped for the process,
  * or -1 if an error occurred.
  */
-int addFdProcess(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdWriteHandler writeHandler, FdCloseHandler closeHandler
-, FdDupHandler dupHandler);
+int addFd(Pid pid, int fd, void* resource, ReadHandler readHandler, WriteHandler writeHandler, CloseHandler closeHandler, DupHandler dupHandler);
 
 /**
  * @brief Unmaps a resource from a process' I/O table.
  * 
  * @returns 0 if the operation succeeded.
  */
-int deleteFdProcess(Pid pid, int fd);
+int deleteFd(Pid pid, int fd);
+
+/**
+ * @brief Maps the resource on a file descriptor from a process to a file descriptor
+ * on another process. fdTo may be -1 to let the I/O table decide a file descriptor.
+ * 
+ * @returns The file descriptor on which the resource was mapped for the process,
+ * or -1 if an error occurred.
+ */
+int dupFd(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo);
 
 /** 
  * @brief Handles a process' read operation from a file descriptor in its I/O table.
  *
  * @returns The amount of bytes read, or -1 if an error occurred.
  */
-ssize_t handleReadFdProcess(Pid pid, int fd, char* buf, size_t count);
+ssize_t handleRead(Pid pid, int fd, char* buf, size_t count);
 
 /**
  * @brief Handles a process' write operation to a file descriptor in its I/O table.
  * 
  * @returns The amount of bytes written, or -1 if an error occurred.
  */
-ssize_t handleWriteFdProcess(Pid pid, int fd, const char* buf, size_t count);
+ssize_t handleWrite(Pid pid, int fd, const char* buf, size_t count);
 
 /**
  * @brief Returns if a process is in the foreground or not.
@@ -123,15 +131,6 @@ int toBackground(Pid pid);
  * @returns The amount of processes archived.
  */
 uint8_t listProcesses(ProcessInfo* vec, uint8_t maxProcesses);
-
-/**
- * @brief Maps the resource on a file descriptor from a process to a file descriptor
- * on another process. fdTo may be -1 to let the I/O table decide a file descriptor.
- * 
- * @returns The file descriptor on which the resource was mapped for the process,
- * or -1 if an error occurred.
- */
-int dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo);
 
 /**
  * @brief Adds a process to another process' "unblock on killed" list.

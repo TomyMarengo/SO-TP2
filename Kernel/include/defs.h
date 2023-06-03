@@ -66,10 +66,7 @@
  */
 #define KBDIN  3
 
-/* --- Kernel types --- */
-/* -------------------- */
-
-/* --- Memory Management */
+/* --- Memory Management --- */
 
 /**
  * @brief Represents the various categories of supported memory managers.

@@ -46,11 +46,7 @@ struct vbe_mode_info_structure {
 } __attribute__((packed));
 
 const Color RED = {0xFF, 0x00, 0x00};
-const Color ORANGE = {0xFF, 0x66, 0x18};
-const Color GREEN = {0x00, 0xFF, 0x00};
-const Color BLUE = {0x00, 0x00, 0xFF};
 const Color WHITE = {0xFF, 0xFF, 0xFF};
-const Color GRAY = {0xAA, 0xAA, 0xAA};
 const Color BLACK = {0x00, 0x00, 0x00};
 
 static uint8_t current_i, current_j;
@@ -61,8 +57,8 @@ static const struct vbe_mode_info_structure* graphicModeInfo = (struct vbe_mode_
 static void getNextPosition();
 static void scrollIfNecessary();
 
-static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+static ssize_t writeHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
+static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
 static void* getPixelAddress(int i, int j) {
     return (void*)((size_t)graphicModeInfo->framebuffer + 3 * (graphicModeInfo->width * i + j));
@@ -83,8 +79,8 @@ void initializeScreen() {
     clearScreen();
 }
 
-void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
-    if (c == '\b') {
+void printCharFormat(char character, const Color* charColor, const Color* bgColor) {
+    if (character == '\b') {
         if (current_j == 0) {
             current_i -= 1;
             current_j = width - 1;
@@ -101,12 +97,12 @@ void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
 
     scrollIfNecessary();
 
-    if (c == '\n') {
+    if (character == '\n') {
         printLine();
         return;
     }
 
-    uint8_t* character = getCharMapping(c);
+    uint8_t* characterPtr = getCharMapping(character);
 
     uint16_t write_i = (current_i)*CHAR_HEIGHT;
     uint16_t write_j = (current_j)*CHAR_WIDTH;
@@ -116,7 +112,7 @@ void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
     for (int i = 0; i < CHAR_HEIGHT; ++i) {
         for (int j = 0; j < CHAR_WIDTH; ++j) {
             mask = 1 << (CHAR_WIDTH - j - 1);
-            if (character[i] & mask) {
+            if (characterPtr[i] & mask) {
                 drawPixel(write_i + i, write_j + j, charColor);
             } else {
                 drawPixel(write_i + i, write_j + j, bgColor);
@@ -126,8 +122,8 @@ void printCharFormat(char c, const Color* charColor, const Color* bgColor) {
     getNextPosition();
 }
 
-void printChar(char c) {
-    printCharFormat(c, &WHITE, &BLACK);
+void printChar(char character) {
+    printCharFormat(character, &WHITE, &BLACK);
 }
 
 void print(const char* string) {
@@ -153,27 +149,27 @@ void clearScreen() {
     current_j = 0;
 }
 
-void printDec(uint64_t value) {
-    printBase(value, 10);
+void printDec(uint64_t number) {
+    printBase(number, 10);
 }
 
-void printHex(uint64_t value) {
-    printBase(value, 16);
+void printHex(uint64_t number) {
+    printBase(number, 16);
 }
 
-void printBin(uint64_t value) {
-    printBase(value, 2);
+void printBin(uint64_t number) {
+    printBase(number, 2);
 }
 
-void printBase(uint64_t value, uint32_t base) {
+void printBase(uint64_t number, uint32_t base) {
     static char buffer[65] = {'\0'};
-    uintToBase(value, buffer, base);
+    uintToBase(number, buffer, base);
     print(buffer);
 }
 
-void printRegisterFormat(uint64_t reg) {
+void printRegisterFormat(uint64_t regis) {
 
-    uint64_t aux = reg;
+    uint64_t aux = regis;
     uint64_t count = 16;
 
     while (aux) {
@@ -185,8 +181,8 @@ void printRegisterFormat(uint64_t reg) {
         printChar('0');
     }
 
-    if (reg) {
-        printHex(reg);
+    if (regis) {
+        printHex(regis);
     }
 }
 
@@ -210,10 +206,10 @@ static void scrollIfNecessary() {
 
 int addFdScreen(Pid pid, int fd, const Color* color) {
     uint64_t col = color->R | (color->G << 8) | (color->B << 16) | (1 << sizeof(Color));
-    return addFdProcess(pid, fd, (void*)col, NULL, &fdWriteHandler, NULL, &fdDupHandler);
+    return addFd(pid, fd, (void*)col, NULL, &writeHandler, NULL, &dupHandler);
 }
 
-static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
+static ssize_t writeHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
     //if (!isForeground(pid))
     //    return -1;
 
@@ -223,6 +219,6 @@ static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, 
     return count;
 }
 
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
+static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
     return addFdScreen(pidTo, fdTo, (const Color*)&resource);
 }

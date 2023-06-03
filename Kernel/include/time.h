@@ -14,7 +14,7 @@
 #define TICKS_TO_MILLISECONDS(x) ((x) *5000 / 91);
 
 /**
- * @brief Increments ticks.
+ * @brief Invoked by the interrupt dispatcher when a timer interrupt is detected. Increments ticks.
  */
 void interruptHandlerRTC();
 

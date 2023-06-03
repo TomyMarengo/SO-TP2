@@ -17,10 +17,10 @@
 
 typedef struct {
     void* resource;
-    FdReadHandler readHandler;
-    FdWriteHandler writeHandler;
-    FdCloseHandler closeHandler;
-    FdDupHandler dupHandler;
+    ReadHandler readHandler;
+    WriteHandler writeHandler;
+    CloseHandler closeHandler;
+    DupHandler dupHandler;
 } FDEntry;
 
 typedef struct {
@@ -198,7 +198,6 @@ int handleFree(Pid pid, void* ptr) {
     return free(ptr);
 }
 
-
 void* handleRealloc(Pid pid, void* ptr, size_t size) {
     Process* process;
     if (!getProcessByPid(pid, &process))
@@ -222,7 +221,6 @@ void* handleRealloc(Pid pid, void* ptr, size_t size) {
 
     return newPtr;
 }
-
 
 int isForeground(Pid pid) {
     Process* process;
@@ -250,7 +248,7 @@ int toBackground(Pid pid) {
     return 0;
 }
 
-int addFdProcess(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdWriteHandler writeHandler, FdCloseHandler closeHandler, FdDupHandler dupHandler) {
+int addFd(Pid pid, int fd, void* resource, ReadHandler readHandler, WriteHandler writeHandler, CloseHandler closeHandler, DupHandler dupHandler) {
     Process* process;
     if (resource == NULL || !getProcessByPid(pid, &process))
         return -1;
@@ -289,7 +287,7 @@ int addFdProcess(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdW
     return fd;
 }
 
-int deleteFdProcess(Pid pid, int fd) {
+int deleteFd(Pid pid, int fd) {
     Process* process;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd || process->fdTable[fd].resource == NULL)
         return 1;
@@ -310,7 +308,7 @@ static int deleteFdUnchecked(Process* process, Pid pid, int fd) {
     return 0;
 }
 
-int dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
+int dupFd(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
     Process* processFrom;
     if (fdFrom < 0 || !getProcessByPid(pidFrom, &processFrom) || processFrom->fdTableSize <= fdFrom || processFrom->fdTable[fdFrom].resource == NULL || processFrom->fdTable[fdFrom].dupHandler == NULL)
         return -1;
@@ -318,7 +316,7 @@ int dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
     return processFrom->fdTable[fdFrom].dupHandler(pidFrom, pidTo, fdFrom, fdTo, processFrom->fdTable[fdFrom].resource);
 }
 
-ssize_t handleReadFdProcess(Pid pid, int fd, char* buf, size_t count) {
+ssize_t handleRead(Pid pid, int fd, char* buf, size_t count) {
     Process* process;
     FDEntry* entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd
@@ -328,7 +326,7 @@ ssize_t handleReadFdProcess(Pid pid, int fd, char* buf, size_t count) {
     return entry->readHandler(pid, fd, entry->resource, buf, count);
 }
 
-ssize_t handleWriteFdProcess(Pid pid, int fd, const char* buf, size_t count) {
+ssize_t handleWrite(Pid pid, int fd, const char* buf, size_t count) {
     Process* process;
     FDEntry* entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd

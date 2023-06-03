@@ -9,27 +9,29 @@
 void initializeKeyboard();
 
 /**
- * @brief Called by the interrupt dispatcher whenever a keyboard interrupt occurs.
+ * @brief Invoked by the interrupt dispatcher when a keyboard interrupt is detected.
  */
 void interruptHandlerKeyboard();
 
 /**
- * @brief Attempts to read up to count chars from the keyboard buffer, 
- * and write them to the given buffer.
+ * @brief Tries to retrieve up to count characters from the keyboard buffer and copies them to the provided buffer.
  * 
- * @returns The amount of chars read.
+ * @param bufferDestination The buffer that will store the characters read.
+ * @param count Maximum characters to be read.
+ * 
+ * @returns - The number of characters successfully read.
  */
-unsigned int readChars(char* buf, unsigned int count);
+unsigned int readChars(char* bufferDestination, unsigned int count);
 
 /**
- * @brief Attempts to read a single char from the keyboard buffer.
+ * @brief Tries to read a single character from the keyboard buffer.
  * 
- * @returns The char read from the buffer, or -1 if the buffer was empty.
+ * @returns - The character read from the buffer, or -1 if the buffer was empty.
  */
 int getChar();
 
 /**
- * @brief Clears the keyboard buffer, setting it to empty until new keys arrive.
+ * @brief Resets the keyboard buffer, making it empty until new keys are received.
  */
 void clearKeyboard();
 
@@ -38,7 +40,8 @@ void clearKeyboard();
  * 
  * @param pid PID of the process.
  * @param fd File descriptor to add to the table.
- * @returns The keyboard file descriptor, -1 in error cases.
+ * 
+ * @returns - The keyboard file descriptor, -1 in error cases.
  */
 int addFdKeyboard(Pid pid, int fd);
 

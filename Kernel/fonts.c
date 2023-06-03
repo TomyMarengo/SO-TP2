@@ -3478,6 +3478,6 @@ static uint8_t pixel_chars[] = {
     ________,
 };
 
-uint8_t* getCharMapping(uint8_t c) {
-    return pixel_chars + CHAR_HEIGHT * (c - 31);
+uint8_t* getCharMapping(uint8_t character) {
+    return pixel_chars + CHAR_HEIGHT * (character - 31);
 }

@@ -4,42 +4,42 @@
 typedef struct NamerData* Namer;
 
 /**
- * @brief Creates a new resource namer instance.
+ * @brief Creates a new instance of a resource namer.
  * 
- * @returns The created resource namer instance, or NULL if the operation failed.
+ * @returns - The newly created resource namer instance, or NULL if the operation failed.
  */
 Namer newNamer();
 
 /**
- * @brief Frees all resources used by a resource namer. Attempting to use a
- * resource namer after it has been freed results in undefined behavior.
+ * @brief Releases all resources used by a resource namer.
+ * Using a namer after it has been released leads to undefined behavior.
  * 
- * @returns 0 if the operation succeeded, != 0 if not.
+ * @returns - 0 if the operation succeeded, or greater than 0 if not.
  */
 int freeNamer(Namer namer);
 
 /**
- * @brief Maps a given resource to a given name. The namer does not keep a reference
- * to the string, but rather makes an internal copy. This internal copy is also placed
- * in nameData (if not NULL).
+ * @brief Associates a specified resource with a given name. The namer creates an internal
+ * copy of the name string, and if nameData is not NULL, it also stores a copy there.
  * 
- * @returns 0 if the operation succeeded, 1 if the resource was already present,
- * or -1 if the operation failed for other reasons.
+ * @returns - 0 if the operation is successful, 1 if the resource is already associated with a name,
+ * or -1 if the operation fails for other reasons.
  */
 int addResource(Namer namer, void* resource, const char* name, const char** nameData);
 
 /**
- * @brief Unmaps a given resource to a given name.
+ * @brief Removes the association between a specified resource and its corresponding name.
  * 
- * @returns The resource whose name was removed, or NULL if no resource
- * had such name.
+ * @returns - The resource that was previously associated with the name, or NULL if no resource
+ * was associated with the given name.
  */
 void* deleteResource(Namer namer, const char* name);
 
 /**
- * @brief Gets a resource by it's name.
+ * @brief Retrieves a resource by its name.
  * 
- * @returns The named resource, or NULL if none was found with such name.
+ * @returns - The resource with the specified name, or NULL if no resource was found
+ * with the given name.
  */
 void* getResource(Namer namer, const char* name);
 
