@@ -137,16 +137,16 @@ static void phyloEat(int phyloIdx) {
 
     int otherSemIdx = (phyloIdx + 1) % phyloCount;
     sys_wait(semPickForks);
-    sys_wait(forks[phyloIdx]);    // Left chopstick
-    sys_wait(forks[otherSemIdx]); // Right chopstick
+    sys_wait(forks[phyloIdx]);    
+    sys_wait(forks[otherSemIdx]); 
     sys_post(semPickForks);
 
     printState();
     phylos[phyloIdx].phyloState = EATING;
     sleep(getEatingTime());
 
-    sys_post(forks[otherSemIdx]); // Right chopstick
-    sys_post(forks[phyloIdx]);    // Left chopstick
+    sys_post(forks[otherSemIdx]); 
+    sys_post(forks[phyloIdx]);    
 }
 
 static void phyloSleep(int phyloIdx) {
