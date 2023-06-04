@@ -1,8 +1,7 @@
 #ifndef _TEST_H_
 #define _TEST_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <defs.h>
 
 void testMM(int argc, char *argv[]);
 void testPrio();

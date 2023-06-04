@@ -1,8 +1,7 @@
-#include <defs.h>
-#include <syscalls.h>
 #include <test.h>
-#include <testUtil.h>
-#include <userstdlib.h>
+#include <syscalls.h>
+#include <programs.h>
+#include <userlib.h>
 
 enum State { RUNNING_TEST, BLOCKED_TEST, KILLED_TEST };
 

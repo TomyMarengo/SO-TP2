@@ -1,9 +1,11 @@
-#include <programlib.h>
 #include <shell.h>
+#include <userlib.h>
+#include <programs.h>
 #include <string.h>
 #include <syscalls.h>
 #include <test.h>
-#include <userstdlib.h>
+
+#define MAX_PARAMS 8
 
 char *welcomeMessage = "Welcome to the Shell!\nType help for a list of available commands...\n";
 char *noCommandMessage = "Command not found\nTry typing help for a list of available commands!\n";
