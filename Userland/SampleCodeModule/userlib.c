@@ -356,3 +356,21 @@ my_strtok(char *str, const char delim) {
     // If we reached the end of the string, the last token is the rest of the string
     return token;
 }
+
+uint8_t getMaxAvailableProcesses()
+{
+    int count = 0 ;
+
+    ProcessInfo processes[MAX_PROCESSES] = {};
+    
+    sys_listProcesses(processes,MAX_PROCESSES);
+
+    for (int i = 0 ; i < MAX_PROCESSES ; i++)
+    {
+        if (processes[i].stackEnd == 0)
+            continue;
+        count++;
+    }
+
+    return MAX_PROCESSES - count;
+}

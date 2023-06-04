@@ -80,4 +80,9 @@ int fgetLine(int fd, char *buffer, int maxSize);
  */
 char *my_strtok(char *str, const char delim);
 
+/**
+ * @brief Returns maximun available processes
+ */
+uint8_t getMaxAvailableProcesses();
+
 #endif
