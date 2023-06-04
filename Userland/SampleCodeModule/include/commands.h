@@ -30,6 +30,7 @@ int runCat(int stdin, int stdout, int stderr, int isForeground, int argc, const 
 int runWc(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);
 int runFilter(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);
 int runPipe(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);
+int runPhylo(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);
 
 /* Tests */
 int runTestMM(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);

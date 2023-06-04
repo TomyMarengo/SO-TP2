@@ -3,6 +3,7 @@
 #include <userlib.h>
 #include <processes.h>
 #include <string.h>
+#include <phylo.h>
 #include <testUtil.h>
 
 static Command validCommands[] = {
@@ -14,7 +15,7 @@ static Command validCommands[] = {
     {runPs, "ps", "Displays a list of all the currently running processes with their properties."},
     {runLoop, "loop", "Creates a process that prints it's PID once every 3 seconds."},
     {runKill, "kill", "Kills the process with the parameter-specified PID."},
-    {runPriority, "priority", "Changes the priority of the process with the parameter-specified PID."},
+    {runPriority, "nice", "Changes the priority of the process with the parameter-specified PID."},
     {runBlock, "block", "Blocks the process with the given PID."},
     {runUnblock, "unblock", "Unblocks the process with the given PID."},
     {runSem, "sem", "Displays a list of all the currently active semaphores with their properties."},
@@ -25,7 +26,8 @@ static Command validCommands[] = {
     {runTestMM, "testmm", "Runs a test for memory manager."},
     {runTestSync, "testsync", "Runs a synchronization test with multiple processes with semaphores."},
     {runTestProcesses, "testprocesses", "Runs a test for processes."},
-    {runTestPrio, "testprio", "Runs a test on process priorities."},
+    {runTestPrio, "testprio", "priority a test on process priorities."},
+    {runPhylo, "phylo", "Runs the philosopher, add one philosopher with \"a\", remove one philosopher with \"r\"."},
 };
 
 const Command* getCommandByName(const char* name) {
@@ -354,6 +356,20 @@ int runTestPrio(int stdin, int stdout, int stderr, int isForeground, int argc, c
     ProcessCreateInfo pci = {
         .name = "testPrio",
         .start = testPrio,
+        .isForeground = isForeground,
+        .priority = PRIORITY_DEFAULT,
+        .argc = argc,
+        .argv = argv
+    };
+
+    *createdProcess = sys_createProcess(stdin, stdout, stderr, &pci);
+    return *createdProcess >= 0;
+}
+
+int runPhylo(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
+    ProcessCreateInfo pci = {
+        .name = "phylo",
+        .start = startPhylo,
         .isForeground = isForeground,
         .priority = PRIORITY_DEFAULT,
         .argc = argc,
