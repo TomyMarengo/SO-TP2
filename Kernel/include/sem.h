@@ -3,64 +3,60 @@
 
 #include <defs.h>
 
-#define MAX_SEMAPHORES 127
-#define SEM_OK 0
-#define SEM_FAIL -1
-#define SEM_NOT_EXISTS -2
-
-typedef int8_t Lock;
-
 /**
  * @brief Initialize the semaphore system.
  * 
- * @returns SEM_SUCCES (0) if the operation succeeded, SEM_FAILED (-1) otherwise.
+ * @returns - 0 if the operation succeeded, -1 otherwise.
  *
  */
 int initializeSem();
 
 /**
- * @brief Creates a semaphore with the indicated name, or opens it if
- * it already existed. 
+ * @brief Creates a named semaphore, or opens if exists. 
  * 
- * @return The semaphore, or SEM_FAILED (-1) if the operation failed.
+ * @param name Semaphore's name.
+ * @param initialValue Semaphore's initial value.
+ * 
+ * @returns - The semaphore, or -1 if the operation failed.
  */
 Sem openSem(const char * name, uint8_t initialValue);
 
 /**
- * @brief Closes a semaphore. A semaphore will be destroyed once all
- * the processes that where linked to it, close it. 
+ * @brief Deallocates a semaphore. The semaphore will be destroyed once all
+ * the processes that were linked to it have closed it.
  * 
- * @return SEM_SUCCES (0) if the operation succeded or SEM_NOTEXISTS (-2) if the requested semaphore 
- * does not exist.
+ * @param sem The semaphore (returned in openSem).
+ * 
+ * @returns - 0 if the operation is successful or -2 if the requested semaphore does not exist.
  */
 int closeSem(Sem sem);
 
 /**
- * @brief Decrements or locks the semaphore pointed to by sem. If the semaphore's 
- * value is greater than zero, then the decrement proceeds, and the function returns, 
- * immediately. If the semaphore currently has the value zero, then the call blocks
- * until the semaphore value rises above zero.
+ * @brief Decrements or locks the semaphore pointed to by sem parameter.
  * 
- * @return SEM_SUCCES (0) if the operation succeded or SEM_NOTEXISTS (-2) if the requested semaphore 
- * does not exist.
+ * @param sem The semaphore (returned in openSem).
+ * 
+ * @returns - 0 if the operation is successful or -2 if the requested semaphore does not exist.
  */
 int wait(Sem sem);
 
 /**
- * @brief Increments or unlocks the semaphore pointed to by sem. If the semaphore's 
- * value consequently becomes greater than zero, then another process blocked in a sem_wait call 
- * will be woken up
+ * @brief Increments or unlocks the semaphore pointed to by sem.
  * 
- * @return SEM_SUCCES (0) if the operation succeded or SEM_NOTEXISTS (-2) if the requested semaphore 
- * does not exist.
+ * @param sem The semaphore (returned in openSem).
+ * 
+ * @returns - 0 if the operation is successful or -2 if the requested semaphore does not exist.
  */
 int post(Sem sem);
 
 /**
- * @brief Gets the information of up to maxSemaphores semaphores.
+ * @brief Gets (maxSemaphores)-amount information of semaphores.
  * 
- * @returns the amount of semaphores read.
+ * @param storingInfo Array of SemaphoreInfo to archive the data.
+ * @param maxSemaphores Limit.
+ * 
+ * @returns - The amount of semaphores archived.
  */
-int listSemaphores(SemaphoreInfo* array, int maxSemaphores);
+int listSemaphores(SemaphoreInfo* storingInfo, int maxSemaphores);
 
 #endif

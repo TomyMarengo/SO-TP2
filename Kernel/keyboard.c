@@ -1,8 +1,7 @@
-#include <stdint.h>
-#include <lib.h>
 #include <defs.h>
-#include <process.h>
 #include <keyboard.h>
+#include <lib.h>
+#include <process.h>
 #include <scheduler.h>
 #include <waitingQueue.h>
 
@@ -40,14 +39,14 @@ static uint8_t scancodeUToAscii[] = {
 
 static uint8_t* keyMap[] = {scancodeLToAscii, scancodeUToAscii};
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void* resource);
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+static ssize_t readHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
+static int closeHandler(Pid pid, int fd, void* resource);
+static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
 static WaitingQueue processReadWQ;
 
 void initializeKeyboard() {
-    processReadWQ = newWQ();
+    processReadWQ = newQueue();
 }
 
 void interruptHandlerKeyboard() {
@@ -61,7 +60,7 @@ void interruptHandlerKeyboard() {
                 uint16_t bufferEnd = (bufferStart + bufferSize) % BUFFER_MAX_SIZE;
                 buffer[bufferEnd] = keyChar;
                 bufferSize++;
-                unblockAllWQ(processReadWQ);
+                unblockAllInQueue(processReadWQ);
             }
         }
     } else {
@@ -72,7 +71,7 @@ void interruptHandlerKeyboard() {
     }
 }
 
-unsigned int readChars(char* buf, unsigned int count) {
+unsigned int readChars(char* bufferDestination, unsigned int count) {
     unsigned int charsToRead = bufferSize;
     if (charsToRead > count)
         charsToRead = count;
@@ -83,10 +82,10 @@ unsigned int readChars(char* buf, unsigned int count) {
     unsigned int firstReadSize = BUFFER_MAX_SIZE - bufferStart;
     if (firstReadSize > charsToRead)
         firstReadSize = charsToRead;
-    memcpy(buf, buffer + bufferStart, firstReadSize);
+    memcpy(bufferDestination, buffer + bufferStart, firstReadSize);
 
     if (firstReadSize < charsToRead)
-        memcpy(buf + firstReadSize, buffer, charsToRead - firstReadSize);
+        memcpy(bufferDestination + firstReadSize, buffer, charsToRead - firstReadSize);
 
     bufferSize -= charsToRead;
     bufferStart = (bufferStart + charsToRead) % BUFFER_MAX_SIZE;
@@ -109,10 +108,10 @@ void clearKeyboard() {
 }
 
 int addFdKeyboard(Pid pid, int fd) {
-    return addFdProcess(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler, &fdDupHandler);
+    return addFd(pid, fd, (void*)1, &readHandler, NULL, &closeHandler, &dupHandler);
 }
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
+static ssize_t readHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
     if (!isForeground(pid))
         return -1;
 
@@ -124,7 +123,7 @@ static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t 
 
     int read;
     while ((read = readChars(buf, count)) == 0) {
-        addWQ(processReadWQ, pid);
+        addInQueue(processReadWQ, pid);
         block(pid);
         yield();
     }
@@ -132,11 +131,11 @@ static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t 
     return read;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) {
-    removeWQ(processReadWQ, pid);
+static int closeHandler(Pid pid, int fd, void* resource) {
+    removeInQueue(processReadWQ, pid);
     return 0;
 }
 
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
+static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
     return addFdKeyboard(pidTo, fdTo);
 }

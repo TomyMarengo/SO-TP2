@@ -1,7 +1,7 @@
 #ifndef _INTERRUPTS_H_
 #define _INTERRUPTS_H_
 
-#include <stdint.h>
+#include <defs.h>
 
 /**
  * @brief Clear Interrupt Flag.

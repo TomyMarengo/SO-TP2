@@ -1,29 +1,26 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
+#include <defs.h>
 #include <graphics.h>
 #include <keyboard.h>
-#include <time.h>
-#include <memoryManager.h>
 #include <lib.h>
+#include <memoryManager.h>
+#include <pipe.h>
 #include <process.h>
 #include <scheduler.h>
-#include <pipe.h>
-#include <defs.h>
 #include <sem.h>
+#include <time.h>
 
 typedef size_t (*SyscallHandlerFunction)(size_t rdi, size_t rsi, size_t rdx, size_t r10, size_t r8);
 
 static ssize_t readHandler(int fd, char* buffer, size_t count) {
-    return handleReadFdProcess(getpid(), fd, buffer, count);
+    return handleRead(getpid(), fd, buffer, count);
 }
 
 static ssize_t writeHandler(int fd, const char* buffer, size_t count) {
-    return handleWriteFdProcess(getpid(), fd, buffer, count);
+    return handleWrite(getpid(), fd, buffer, count);
 }
 
 static int closeHandler(int fd) {
-    return deleteFdProcess(getpid(), fd);
+    return deleteFd(getpid(), fd);
 }
 
 static int clearScreenHandler() {
@@ -78,17 +75,17 @@ static Pid createProcessHandler(int stdinMapFd, int stdoutMapFd, int stderrMapFd
     if (stdinMapFd < 0)
         addFdKeyboard(newPid, STDIN);
     else
-        dupFdProcess(callerPid, newPid, stdinMapFd, STDIN);
+        dupFd(callerPid, newPid, stdinMapFd, STDIN);
 
     if (stdoutMapFd < 0)
-        addFdScreen(newPid, STDOUT, &GRAY);
+        addFdScreen(newPid, STDOUT, &WHITE);
     else
-        dupFdProcess(callerPid, newPid, stdoutMapFd, STDOUT);
+        dupFd(callerPid, newPid, stdoutMapFd, STDOUT);
 
     if (stderrMapFd < 0)
-        addFdScreen(newPid, STDERR, &ORANGE);
+        addFdScreen(newPid, STDERR, &RED);
     else
-        dupFdProcess(callerPid, newPid, stderrMapFd, STDERR);
+        dupFd(callerPid, newPid, stderrMapFd, STDERR);
 
     return newPid;
 }
@@ -147,7 +144,7 @@ static int createPipeHandler(int pipefd[2]) {
 
     if ((pipe = createPipe()) < 0 || (readFd = addFdPipe(pid, -1, pipe, 1, 0)) < 0 || (writeFd = addFdPipe(pid, -1, pipe, 0, 1)) < 0) {
         if (readFd >= 0)
-            deleteFdProcess(pid, readFd);
+            deleteFd(pid, readFd);
         if (pipe >= 0)
             freePipe(pipe);
         return 1;
@@ -166,7 +163,7 @@ static int openPipeHandler(const char* name, int pipefd[2]) {
 
     if ((pipe = openPipe(name)) < 0 || (readFd = addFdPipe(pid, -1, pipe, 1, 0)) < 0 || (writeFd = addFdPipe(pid, -1, pipe, 0, 1)) < 0) {
         if (readFd >= 0)
-            deleteFdProcess(pid, readFd);
+            deleteFd(pid, readFd);
         if (pipe >= 0)
             freePipe(pipe);
         return 1;

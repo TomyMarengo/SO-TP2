@@ -1,10 +1,10 @@
+#include <defs.h>
 #include <scheduler.h>
 #include <memoryManager.h>
 #include <interrupts.h>
 
 #define QUANTUM 5
 
-// Pseudo PIDs for limit cases
 #define PSEUDOPID_KERNEL -1
 #define PSEUDOPID_NONE -2
 

@@ -1,7 +1,8 @@
+#include <defs.h>
 #include <waitingQueue.h>
+#include <lib.h>
 #include <memoryManager.h>
 #include <scheduler.h>
-#include <lib.h>
 
 #define BUFFER_CHUNK_SIZE 8
 
@@ -12,7 +13,7 @@ struct WaitingQueueData {
     unsigned int bufSize;
 };
 
-WaitingQueue newWQ() {
+WaitingQueue newQueue() {
     WaitingQueue queue;
     if ((queue = malloc(sizeof(struct WaitingQueueData))) == NULL)
         return NULL;
@@ -24,11 +25,11 @@ WaitingQueue newWQ() {
     return queue;
 }
 
-int freeWQ(WaitingQueue queue) {
+int freeQueue(WaitingQueue queue) {
     return free(queue->buf) + free(queue);
 }
 
-int addWQ(WaitingQueue queue, Pid pid) {
+int addInQueue(WaitingQueue queue, Pid pid) {
     if (queue->count == queue->bufSize) {
         unsigned int newBufSize = queue->bufSize + BUFFER_CHUNK_SIZE;
         Pid* newBuf = malloc(newBufSize * sizeof(Pid));
@@ -54,22 +55,22 @@ int addWQ(WaitingQueue queue, Pid pid) {
     return 0;
 }
 
-int entriesWQ(WaitingQueue queue) {
+int entriesInQueue(WaitingQueue queue) {
     return queue->count;
 }
 
-int containsWQ(WaitingQueue queue, Pid pid) {
+int containsInQueue(WaitingQueue queue, Pid pid) {
     for (unsigned int i = 0; i < queue->count; i++)
         if (queue->buf[(queue->offset + i) % queue->bufSize] == pid)
             return 1;
     return 0;
 }
 
-int addIfNotExistsWQ(WaitingQueue queue, Pid pid) {
-    return containsWQ(queue, pid) ? 0 : addWQ(queue, pid);
+int addIfNotExistsInQueue(WaitingQueue queue, Pid pid) {
+    return containsInQueue(queue, pid) ? 0 : addInQueue(queue, pid);
 }
 
-int removeWQ(WaitingQueue queue, Pid pid) {
+int removeInQueue(WaitingQueue queue, Pid pid) {
     unsigned int i;
     for (i = 0; i < queue->count && queue->buf[(queue->offset + i) % queue->bufSize] != pid; i++);
 
@@ -82,7 +83,7 @@ int removeWQ(WaitingQueue queue, Pid pid) {
     return 0;
 }
 
-int unblockWQ(WaitingQueue queue) {
+int unblockInQueue(WaitingQueue queue) {
     int failed = 0;
 
     while (queue->count != 0) {
@@ -98,7 +99,7 @@ int unblockWQ(WaitingQueue queue) {
     return failed;
 }
 
-int unblockAllWQ(WaitingQueue queue) {
+int unblockAllInQueue(WaitingQueue queue) {
     int failed = 0;
 
     for (unsigned int i = 0; i < queue->count; i++)
@@ -110,12 +111,12 @@ int unblockAllWQ(WaitingQueue queue) {
     return failed;
 }
 
-int getpidsWQ(WaitingQueue queue, Pid* array, int maxPids) {
+int listPidsInQueue(WaitingQueue queue, Pid* storingInfo, int maxPids) {
     if (maxPids > queue->count)
         maxPids = queue->count;
 
     for (int i = 0; i < maxPids; i++)
-        array[i] = queue->buf[(queue->offset + i) % queue->bufSize];
+        storingInfo[i] = queue->buf[(queue->offset + i) % queue->bufSize];
 
     return maxPids;
 }

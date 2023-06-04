@@ -1,12 +1,10 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
+#include <defs.h>
 #include <process.h>
+#include <graphics.h>
+#include <lib.h>
 #include <memoryManager.h>
 #include <pipe.h>
 #include <scheduler.h>
-#include <graphics.h>
-#include <lib.h>
 #include <string.h>
 #include <waitingQueue.h>
 
@@ -17,10 +15,10 @@
 
 typedef struct {
     void* resource;
-    FdReadHandler readHandler;
-    FdWriteHandler writeHandler;
-    FdCloseHandler closeHandler;
-    FdDupHandler dupHandler;
+    ReadHandler readHandler;
+    WriteHandler writeHandler;
+    CloseHandler closeHandler;
+    DupHandler dupHandler;
 } FDEntry;
 
 typedef struct {
@@ -49,7 +47,7 @@ static int getProcessByPid(Pid pid, Process** outProcess) {
     return 1;
 }
 
-static int isNameValid(const char* name) {
+static int isValidName(const char* name) {
     if (name == NULL)
         return 0;
 
@@ -66,11 +64,12 @@ static int isNameValid(const char* name) {
 
     return 0;
 }
+
 Pid createProcess(const ProcessCreateInfo* createInfo) {
     Pid pid = 0;
     for (; pid < MAX_PROCESSES && processes[pid].stackEnd != NULL; pid++);
 
-    if (createInfo->argc < 0 || pid == MAX_PROCESSES || !isNameValid(createInfo->name))
+    if (createInfo->argc < 0 || pid == MAX_PROCESSES || !isValidName(createInfo->name))
         return -1;
 
     void* stackEnd = NULL;
@@ -135,8 +134,8 @@ int kill(Pid pid) {
     onProcessKilled(pid);
 
     if (process->pidWQ != NULL) {
-        unblockAllWQ(process->pidWQ);
-        freeWQ(process->pidWQ);
+        unblockAllInQueue(process->pidWQ);
+        freeQueue(process->pidWQ);
     }
 
 	for (int i = 0; i < process->argc; i++){
@@ -175,14 +174,14 @@ void* handleMalloc(Pid pid, size_t size) {
     return ptr;
 }
 
-int handleFree(Pid pid, void* ptr) {
+int handleFree(Pid pid, void* memorySegment) {
     Process* process;
     if (!getProcessByPid(pid, &process))
         return 1;
 
     int index = -1;
     for (int i = 0; i < process->memoryCount; i++) {
-        if (process->memory[i] == ptr) {
+        if (process->memory[i] == memorySegment) {
             index = i;
             break;
         }
@@ -195,18 +194,17 @@ int handleFree(Pid pid, void* ptr) {
     for (int i = index; i < process->memoryCount; i++)
         process->memory[i] = process->memory[i + 1];
 
-    return free(ptr);
+    return free(memorySegment);
 }
 
-
-void* handleRealloc(Pid pid, void* ptr, size_t size) {
+void* handleRealloc(Pid pid, void* memorySegment, size_t size) {
     Process* process;
     if (!getProcessByPid(pid, &process))
         return NULL;
 
     int index = -1;
     for (int i = 0; i < process->memoryCount; i++) {
-        if (process->memory[i] == ptr) {
+        if (process->memory[i] == memorySegment) {
             index = i;
             break;
         }
@@ -215,14 +213,13 @@ void* handleRealloc(Pid pid, void* ptr, size_t size) {
     if (index == -1)
         return NULL;
 
-    void* newPtr = realloc(ptr, size);
+    void* newPtr = realloc(memorySegment, size);
 
     if (newPtr != NULL)
         process->memory[index] = newPtr;
 
     return newPtr;
 }
-
 
 int isForeground(Pid pid) {
     Process* process;
@@ -250,7 +247,7 @@ int toBackground(Pid pid) {
     return 0;
 }
 
-int addFdProcess(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdWriteHandler writeHandler, FdCloseHandler closeHandler, FdDupHandler dupHandler) {
+int addFd(Pid pid, int fd, void* resource, ReadHandler readHandler, WriteHandler writeHandler, CloseHandler closeHandler, DupHandler dupHandler) {
     Process* process;
     if (resource == NULL || !getProcessByPid(pid, &process))
         return -1;
@@ -289,7 +286,7 @@ int addFdProcess(Pid pid, int fd, void* resource, FdReadHandler readHandler, FdW
     return fd;
 }
 
-int deleteFdProcess(Pid pid, int fd) {
+int deleteFd(Pid pid, int fd) {
     Process* process;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd || process->fdTable[fd].resource == NULL)
         return 1;
@@ -310,7 +307,7 @@ static int deleteFdUnchecked(Process* process, Pid pid, int fd) {
     return 0;
 }
 
-int dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
+int dupFd(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
     Process* processFrom;
     if (fdFrom < 0 || !getProcessByPid(pidFrom, &processFrom) || processFrom->fdTableSize <= fdFrom || processFrom->fdTable[fdFrom].resource == NULL || processFrom->fdTable[fdFrom].dupHandler == NULL)
         return -1;
@@ -318,24 +315,24 @@ int dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
     return processFrom->fdTable[fdFrom].dupHandler(pidFrom, pidTo, fdFrom, fdTo, processFrom->fdTable[fdFrom].resource);
 }
 
-ssize_t handleReadFdProcess(Pid pid, int fd, char* buf, size_t count) {
+ssize_t handleRead(Pid pid, int fd, char* buffer, size_t count) {
     Process* process;
     FDEntry* entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd
         || (entry = &process->fdTable[fd])->resource == NULL || entry->readHandler == NULL)
         return -1;
 
-    return entry->readHandler(pid, fd, entry->resource, buf, count);
+    return entry->readHandler(pid, fd, entry->resource, buffer, count);
 }
 
-ssize_t handleWriteFdProcess(Pid pid, int fd, const char* buf, size_t count) {
+ssize_t handleWrite(Pid pid, int fd, const char* buffer, size_t count) {
     Process* process;
     FDEntry* entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd
         || (entry = &process->fdTable[fd])->resource == NULL || entry->writeHandler == NULL)
         return -1;
 
-    return entry->writeHandler(pid, fd, entry->resource, buf, count);
+    return entry->writeHandler(pid, fd, entry->resource, buffer, count);
 }
 
 int unblockOnKilled(Pid pidToUnblock, Pid pidToWait) {
@@ -343,19 +340,19 @@ int unblockOnKilled(Pid pidToUnblock, Pid pidToWait) {
     if (!getProcessByPid(pidToWait, &process))
         return 1;
 
-    if (process->pidWQ == NULL && (process->pidWQ = newWQ()) == NULL)
+    if (process->pidWQ == NULL && (process->pidWQ = newQueue()) == NULL)
         return -1;
 
-    addIfNotExistsWQ(process->pidWQ, pidToUnblock);
+    addIfNotExistsInQueue(process->pidWQ, pidToUnblock);
     return 0;
 }
 
-uint8_t listProcesses(ProcessInfo* array, uint8_t maxProcesses) {
+uint8_t listProcesses(ProcessInfo* storingInfo, uint8_t maxProcesses) {
     int processCounter = 0;
     for (int i = 0; i < MAX_PROCESSES && processCounter < maxProcesses; ++i) {
         Process* process = &processes[i];
         if (process->stackEnd != NULL) {
-            ProcessInfo* info = &array[processCounter++];
+            ProcessInfo* info = &storingInfo[processCounter++];
             info->pid = i;
             strncpy(info->name, process->name, MAX_NAME_LENGTH);
             info->stackEnd = process->stackEnd;

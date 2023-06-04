@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 /* ---  Flags for access rights of the segments --- */
 
@@ -66,10 +67,7 @@
  */
 #define KBDIN  3
 
-/* --- Kernel types --- */
-/* -------------------- */
-
-/* --- Memory Management */
+/* --- Memory Management --- */
 
 /**
  * @brief Represents the various categories of supported memory managers.
@@ -138,6 +136,28 @@ typedef int8_t Priority;
  */
 typedef void (*ProcessStart)(int argc, char* argv[]);
 
+#define PROCESS_STACK_SIZE 4096
+
+/**
+ * @brief Defines a function that will handle a file descriptor read operation.
+ */
+typedef ssize_t (*ReadHandler)(Pid pid, int fd, void* resource, char* buf, size_t count);
+
+/**
+ * @brief Defines a function that will handle a file descriptor write operation.
+ */
+typedef ssize_t (*WriteHandler)(Pid pid, int fd, void* resource, const char* buf, size_t count);
+
+/**
+ * @brief Defines a function that will handle a file descriptor close operation.
+ */
+typedef int (*CloseHandler)(Pid pid, int fd, void* resource);
+
+/**
+ * @brief Defines a function that will handle a file descriptor dup operation.
+ */
+typedef int (*DupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+
 /**
  * @brief Represents the various categories of supported process status.
  */
@@ -172,6 +192,11 @@ typedef struct {
 /* --- Pipes --- */
 
 /**
+ * @brief Represents a pipe.
+ */
+typedef int Pipe;
+
+/**
  * @brief Represents information of a process at particular time.
  */
 typedef struct {
@@ -185,10 +210,20 @@ typedef struct {
 
 /* --- Semaphores --- */
 
+#define MAX_SEMAPHORES 127
+#define SEM_OK 0
+#define SEM_FAIL -1
+#define SEM_NOT_EXISTS -2
+
 /**
  * @brief Represents a semaphore.
  */
 typedef int8_t Sem;
+
+/**
+ * @brief Represents a lock.
+ */
+typedef int8_t Lock;
 
 /**
  * @brief Represents information of a semaphore at particular time.
@@ -200,3 +235,9 @@ typedef struct {
     Pid processesWQ[MAX_PID_ARRAY_LENGTH+1];
 } SemaphoreInfo;
 #endif
+
+/* --- Others --- */
+
+typedef struct NamerData* Namer;
+
+typedef struct WaitingQueueData* WaitingQueue;

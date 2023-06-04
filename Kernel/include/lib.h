@@ -1,8 +1,7 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include <defs.h>
 
 /**
  * @brief Aligns the provided integer value downwards to the closest multiple of 8.
@@ -18,12 +17,12 @@
  * @brief Fills a block of memory with a specified value.
  *
  * @param destination Pointer to the destination memory block.
- * @param c The value to be set (interpreted as an unsigned char).
+ * @param value The value to be set (interpreted as an unsigned char).
  * @param length Number of bytes to be set.
  *
- * @return A pointer to the destination memory block (dest).
+ * @returns - A pointer to the destination memory block (dest).
  */
-void* memset(void* destination, int32_t c, size_t length);
+void* memset(void* destination, int32_t value, size_t length);
 
 /**
  * @brief Copies a block of memory from a source location to a destination location.
@@ -32,29 +31,28 @@ void* memset(void* destination, int32_t c, size_t length);
  * @param source Pointer to the source memory block.
  * @param length Number of bytes to be copied.
  *
- * @return A pointer to the destination memory block (dest).
+ * @returns - A pointer to the destination memory block (dest).
  */
 void* memcpy(void* destination, const void* source, size_t length);
 
 /**
- * @brief Returns the output from executing the cpuid instruction.
- */
-char* cpuVendor(char* result);
-
-/**
- * @brief Transforms the value to a number in the base recived as parameter, and stores the result in the buffer. 
+ * @brief Converts the given value into a number in the specified base and stores the result in the buffer.
  *
- * @param value the number to transform.
- * @param buffer memory area destination, where the number will be stored.
- * @param base base to convert the numbre to.
+ * @param value The number to be converted.
+ * @param buffer The destination memory area where the converted number will be stored.
+ * @param base The base to which the number will be converted.
  *
- * @return The digits of the number. 
+ * @returns - The number of digits in the converted number.
  */
 uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base);
 
 /**
- * @brief Converts a binary-coded decimal number into a decimal number in terms of representation.
+ * @brief Converts a binary-coded decimal number into its decimal representation.
+ * 
+ * @param value The number to be converted.
+ * 
+ * @returns - The decimal representation of value.
  */
-uint8_t bcdToDec(uint8_t time);
+uint8_t bcdToDec(uint8_t value);
 
 #endif

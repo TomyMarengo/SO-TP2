@@ -1,7 +1,7 @@
 #ifndef _TIME_H_
 #define _TIME_H_
 
-#include <stdint.h>
+#include <defs.h>
 
 /**
  * @brief Converts ticks to seconds.
@@ -14,61 +14,77 @@
 #define TICKS_TO_MILLISECONDS(x) ((x) *5000 / 91);
 
 /**
- * @brief Increments ticks.
+ * @brief Invoked by the interrupt dispatcher when a timer interrupt is detected. Increments ticks.
  */
 void interruptHandlerRTC();
 
 /**
  * @brief Gets the total amount of ticks elapsed since startup.
  *
- * @return The total amount of ticks elapsed since startup.
+ * @returns - The total amount of ticks elapsed since startup.
  */
 unsigned long getElapsedTicks();
 
 /**
  * @brief Gets the total amount of seconds elapsed since startup.
  *
- * @return The total amount of seconds elapsed since startup.
+ * @returns - The total amount of seconds elapsed since startup.
  */
 unsigned long getElapsedSeconds();
 
 /**
- * @brief Returns current seconds.
+ * @brief Gets the current seconds.
+ * 
+ * @returns - The current seconds.
  */
 uint8_t getCurrentSeconds();
 
 /**
- * @brief Returns current minutes.
+ * @brief Gets the current minutes.
+ * 
+ * @returns - The current minutes.
  */
 uint8_t getCurrentMinutes();
 
 /**
- * @brief Returns current hours.
+ * @brief Gets the current hours.
+ * 
+ * @returns - The current hours.
  */
 uint8_t getCurrentHours();
 
 /**
- * @brief Returns current day.
+ * @brief Gets the current day.
+ * 
+ * @returns - The current day.
  */
 uint8_t getCurrentDay();
 
 /**
- * @brief Returns current month.
+ * @brief Gets the current month.
+ * 
+ * @returns - The current month.
  */
 uint8_t getCurrentMonth();
 
 /**
- * @brief Returns current year.
+ * @brief Gets the current year.
+ * 
+ * @returns - The current year.
  */
 uint8_t getCurrentYear();
 
 /**
- * @brief Returns the current date in format DD/MM/YY
+ * @brief Gets the current date in format DD/MM/YY.
+ * 
+ * @param buffer Buffer to archive the current date in format DD/MM/YY.
  */
 void getCurrentDateString(char* buffer);
 
 /**
- * @brief Returns the current time in format HH:MM:SS
+ * @brief Gets the current time in format HH:MM:SS.
+ * 
+ * @param buffer Buffer to archive the current time in format HH:MM:SS.
  */
 void getCurrentTimeString(char* buffer);
 

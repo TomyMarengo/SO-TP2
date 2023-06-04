@@ -1,8 +1,8 @@
-#include <stdint.h>
+#include <defs.h>
 #include <lib.h>
 
-void* memset(void* destination, int32_t c, size_t length) {
-    uint8_t chr = (uint8_t)c;
+void* memset(void* destination, int32_t value, size_t length) {
+    uint8_t chr = (uint8_t)value;
     char* dst = (char*)destination;
 
     while (length--)
@@ -58,6 +58,6 @@ uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base) {
     return digits;
 }
 
-uint8_t bcdToDec(uint8_t time) {
-    return (time >> 4) * 10 + (time & 0x0F);
+uint8_t bcdToDec(uint8_t value) {
+    return (value >> 4) * 10 + (value & 0x0F);
 }
