@@ -1,45 +1,50 @@
-#include <scheduler.h>
-#include <memoryManager.h>
 #include <interrupts.h>
+#include <memoryManager.h>
+#include <scheduler.h>
 
 #define QUANTUM 5
 
 // Pseudo PIDs for limit cases
 #define PSEUDOPID_KERNEL -1
-#define PSEUDOPID_NONE -2
+#define PSEUDOPID_NONE   -2
 
 typedef struct {
     Priority priority;
     ProcessStatus status;
-    void* currentRSP;
+    void *currentRSP;
 } ProcessControlBlock;
 
-static void* mainRSP;
+static void *mainRSP;
 
 static ProcessControlBlock processTable[MAX_PROCESSES];
 static Pid currentRunningPID;
 static Pid forceRunNextPID;
 static uint8_t currentQuantum;
 
-extern void* createProcessStack(int argc, const char* const argv[], void* rsp, ProcessStart start);
+extern void *createProcessStack(int argc, const char *const argv[], void *rsp, ProcessStart start);
 
-static int isValidPid(Pid pid) {
+static int
+isValidPid(Pid pid) {
     return pid >= 0 && pid < MAX_PROCESSES;
 }
 
-static int isActiveProcess(Pid pid) {
+static int
+isActiveProcess(Pid pid) {
     return isValidPid(pid) && processTable[pid].currentRSP != NULL;
 }
 
-static int isReadyProcess(Pid pid) {
+static int
+isReadyProcess(Pid pid) {
     return isActiveProcess(pid) && processTable[pid].status == READY;
 }
 
-static int getCurrentQuantum(Pid pid) {
+static int
+getCurrentQuantum(Pid pid) {
     return PRIORITY_MIN - processTable[pid].priority;
 }
 
-static Pid getNextReadyPid() {
+static Pid
+getNextReadyPid() {
     Pid first = currentRunningPID < 0 ? 0 : currentRunningPID;
     Pid next = first;
 
@@ -53,7 +58,8 @@ static Pid getNextReadyPid() {
     return PSEUDOPID_KERNEL;
 }
 
-static int getProcessState(Pid pid, ProcessControlBlock** pcb) {
+static int
+getProcessState(Pid pid, ProcessControlBlock **pcb) {
     if (!isActiveProcess(pid))
         return 0;
 
@@ -61,13 +67,15 @@ static int getProcessState(Pid pid, ProcessControlBlock** pcb) {
     return 1;
 }
 
-void initializeScheduler() {
+void
+initializeScheduler() {
     forceRunNextPID = PSEUDOPID_NONE;
     currentRunningPID = PSEUDOPID_KERNEL;
     currentQuantum = 0;
 }
 
-int onProcessCreated(Pid pid, ProcessStart start, Priority priority, void* currentRSP, int argc, const char* const argv[]) {
+int
+onProcessCreated(Pid pid, ProcessStart start, Priority priority, void *currentRSP, int argc, const char *const argv[]) {
     if (priority < PRIORITY_MAX || priority > PRIORITY_MIN)
         priority = PRIORITY_DEFAULT;
 
@@ -77,8 +85,9 @@ int onProcessCreated(Pid pid, ProcessStart start, Priority priority, void* curre
     return 0;
 }
 
-int onProcessKilled(Pid pid) {
-    ProcessControlBlock* pcb;
+int
+onProcessKilled(Pid pid) {
+    ProcessControlBlock *pcb;
     if (!getProcessState(pid, &pcb))
         return 1;
 
@@ -94,8 +103,9 @@ int onProcessKilled(Pid pid) {
     return 0;
 }
 
-int block(Pid pid) {
-    ProcessControlBlock* pcb;
+int
+block(Pid pid) {
+    ProcessControlBlock *pcb;
     if (!getProcessState(pid, &pcb))
         return 1;
 
@@ -107,8 +117,9 @@ int block(Pid pid) {
     return 0;
 }
 
-int unblock(Pid pid) {
-    ProcessControlBlock* pcb;
+int
+unblock(Pid pid) {
+    ProcessControlBlock *pcb;
     if (!getProcessState(pid, &pcb))
         return 1;
 
@@ -123,12 +134,14 @@ int unblock(Pid pid) {
     return 0;
 }
 
-Pid getpid() {
+Pid
+getpid() {
     return currentRunningPID;
 }
 
-int setPriority(Pid pid, Priority newPriority) {
-    ProcessControlBlock* pcb;
+int
+setPriority(Pid pid, Priority newPriority) {
+    ProcessControlBlock *pcb;
     if (!getProcessState(pid, &pcb))
         return 1;
 
@@ -140,18 +153,19 @@ int setPriority(Pid pid, Priority newPriority) {
     return 0;
 }
 
-void yield() {
+void
+yield() {
     currentQuantum = 0;
     int81();
 }
 
-void* switchProcess(void* currentRSP) {
+void *
+switchProcess(void *currentRSP) {
     if (currentRunningPID >= 0) {
         processTable[currentRunningPID].currentRSP = currentRSP;
         if (processTable[currentRunningPID].status == RUNNING)
             processTable[currentRunningPID].status = READY;
-    }
-    else if (currentRunningPID == PSEUDOPID_KERNEL)
+    } else if (currentRunningPID == PSEUDOPID_KERNEL)
         mainRSP = currentRSP;
 
     if (isReadyProcess(forceRunNextPID)) {
@@ -175,8 +189,9 @@ void* switchProcess(void* currentRSP) {
     return processTable[currentRunningPID].currentRSP;
 }
 
-int getProcessInfo(Pid pid, ProcessInfo* processInfo) {
-    ProcessControlBlock* pcb;
+int
+getProcessInfo(Pid pid, ProcessInfo *processInfo) {
+    ProcessControlBlock *pcb;
     if (!getProcessState(pid, &pcb))
         return 1;
 

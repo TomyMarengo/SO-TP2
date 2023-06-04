@@ -1,8 +1,8 @@
 #ifndef _MEMORY_MANAGER_H_
 #define _MEMORY_MANAGER_H_
 
-#include <stddef.h>
 #include <defs.h>
+#include <stddef.h>
 
 /**
  * @brief Initializes the memory manager

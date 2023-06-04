@@ -1,55 +1,65 @@
+#include <lib.h>
 #include <stdint.h>
 #include <time.h>
-#include <lib.h>
 
 #define SECONDS 0x00
 #define MINUTES 0x02
-#define HOURS 0x04
-#define DAY 0x07
-#define MONTH 0x08
-#define YEAR 0x09
+#define HOURS   0x04
+#define DAY     0x07
+#define MONTH   0x08
+#define YEAR    0x09
 
 extern uint8_t readValue(uint8_t mode);
 
 static unsigned long ticks = 0;
 
-void interruptHandlerRTC() {
+void
+interruptHandlerRTC() {
     ticks++;
 }
 
-unsigned long getElapsedTicks() {
+unsigned long
+getElapsedTicks() {
     return ticks;
 }
 
-unsigned long getElapsedSeconds() {
+unsigned long
+getElapsedSeconds() {
     return TICKS_TO_SECONDS(ticks);
 }
 
-uint8_t getCurrentSeconds() {
+uint8_t
+getCurrentSeconds() {
     return bcdToDec(readValue(SECONDS));
 }
 
-uint8_t getCurrentMinutes() {
+uint8_t
+getCurrentMinutes() {
     return bcdToDec(readValue(MINUTES));
 }
 
-uint8_t getCurrentHours() {
+uint8_t
+getCurrentHours() {
     return bcdToDec(readValue(HOURS));
 }
 
-uint8_t getCurrentDay() {
+uint8_t
+getCurrentDay() {
     return bcdToDec(readValue(DAY));
 }
 
-uint8_t getCurrentMonth() {
+uint8_t
+getCurrentMonth() {
     return bcdToDec(readValue(MONTH));
 }
 
-uint8_t getCurrentYear() {
+uint8_t
+getCurrentYear() {
     return bcdToDec(readValue(YEAR));
 }
 
-void getCurrentDateString(char* buffer) {
+void
+getCurrentDateString(char *buffer) {
     char date[] = {'0', '0', '/', '0', '0', '/', '0', '0', 0};
 
     int t = getCurrentDay();
@@ -69,7 +79,8 @@ void getCurrentDateString(char* buffer) {
     buffer[i] = 0;
 }
 
-void getCurrentTimeString(char* buffer) {
+void
+getCurrentTimeString(char *buffer) {
     char time[] = {'0', '0', ':', '0', '0', ':', '0', '0', 0};
 
     int t = getCurrentHours();

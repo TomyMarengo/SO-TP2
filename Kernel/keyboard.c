@@ -1,13 +1,13 @@
-#include <stdint.h>
-#include <lib.h>
 #include <defs.h>
-#include <process.h>
 #include <keyboard.h>
+#include <lib.h>
+#include <process.h>
 #include <scheduler.h>
+#include <stdint.h>
 #include <waitingQueue.h>
 
-#define LEFT_SHIFT 0x2A
-#define RIGHT_SHIFT 0x36
+#define LEFT_SHIFT      0x2A
+#define RIGHT_SHIFT     0x36
 #define BUFFER_MAX_SIZE 256
 
 extern unsigned int readKey();
@@ -19,38 +19,34 @@ static uint16_t bufferStart = 0;
 static uint16_t bufferSize = 0;
 
 static uint8_t scancodeLToAscii[] = {
-    0,   27, '1', '2', '3', '4', '5', '6', '7', '8', '9',  '0', '-', '=',
-   '\b', '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',  '[', ']',
-   '\n',    0, 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
-    0, '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/',    0, '*',
-    0,  ' ',   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,    0,   0,
-    0,    0,   38,   0, '-',   37,   0,   39, '+',   0,   40,   0,    0,   0,
-    0,    0,   0,   0,   0,   0,   0,   0,  0,    0,   0,   0,    0,   0,
+    0,    27,  '1', '2',  '3', '4', '5', '6', '7',  '8', '9', '0', '-', '=', '\b', '\t', 'q', 'w', 'e', 'r',
+    't',  'y', 'u', 'i',  'o', 'p', '[', ']', '\n', 0,   'a', 's', 'd', 'f', 'g',  'h',  'j', 'k', 'l', ';',
+    '\'', '`', 0,   '\\', 'z', 'x', 'c', 'v', 'b',  'n', 'm', ',', '.', '/', 0,    '*',  0,   ' ', 0,   0,
+    0,    0,   0,   0,    0,   0,   0,   0,   0,    0,   0,   0,   38,  0,   '-',  37,   0,   39,  '+', 0,
+    40,   0,   0,   0,    0,   0,   0,   0,   0,    0,   0,   0,   0,   0,   0,    0,    0,   0,
 };
 
-static uint8_t scancodeUToAscii[] = {
-    0,   27, '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',
-   '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}',
-   '\n',    0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',
-    0, '|', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', '<', '>', '?',   0, '*',
-    0, ' ',    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
-    0,   0,    0,   0, '-',   0,   0,   0, '+',   0,   0,   0,   0,   0,
-    0,   0,    0,   0,   0,   0
-};
+static uint8_t scancodeUToAscii[] = {0,   27,  '!', '@', '#', '$', '%', '^', '&', '*', '(',  ')', '_', '+', '\b', '\t', 'Q', 'W',
+                                     'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,   'A', 'S', 'D',  'F',  'G', 'H',
+                                     'J', 'K', 'L', ':', '"', '~', 0,   '|', 'Z', 'X', 'C',  'V', 'B', 'N', 'M',  '<',  '>', '?',
+                                     0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
+                                     0,   0,   '-', 0,   0,   0,   '+', 0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0};
 
-static uint8_t* keyMap[] = {scancodeLToAscii, scancodeUToAscii};
+static uint8_t *keyMap[] = {scancodeLToAscii, scancodeUToAscii};
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void* resource);
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+static ssize_t fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count);
+static int fdCloseHandler(Pid pid, int fd, void *resource);
+static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
 
 static WaitingQueue processReadWQ;
 
-void initializeKeyboard() {
+void
+initializeKeyboard() {
     processReadWQ = newWQ();
 }
 
-void interruptHandlerKeyboard() {
+void
+interruptHandlerKeyboard() {
     unsigned char code = readKey();
     if (code < 0x80) {
         if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
@@ -72,7 +68,8 @@ void interruptHandlerKeyboard() {
     }
 }
 
-unsigned int readChars(char* buf, unsigned int count) {
+unsigned int
+readChars(char *buf, unsigned int count) {
     unsigned int charsToRead = bufferSize;
     if (charsToRead > count)
         charsToRead = count;
@@ -93,7 +90,8 @@ unsigned int readChars(char* buf, unsigned int count) {
     return charsToRead;
 }
 
-int getChar() {
+int
+getChar() {
     if (bufferSize == 0)
         return -1;
 
@@ -103,16 +101,19 @@ int getChar() {
     return c;
 }
 
-void clearKeyboard() {
+void
+clearKeyboard() {
     bufferStart = 0;
     bufferSize = 0;
 }
 
-int addFdKeyboard(Pid pid, int fd) {
-    return addFdProcess(pid, fd, (void*)1, &fdReadHandler, NULL, &fdCloseHandler, &fdDupHandler);
+int
+addFdKeyboard(Pid pid, int fd) {
+    return addFdProcess(pid, fd, (void *) 1, &fdReadHandler, NULL, &fdCloseHandler, &fdDupHandler);
 }
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
+static ssize_t
+fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count) {
     if (!isForeground(pid))
         return -1;
 
@@ -132,11 +133,13 @@ static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t 
     return read;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) {
+static int
+fdCloseHandler(Pid pid, int fd, void *resource) {
     removeWQ(processReadWQ, pid);
     return 0;
 }
 
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
+static int
+fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource) {
     return addFdKeyboard(pidTo, fdTo);
 }

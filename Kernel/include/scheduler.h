@@ -1,8 +1,8 @@
 #ifndef _SCHEDULER_H_
 #define _SCHEDULER_H_
 
-#include <stdint.h>
 #include <defs.h>
+#include <stdint.h>
 
 /**
  * @brief Initialize the Scheduler.
@@ -14,11 +14,11 @@ void initializeScheduler();
  *
  * @returns 0 if the operation is successful.
  */
-int onProcessCreated(Pid pid, ProcessStart start, Priority priority, void* currentRSP, int argc, const char* const argv[]);
+int onProcessCreated(Pid pid, ProcessStart start, Priority priority, void *currentRSP, int argc, const char *const argv[]);
 
 /**
- * @brief Called by process.c when a process is being terminated. If the caller is the process itself, it is not immediately halted. 
- * To accomplish this, sch_yield() must be invoked.
+ * @brief Called by process.c when a process is being terminated. If the caller is the process itself, it is not immediately
+ * halted. To accomplish this, sch_yield() must be invoked.
  *
  * @return 0 if the operation is successful, 1 otherwise.
  */
@@ -26,7 +26,7 @@ int onProcessKilled(Pid pid);
 
 /**
  * @brief Instructs the scheduler that a specific process should remain inactive until it is unblocked.
- * If the caller is the process itself, it is not immediately blocked. To accomplish this, sch_yield() 
+ * If the caller is the process itself, it is not immediately blocked. To accomplish this, sch_yield()
  * must be called subsequently.
  *
  * @return 0 if the operation is successful, 1 otherwise.
@@ -60,14 +60,14 @@ int setPriority(Pid pid, Priority newPriority);
  * @param currentRSP RSP (Stack Pointer) of the interrupted process.
  * @return RSP (Stack Pointer) of the next process to be executed.
  */
-void* switchProcess(void* currentRSP);
+void *switchProcess(void *currentRSP);
 
 /**
  * @brief Populates the provided struct processInfo with the scheduler-related data of the requested process.
- * 
+ *
  * @return 0 if the operation is successful, 1 otherwise.
  */
-int getProcessInfo(Pid pid, ProcessInfo* processInfo);
+int getProcessInfo(Pid pid, ProcessInfo *processInfo);
 
 /**
  * @brief Relinquishes CPU control to the next process on the ready list.

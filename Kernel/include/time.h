@@ -65,11 +65,11 @@ uint8_t getCurrentYear();
 /**
  * @brief Returns the current date in format DD/MM/YY
  */
-void getCurrentDateString(char* buffer);
+void getCurrentDateString(char *buffer);
 
 /**
  * @brief Returns the current time in format HH:MM:SS
  */
-void getCurrentTimeString(char* buffer);
+void getCurrentTimeString(char *buffer);
 
 #endif

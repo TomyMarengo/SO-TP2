@@ -14,31 +14,31 @@
 /**
  * @brief Code Segment.
  */
-#define ACS_CSEG    0x18
+#define ACS_CSEG 0x18
 
 /**
  * @brief Data Segment.
  */
-#define ACS_DSEG    0x10
+#define ACS_DSEG 0x10
 
 /**
  * @brief Read Segment.
  */
-#define ACS_READ    0x02
+#define ACS_READ 0x02
 
 /**
  * @brief Write Segment.
  */
-#define ACS_WRITE   0x02
+#define ACS_WRITE 0x02
 
-#define ACS_IDT     ACS_DSEG
+#define ACS_IDT ACS_DSEG
 
 /**
  * @brief Interrupt GATE 32 bits.
  */
 #define ACS_INT_386 0x0E
 
-#define ACS_INT     (ACS_PRESENT | ACS_INT_386)
+#define ACS_INT (ACS_PRESENT | ACS_INT_386)
 
 #define ACS_CODE  (ACS_PRESENT | ACS_CSEG | ACS_READ)
 #define ACS_DATA  (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
@@ -49,7 +49,7 @@
 /**
  * @brief Standard Input File Descriptor.
  */
-#define STDIN  0
+#define STDIN 0
 
 /**
  * @brief Standard Output File Descriptor.
@@ -64,7 +64,7 @@
 /**
  * @brief Keyboard Input File Descriptor.
  */
-#define KBDIN  3
+#define KBDIN 3
 
 /* --- Kernel types --- */
 /* -------------------- */
@@ -103,7 +103,6 @@ typedef struct {
  */
 #define MAX_PROCESSES 8
 
-
 #define MAX_PARAMS 8
 
 /**
@@ -139,7 +138,7 @@ typedef int8_t Priority;
 /**
  * @brief Process start function.
  */
-typedef void (*ProcessStart)(int argc, char* argv[]);
+typedef void (*ProcessStart)(int argc, char *argv[]);
 
 /**
  * @brief Represents the various categories of supported process status.
@@ -152,24 +151,24 @@ typedef enum { READY = 0, RUNNING = 1, BLOCKED = 2, KILLED = 3 } ProcessStatus;
 typedef struct {
     Pid pid;
     char name[MAX_NAME_LENGTH + 1];
-    void* stackEnd;
-    void* stackStart;
+    void *stackEnd;
+    void *stackStart;
     int isForeground;
     Priority priority;
     ProcessStatus status;
-    void* currentRSP;
+    void *currentRSP;
 } ProcessInfo;
 
 /**
  * @brief Represents the information needed for a create process request.
  */
 typedef struct {
-    const char* name;
+    const char *name;
     ProcessStart start;
     int isForeground;
     Priority priority;
     int argc;
-    const char* const* argv;
+    const char *const *argv;
 } ProcessCreateInfo;
 
 /* --- Pipes --- */
@@ -198,8 +197,8 @@ typedef int8_t Sem;
  */
 typedef struct {
     int value;
-    int linkedProcesses; 
-    char name[MAX_NAME_LENGTH+1];
-    Pid processesWQ[MAX_PID_ARRAY_LENGTH+1];
+    int linkedProcesses;
+    char name[MAX_NAME_LENGTH + 1];
+    Pid processesWQ[MAX_PID_ARRAY_LENGTH + 1];
 } SemaphoreInfo;
 #endif

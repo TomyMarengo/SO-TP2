@@ -1,7 +1,7 @@
-#include <testUtil.h>
 #include <syscalls.h>
-#include <userstdlib.h>
 #include <test.h>
+#include <testUtil.h>
+#include <userstdlib.h>
 
 #define MAX_BLOCKS 128
 
@@ -10,21 +10,20 @@ typedef struct MM_rq {
     uint32_t size;
 } mm_rq;
 
-void testMM(int argc, char* argv[]) {
+void
+testMM(int argc, char *argv[]) {
 
     mm_rq mm_rqs[MAX_BLOCKS];
     uint8_t rq;
     uint32_t total;
     uint64_t max_memory;
 
-    if (argc != 1)
-    {
+    if (argc != 1) {
         printf("insufficient parameters!\n");
         return;
     }
 
-    if ((max_memory = satoi(argv[0])) <= 0)
-    {
+    if ((max_memory = satoi(argv[0])) <= 0) {
         printf("Max memory must be positive integer\n");
         return;
     }
@@ -62,8 +61,5 @@ void testMM(int argc, char* argv[]) {
         for (i = 0; i < rq; i++)
             if (mm_rqs[i].address)
                 sys_free(mm_rqs[i].address);
-
     }
-
-    
 }

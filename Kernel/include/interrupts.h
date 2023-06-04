@@ -33,7 +33,6 @@ void picMasterMask(uint8_t mask);
  */
 void picSlaveMask(uint8_t mask);
 
-
 /* --- Interrupt and Exception Handlers --- */
 
 void irq00Handler(void);
