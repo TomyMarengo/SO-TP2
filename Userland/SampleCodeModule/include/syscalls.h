@@ -2,7 +2,6 @@
 #define _SYSCALLS_H_
 
 #include <defs.h>
-#include <sys/types.h>
 
 ssize_t sys_read(int fd, char *buffer, size_t size);
 ssize_t sys_write(int fd, const char *buffer, size_t size);

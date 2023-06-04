@@ -1,9 +1,7 @@
-#include <defs.h>
-#include <stdint.h>
-#include <syscalls.h>
 #include <test.h>
-#include <testUtil.h>
-#include <userstdlib.h>
+#include <syscalls.h>
+#include <programs.h>
+#include <userlib.h>
 
 /* Constants */
 #define SEM_ID               "sem"

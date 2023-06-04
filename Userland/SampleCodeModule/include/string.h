@@ -1,7 +1,7 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
-#include <stddef.h>
+#include <defs.h>
 
 /**
  * @brief Calculates the length of the string pointed to by s, excluding the terminating null byte ('\0').

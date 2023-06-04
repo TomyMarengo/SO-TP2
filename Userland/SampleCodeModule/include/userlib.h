@@ -1,5 +1,13 @@
-#ifndef _USERSTDLIB_H_
-#define _USERSTDLIB_H_
+#ifndef _USERLIB_H_
+#define _USERLIB_H_
+
+#include <defs.h>
+
+uint32_t getUint();
+uint32_t getUniform(uint32_t max);
+uint8_t memcheck(void *start, uint8_t value, uint32_t size);
+void *memset(void *destination, int32_t c, size_t length);
+int64_t satoi(char *str);
 
 /**
  * @brief Delay for a specified amount of milliseconds
@@ -61,17 +69,8 @@ int getLine(char *buffer, int maxSize);
  */
 int fgetLine(int fd, char *buffer, int maxSize);
 
-// thanks chatGPT!
 /**
  * @brief Splits a string into tokens.
- *
- * This function is a custom implementation of the standard C library function strtok.
- * It splits the input string into tokens, which are sequences of characters separated by the specified delimiter.
- * The function modifies the original string by replacing delimiters with null characters.
- *
- * This function maintains static variables to keep track of its state between calls.
- * When called with a non-null string, it initializes its state and starts tokenizing the string.
- * When called with a null string, it continues tokenizing the string from the last position.
  *
  * @param str The string to tokenize. If this parameter is null, the function continues tokenizing the last string from the last
  * position.
