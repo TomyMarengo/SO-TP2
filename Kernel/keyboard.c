@@ -40,7 +40,7 @@ static int fdCloseHandler(Pid pid, int fd, void *resource);
 static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
 
 static WaitingQueue processReadWQ;
-int ctrl = 0;
+static int ctrl = 0;
 
 void
 initializeKeyboard() {
@@ -58,20 +58,14 @@ interruptHandlerKeyboard() {
         {
             ctrl = 1;
         }
-        else if (code == 0x9D)
-        {
-            ctrl = 0;
-        }
         else {
             uint8_t keyChar = keyMap[keyMapRow][code];
             if (keyChar == 'c' && ctrl == 1)
             {
                 if(getpid()!=0)
                     killCurrentProcess();
-                
                 return;
             }
-            
             if (keyChar != 0 && bufferSize < BUFFER_MAX_SIZE) {
                 uint16_t bufferEnd = (bufferStart + bufferSize) % BUFFER_MAX_SIZE;
                 buffer[bufferEnd] = keyChar;
@@ -80,6 +74,10 @@ interruptHandlerKeyboard() {
             }
         }
     } else {
+        if (code == 0x9D)
+        {
+            ctrl = 0;
+        }
         code -= 0x80;
         if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
             keyMapRow &= 0xFE;
