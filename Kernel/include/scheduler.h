@@ -75,4 +75,9 @@ int getProcessInfo(Pid pid, ProcessInfo *processInfo);
  */
 void yield();
 
+/**
+ * @brief Kills the process that is currently RUNNING.
+ */
+int killCurrentProcess();
+
 #endif

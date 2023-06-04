@@ -5,6 +5,7 @@
 #include <scheduler.h>
 #include <stdint.h>
 #include <waitingQueue.h>
+#include <graphics.h>
 
 #define LEFT_SHIFT      0x2A
 #define RIGHT_SHIFT     0x36
@@ -39,6 +40,7 @@ static int fdCloseHandler(Pid pid, int fd, void *resource);
 static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
 
 static WaitingQueue processReadWQ;
+int ctrl = 0;
 
 void
 initializeKeyboard() {
@@ -51,8 +53,25 @@ interruptHandlerKeyboard() {
     if (code < 0x80) {
         if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
             keyMapRow |= 0x01;
-        } else {
+        }
+        else if (code == 0x1D)
+        {
+            ctrl = 1;
+        }
+        else if (code == 0x1D)
+        {
+            ctrl = 0;
+        }
+        else {
             uint8_t keyChar = keyMap[keyMapRow][code];
+            if (keyChar == 'c' && ctrl == 1)
+            {
+                if(getpid()!=0)
+                    killCurrentProcess();
+                
+                return;
+            }
+            
             if (keyChar != 0 && bufferSize < BUFFER_MAX_SIZE) {
                 uint16_t bufferEnd = (bufferStart + bufferSize) % BUFFER_MAX_SIZE;
                 buffer[bufferEnd] = keyChar;

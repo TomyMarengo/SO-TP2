@@ -1,6 +1,7 @@
 #include <interrupts.h>
 #include <memoryManager.h>
 #include <scheduler.h>
+#include <process.h>
 
 #define QUANTUM 5
 
@@ -198,5 +199,25 @@ getProcessInfo(Pid pid, ProcessInfo *processInfo) {
     processInfo->status = pcb->status;
     processInfo->priority = pcb->priority;
     processInfo->currentRSP = pcb->currentRSP;
+    return 0;
+}
+
+static ProcessControlBlock* getCurrentProcess() {
+    if (currentRunningPID > 0 && processTable[currentRunningPID].status == RUNNING)
+        return &processTable[currentRunningPID];
+
+    return NULL;
+}
+
+int killCurrentProcess() {
+    ProcessControlBlock* currentProcess = getCurrentProcess();
+
+    if (currentProcess == NULL)
+        return 1;
+
+    currentProcess->status = KILLED;
+    currentProcess->currentRSP = NULL;
+    kill(currentRunningPID);
+
     return 0;
 }
