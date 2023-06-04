@@ -1,8 +1,7 @@
 #ifndef _LIB_H_
 #define _LIB_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include <defs.h>
 
 /**
  * @brief Aligns the provided integer value downwards to the closest multiple of 8.
@@ -21,7 +20,7 @@
  * @param value The value to be set (interpreted as an unsigned char).
  * @param length Number of bytes to be set.
  *
- * @return - A pointer to the destination memory block (dest).
+ * @returns - A pointer to the destination memory block (dest).
  */
 void* memset(void* destination, int32_t value, size_t length);
 
@@ -32,7 +31,7 @@ void* memset(void* destination, int32_t value, size_t length);
  * @param source Pointer to the source memory block.
  * @param length Number of bytes to be copied.
  *
- * @return - A pointer to the destination memory block (dest).
+ * @returns - A pointer to the destination memory block (dest).
  */
 void* memcpy(void* destination, const void* source, size_t length);
 
@@ -43,7 +42,7 @@ void* memcpy(void* destination, const void* source, size_t length);
  * @param buffer The destination memory area where the converted number will be stored.
  * @param base The base to which the number will be converted.
  *
- * @return - The number of digits in the converted number.
+ * @returns - The number of digits in the converted number.
  */
 uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base);
 
@@ -52,7 +51,7 @@ uint32_t uintToBase(uint64_t value, char* buffer, uint32_t base);
  * 
  * @param value The number to be converted.
  * 
- * @return - The decimal representation of value.
+ * @returns - The decimal representation of value.
  */
 uint8_t bcdToDec(uint8_t value);
 

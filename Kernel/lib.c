@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <defs.h>
 #include <lib.h>
 
 void* memset(void* destination, int32_t value, size_t length) {

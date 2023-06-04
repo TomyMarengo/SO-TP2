@@ -1,7 +1,6 @@
 #ifndef _GRAPHICS_H_
 #define _GRAPHICS_H_
 
-#include <stdint.h>
 #include <defs.h>
 
 typedef struct color {
@@ -100,7 +99,7 @@ void restartCursor();
  * @param fd File descriptor to add.
  * @param color Color resource to map to the screen.
  * 
- * @return - The screen file descriptor, -1 in error cases.
+ * @returns - The screen file descriptor, -1 in error cases.
  */
 int addFdScreen(Pid pid, int fd, const Color* color);
 

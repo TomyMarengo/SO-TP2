@@ -1,12 +1,7 @@
 #ifndef _PIPE_H_
 #define _PIPE_H_
 
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
 #include <defs.h>
-
-typedef int Pipe;
 
 /**
  * @brief Generates a new pipe.

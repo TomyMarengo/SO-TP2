@@ -1,16 +1,13 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
+#include <defs.h>
 #include <graphics.h>
 #include <keyboard.h>
-#include <time.h>
-#include <memoryManager.h>
 #include <lib.h>
+#include <memoryManager.h>
+#include <pipe.h>
 #include <process.h>
 #include <scheduler.h>
-#include <pipe.h>
-#include <defs.h>
 #include <sem.h>
+#include <time.h>
 
 typedef size_t (*SyscallHandlerFunction)(size_t rdi, size_t rsi, size_t rdx, size_t r10, size_t r8);
 

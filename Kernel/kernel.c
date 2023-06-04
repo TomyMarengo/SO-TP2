@@ -1,16 +1,14 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
+#include <defs.h>
+#include <kernel.h>
 #include <lib.h>
 #include <moduleLoader.h>
+#include <process.h>
+#include <keyboard.h>
 #include <graphics.h>
 #include <interrupts.h>
 #include <idtLoader.h>
 #include <memoryManager.h>
-#include <process.h>
 #include <scheduler.h>
-#include <keyboard.h>
-#include <kernel.h>
 #include <sem.h>
 
 extern uint8_t text;

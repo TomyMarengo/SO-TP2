@@ -1,7 +1,7 @@
 #ifndef _FONTS_H_
 #define _FONTS_H_
 
-#include <stdint.h>
+#include <defs.h>
 
 #define CHAR_WIDTH 8
 #define CHAR_HEIGHT 16
@@ -11,7 +11,7 @@
  * 
  * @param character The ASCII character.
  * 
- * @return - A pointer to the pixel data of the corresponding character.
+ * @returns - A pointer to the pixel data of the corresponding character.
  */
 uint8_t* getCharMapping(uint8_t character);
 

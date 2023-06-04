@@ -1,6 +1,8 @@
 #ifndef _MODULE_LOADER_H
 #define _MODULE_LOADER_H
 
+#include <defs.h>
+
 /**
  * @brief Initializes kernel binaries.
  *

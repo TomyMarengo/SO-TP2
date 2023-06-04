@@ -1,7 +1,8 @@
 #ifndef USE_BUDDY
+
+#include <defs.h>
 #include <memoryManager.h>
 #include <lib.h>
-#include <defs.h>
 
 typedef struct memoryListNode {
     size_t size;

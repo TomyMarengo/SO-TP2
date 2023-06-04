@@ -1,7 +1,5 @@
-#include <stddef.h>
-
-#include <namer.h>
 #include <defs.h>
+#include <namer.h>
 #include <memoryManager.h>
 #include <string.h>
 
@@ -18,7 +16,7 @@ struct NamerData {
     int bufferSize;
 };
 
-static int isNameValid(const char* name) {
+static int isValidName(const char* name) {
     if (name == NULL)
         return 0;
 
@@ -61,7 +59,7 @@ static int findResourceIndex(Namer namer, const char* name, int* c) {
 }
 
 int addResource(Namer namer, void* resource, const char* name, const char** nameData) {
-    if (!isNameValid(name))
+    if (!isValidName(name))
         return 1;
 
     int c;

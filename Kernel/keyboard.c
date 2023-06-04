@@ -1,8 +1,7 @@
-#include <stdint.h>
-#include <lib.h>
 #include <defs.h>
-#include <process.h>
 #include <keyboard.h>
+#include <lib.h>
+#include <process.h>
 #include <scheduler.h>
 #include <waitingQueue.h>
 
@@ -47,7 +46,7 @@ static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resour
 static WaitingQueue processReadWQ;
 
 void initializeKeyboard() {
-    processReadWQ = newWQ();
+    processReadWQ = newQueue();
 }
 
 void interruptHandlerKeyboard() {
@@ -61,7 +60,7 @@ void interruptHandlerKeyboard() {
                 uint16_t bufferEnd = (bufferStart + bufferSize) % BUFFER_MAX_SIZE;
                 buffer[bufferEnd] = keyChar;
                 bufferSize++;
-                unblockAllWQ(processReadWQ);
+                unblockAllInQueue(processReadWQ);
             }
         }
     } else {
@@ -124,7 +123,7 @@ static ssize_t readHandler(Pid pid, int fd, void* resource, char* buf, size_t co
 
     int read;
     while ((read = readChars(buf, count)) == 0) {
-        addWQ(processReadWQ, pid);
+        addInQueue(processReadWQ, pid);
         block(pid);
         yield();
     }
@@ -133,7 +132,7 @@ static ssize_t readHandler(Pid pid, int fd, void* resource, char* buf, size_t co
 }
 
 static int closeHandler(Pid pid, int fd, void* resource) {
-    removeWQ(processReadWQ, pid);
+    removeInQueue(processReadWQ, pid);
     return 0;
 }
 

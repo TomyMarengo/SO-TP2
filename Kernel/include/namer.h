@@ -1,7 +1,7 @@
 #ifndef _NAMER_
 #define _NAMER_
 
-typedef struct NamerData* Namer;
+#include <defs.h>
 
 /**
  * @brief Creates a new instance of a resource namer.

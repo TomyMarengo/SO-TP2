@@ -1,7 +1,6 @@
 #ifndef _MEMORY_MANAGER_H_
 #define _MEMORY_MANAGER_H_
 
-#include <stddef.h>
 #include <defs.h>
 
 /**
@@ -17,7 +16,7 @@ void initializeMemory(void *memoryStart, size_t memorySize);
  *
  * @param size - The desired amount of memory requested.
  *
- * @return - A pointer to the reserved memory, or NULL if the operation failed.
+ * @returns - A pointer to the reserved memory, or NULL if the operation failed.
  */
 void *malloc(size_t size);
 
@@ -27,7 +26,7 @@ void *malloc(size_t size);
  *
  * @param memorySegment Pointer to the memory segment to be released.
  *
- * @return - 0 if the operation is successful, 1 otherwise.
+ * @returns - 0 if the operation is successful, 1 otherwise.
  */
 int free(void *memorySegment);
 
@@ -37,7 +36,7 @@ int free(void *memorySegment);
  * @param memorySegment Pointer to the memory block that was previously allocated and needs to be resized.
  * @param size The new size for the memory block.
  *
- * @return - A pointer to the resized memory block, or NULL if the operation failed.
+ * @returns - A pointer to the resized memory block, or NULL if the operation failed.
  */
 void *realloc(void *memorySegment, size_t size);
 

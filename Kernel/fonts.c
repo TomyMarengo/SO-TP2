@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <fonts.h>
 
 static uint8_t pixel_chars[] = {

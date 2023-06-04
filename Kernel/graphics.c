@@ -1,9 +1,7 @@
-#include <stdint.h>
-#include <stddef.h>
+#include <defs.h>
 #include <graphics.h>
 #include <fonts.h>
 #include <lib.h>
-#include <defs.h>
 #include <process.h>
 
 // Retrieved from https://wiki.osdev.org/VESA_Video_Modes

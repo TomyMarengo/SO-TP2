@@ -1,15 +1,12 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
-#include <memoryManager.h>
-#include <process.h>
+#include <defs.h>
 #include <pipe.h>
 #include <lib.h>
-#include <defs.h>
-#include <waitingQueue.h>
+#include <memoryManager.h>
 #include <namer.h>
+#include <process.h>
 #include <string.h>
 #include <scheduler.h>
+#include <waitingQueue.h>
 
 #define MAX_PIPES 64
 #define MIN_BUFFER_SIZE 512
@@ -60,7 +57,7 @@ Pipe createPipe() {
     PipeData* pipeData;
     WaitingQueue readQueue = NULL;
     WaitingQueue writeQueue = NULL;
-    if ((pipeData = malloc(sizeof(PipeData))) == NULL || (readQueue = newWQ()) == NULL || (writeQueue = newWQ()) == NULL) {
+    if ((pipeData = malloc(sizeof(PipeData))) == NULL || (readQueue = newQueue()) == NULL || (writeQueue = newQueue()) == NULL) {
         free(pipeData);
         if (readQueue != NULL)
             free(readQueue);
@@ -110,10 +107,10 @@ int unlinkPipe(const char* name) {
         int result = free(pipeData->buffer);
         pipeData->buffer = NULL;
         pipeData->bufferSize = 0;
-        unblockAllWQ(pipeData->writeProcessWQ);
+        unblockAllInQueue(pipeData->writeProcessWQ);
         return result;
     } else if (pipeData->writerFdCount == 0)
-        unblockAllWQ(pipeData->readProcessWQ);
+        unblockAllInQueue(pipeData->readProcessWQ);
 
     return 0;
 }
@@ -124,7 +121,7 @@ int freePipe(Pipe pipe) {
         return 1;
 
     pipes[pipe] = NULL;
-    return free(pipeData->buffer) + freeWQ(pipeData->readProcessWQ) + freeWQ(pipeData->writeProcessWQ) + free(pipeData);
+    return free(pipeData->buffer) + freeQueue(pipeData->readProcessWQ) + freeQueue(pipeData->writeProcessWQ) + free(pipeData);
 }
 
 static ssize_t writeData(PipeData* pipe, const void* buf, size_t count) {
@@ -168,7 +165,7 @@ static ssize_t writeData(PipeData* pipe, const void* buf, size_t count) {
 
     pipe->remainingBytes += bytesToWrite;
 
-    unblockAllWQ(pipe->readProcessWQ);
+    unblockAllInQueue(pipe->readProcessWQ);
     return bytesToWrite;
 }
 
@@ -192,13 +189,13 @@ ssize_t readData(PipeData* pipe, void* buf, size_t count) {
     pipe->remainingBytes -= bytesToRead;
     pipe->readOffset = (pipe->readOffset + bytesToRead) % pipe->bufferSize;
 
-    unblockAllWQ(pipe->writeProcessWQ);
+    unblockAllInQueue(pipe->writeProcessWQ);
 
     if (pipe->buffer != NULL && pipe->writerFdCount == 0 && pipe->remainingBytes == 0 && pipe->name == NULL) {
         free(pipe->buffer);
         pipe->buffer = NULL;
         pipe->bufferSize = 0;
-        unblockAllWQ(pipe->readProcessWQ);
+        unblockAllInQueue(pipe->readProcessWQ);
     }
 
     return bytesToRead;
@@ -250,7 +247,7 @@ static ssize_t readHandler(Pid pid, int fd, void* resource, char* buf, size_t co
 
     ssize_t r;
     while ((r = readData(pipe, buf, count)) == 0 && (pipe->name != NULL || pipe->writerFdCount != 0)) {
-        addWQ(pipe->readProcessWQ, pid);
+        addInQueue(pipe->readProcessWQ, pid);
         block(pid);
         yield();
     }
@@ -267,7 +264,7 @@ static ssize_t writeHandler(Pid pid, int fd, void* resource, const char* buf, si
 
     ssize_t r;
     while ((r = writeData(pipe, buf, count)) == 0 && (pipe->name != NULL || pipe->readerFdCount != 0)) {
-        addWQ(pipe->writeProcessWQ, pid);
+        addInQueue(pipe->writeProcessWQ, pid);
         block(pid);
         yield();
     }
@@ -292,9 +289,9 @@ static int closeHandler(Pid pid, int fd, void* resource) {
             result += free(pipe->buffer);
             pipe->buffer = NULL;
             pipe->bufferSize = 0;
-            unblockAllWQ(pipe->writeProcessWQ);
+            unblockAllInQueue(pipe->writeProcessWQ);
         } else if (pipe->writerFdCount == 0)
-            unblockAllWQ(pipe->readProcessWQ);
+            unblockAllInQueue(pipe->readProcessWQ);
     }
 
     return result;
@@ -315,10 +312,10 @@ int listPipes(PipeInfo* array, int limit) {
             info->readerFdCount = pipe->readerFdCount;
             info->writerFdCount = pipe->writerFdCount;
 
-            int readPids = getpidsWQ(pipe->readProcessWQ, info->readBlockedPids, MAX_PID_ARRAY_LENGTH);
+            int readPids = listPidsInQueue(pipe->readProcessWQ, info->readBlockedPids, MAX_PID_ARRAY_LENGTH);
             info->readBlockedPids[readPids] = -1;
 
-            int writePids = getpidsWQ(pipe->writeProcessWQ, info->writeBlockedPids, MAX_PID_ARRAY_LENGTH);
+            int writePids = listPidsInQueue(pipe->writeProcessWQ, info->writeBlockedPids, MAX_PID_ARRAY_LENGTH);
             info->writeBlockedPids[writePids] = -1;
 
             if (pipe->name == NULL)
