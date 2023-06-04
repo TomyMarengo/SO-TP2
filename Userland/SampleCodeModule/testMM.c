@@ -1,6 +1,5 @@
-#include <test.h>
+#include <testUtil.h>
 #include <syscalls.h>
-#include <programs.h>
 #include <userlib.h>
 
 #define MAX_BLOCKS 128

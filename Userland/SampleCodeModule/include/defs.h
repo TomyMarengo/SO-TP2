@@ -5,45 +5,10 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-/* ---  Flags for access rights of the segments --- */
 
-/**
- * @brief Segment present in memory.
- */
-#define ACS_PRESENT 0x80
-
-/**
- * @brief Code Segment.
- */
-#define ACS_CSEG 0x18
-
-/**
- * @brief Data Segment.
- */
-#define ACS_DSEG 0x10
-
-/**
- * @brief Read Segment.
- */
-#define ACS_READ 0x02
-
-/**
- * @brief Write Segment.
- */
-#define ACS_WRITE 0x02
-
-#define ACS_IDT ACS_DSEG
-
-/**
- * @brief Interrupt GATE 32 bits.
- */
-#define ACS_INT_386 0x0E
-
-#define ACS_INT (ACS_PRESENT | ACS_INT_386)
-
-#define ACS_CODE  (ACS_PRESENT | ACS_CSEG | ACS_READ)
-#define ACS_DATA  (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
-#define ACS_STACK (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
+/* ------------------- */
+/* --- Kernel Defs --- */
+/* ------------------- */
 
 /* ---  File Descriptors --- */
 
@@ -87,21 +52,6 @@ typedef struct {
 /* --- Processes --- */
 
 /**
- * @brief Defines the maximum amount of Pids that can be returned by an embedded array in a query.
- */
-#define MAX_PID_ARRAY_LENGTH 8
-
-/**
- * @brief Maximum length for the name of a system resource, for example a process.
- */
-#define MAX_NAME_LENGTH 16
-
-/**
- * @brief Maximum amount of process living at the same time.
- */
-#define MAX_PROCESSES 8
-
-/**
  * @brief Represents a process id.
  */
 typedef int Pid;
@@ -132,31 +82,25 @@ typedef int8_t Priority;
 #define PRIORITY_IMPORTANT -5
 
 /**
+ * @brief Maximum length for the name of a system resource, for example a process.
+ */
+#define MAX_NAME_LENGTH 16
+
+/**
+ * @brief Defines the maximum amount of Pids that can be returned by an embedded array in a query.
+ */
+#define MAX_PID_ARRAY_LENGTH 8
+
+/**
+ * @brief Maximum amount of process living at the same time.
+ */
+#define MAX_PROCESSES 8
+
+
+/**
  * @brief Process start function.
  */
 typedef void (*ProcessStart)(int argc, char *argv[]);
-
-#define PROCESS_STACK_SIZE 4096
-
-/**
- * @brief Defines a function that will handle a file descriptor read operation.
- */
-typedef ssize_t (*ReadHandler)(Pid pid, int fd, void* resource, char* buf, size_t count);
-
-/**
- * @brief Defines a function that will handle a file descriptor write operation.
- */
-typedef ssize_t (*WriteHandler)(Pid pid, int fd, void* resource, const char* buf, size_t count);
-
-/**
- * @brief Defines a function that will handle a file descriptor close operation.
- */
-typedef int (*CloseHandler)(Pid pid, int fd, void* resource);
-
-/**
- * @brief Defines a function that will handle a file descriptor dup operation.
- */
-typedef int (*DupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
 /**
  * @brief Represents the various categories of supported process status.
@@ -210,20 +154,10 @@ typedef struct {
 
 /* --- Semaphores --- */
 
-#define MAX_SEMAPHORES 127
-#define SEM_OK 0
-#define SEM_FAIL -1
-#define SEM_NOT_EXISTS -2
-
 /**
  * @brief Represents a semaphore.
  */
 typedef int8_t Sem;
-
-/**
- * @brief Represents a lock.
- */
-typedef int8_t Lock;
 
 /**
  * @brief Represents information of a semaphore at particular time.
@@ -234,10 +168,23 @@ typedef struct {
     char name[MAX_NAME_LENGTH + 1];
     Pid processesWQ[MAX_PID_ARRAY_LENGTH + 1];
 } SemaphoreInfo;
+
+/* ------------------- */
+/* ---  User Defs  --- */
+/* ------------------- */
+
+#define MAX_COMMAND_LENGTH 128
+#define MAX_ARGS 8
+#define MAX_COMMANDS 8
+#define PIPE_CHAR '-'
+#define BACKGROUND_CHAR '&'
+
+typedef int (*CommandFunction)(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);
+
+typedef struct {
+    CommandFunction function;
+    const char* name;
+    const char* description;
+} Command;
+
 #endif
-
-/* --- Others --- */
-
-typedef struct NamerData* Namer;
-
-typedef struct WaitingQueueData* WaitingQueue;

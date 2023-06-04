@@ -1,6 +1,5 @@
-#include <test.h>
+#include <testUtil.h>
 #include <syscalls.h>
-#include <programs.h>
 #include <userlib.h>
 
 enum State { RUNNING_TEST, BLOCKED_TEST, KILLED_TEST };
@@ -15,7 +14,7 @@ testProcesses(int argc, char *argv[]) {
     uint8_t rq;
     uint8_t alive = 0;
     uint8_t action;
-    uint64_t max_processes = getMaxAvailableProcesses();
+    uint64_t max_processes = MAX_PROCESSES;
     char* argvAux[] = {0};
 
     p_rq p_rqs[max_processes];

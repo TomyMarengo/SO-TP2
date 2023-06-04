@@ -1,6 +1,5 @@
-#include <test.h>
+#include <testUtil.h>
 #include <syscalls.h>
-#include <programs.h>
 #include <userlib.h>
 
 #define MINOR_WAIT 1000000  // TODO: Change this value to prevent a process from flooding the screen

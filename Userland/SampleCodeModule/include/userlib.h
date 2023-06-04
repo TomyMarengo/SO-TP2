@@ -69,20 +69,4 @@ int getLine(char *buffer, int maxSize);
  */
 int fgetLine(int fd, char *buffer, int maxSize);
 
-/**
- * @brief Splits a string into tokens.
- *
- * @param str The string to tokenize. If this parameter is null, the function continues tokenizing the last string from the last
- * position.
- * @param delim The character used as a delimiter to separate tokens.
- *
- * @return A pointer to the next token, or null if there are no more tokens.
- */
-char *my_strtok(char *str, const char delim);
-
-/**
- * @brief Returns maximun available processes
- */
-uint8_t getMaxAvailableProcesses();
-
 #endif
