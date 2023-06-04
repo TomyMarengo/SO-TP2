@@ -1,5 +1,5 @@
-#include <stdint.h>
 #include <fonts.h>
+#include <stdint.h>
 
 static uint8_t pixel_chars[] = {
     //   0 $00 'char0'

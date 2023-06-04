@@ -1,9 +1,9 @@
 #include <programlib.h>
 
-void ps(int argc, char* argv[]){
+void
+ps(int argc, char *argv[]) {
 
-    if (argc != 0 )
-    {
+    if (argc != 0) {
         printf("Error, wrong usage of ps\n");
         return;
     }

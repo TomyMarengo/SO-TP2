@@ -1,13 +1,13 @@
-#include <stdint.h>
 #include <defs.h>
 #include <graphics.h>
-#include <keyboard.h>
-#include <scheduler.h>
-#include <process.h>
-#include <kernel.h>
 #include <interrupts.h>
+#include <kernel.h>
+#include <keyboard.h>
+#include <process.h>
+#include <scheduler.h>
+#include <stdint.h>
 
-static const char* exceptionMessages[] = {
+static const char *exceptionMessages[] = {
     /* 0x00 */ "Divide by Zero",
     /* 0x01 */ 0,
     /* 0x02 */ 0,
@@ -25,11 +25,11 @@ static const char* exceptionMessages[] = {
     /* 0x0E */ "Page Fault",
 };
 
-static const char* registerNames[18] = {
-    "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RIP", "RFLAGS"
-};
+static const char *registerNames[18] = {"RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ",
+                                        "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RIP", "RFLAGS"};
 
-void exceptionDispatcher(uint64_t exception, const uint64_t regdata[18]) {
+void
+exceptionDispatcher(uint64_t exception, const uint64_t regdata[18]) {
     Pid pid = getpid();
     print("PID ");
     printDec(pid);
@@ -50,7 +50,7 @@ void exceptionDispatcher(uint64_t exception, const uint64_t regdata[18]) {
         print("\nPress ENTER to restart the shell.");
         clearKeyboard();
         do {
-            hlt(); 
+            hlt();
             cli();
         } while (getChar() != '\n');
 

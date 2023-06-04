@@ -1,29 +1,29 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <sys/types.h>
-#include <memoryManager.h>
-#include <process.h>
-#include <pipe.h>
-#include <lib.h>
 #include <defs.h>
-#include <waitingQueue.h>
+#include <lib.h>
+#include <memoryManager.h>
 #include <namer.h>
-#include <string.h>
+#include <pipe.h>
+#include <process.h>
 #include <scheduler.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <sys/types.h>
+#include <waitingQueue.h>
 
-#define MAX_PIPES 64
-#define MIN_BUFFER_SIZE 512
-#define MAX_BUFFER_SIZE 4096
+#define MAX_PIPES                64
+#define MIN_BUFFER_SIZE          512
+#define MAX_BUFFER_SIZE          4096
 #define ROUND_BUFFER_SIZE(value) (((value) + 511) / 512 * 512)
 
 typedef struct {
-    void* buffer;
+    void *buffer;
     size_t bufferSize;
     size_t readOffset;
     size_t remainingBytes;
     unsigned int readerFdCount, writerFdCount;
     WaitingQueue readProcessWQ, writeProcessWQ;
-    const char* name;
+    const char *name;
 } PipeData;
 
 typedef struct {
@@ -31,20 +31,22 @@ typedef struct {
     int allowRead, allowWrite;
 } PipeFdMapping;
 
-static PipeData* pipes[MAX_PIPES];
+static PipeData *pipes[MAX_PIPES];
 static int nextCandidate = 0;
 static Namer namedPipes = NULL;
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count);
-static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void* resource);
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+static ssize_t fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count);
+static ssize_t fdWriteHandler(Pid pid, int fd, void *resource, const char *buf, size_t count);
+static int fdCloseHandler(Pid pid, int fd, void *resource);
+static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
 
-static PipeData* getPipeData(Pipe pipe) {
+static PipeData *
+getPipeData(Pipe pipe) {
     return (pipe < 0 || pipe >= MAX_PIPES) ? NULL : pipes[pipe];
 }
 
-Pipe createPipe() {
+Pipe
+createPipe() {
     int id = -1;
     for (int i = 0; i < MAX_PIPES; i++) {
         int idCandidate = (nextCandidate + i) % MAX_PIPES;
@@ -57,7 +59,7 @@ Pipe createPipe() {
     if (id == -1)
         return -1;
 
-    PipeData* pipeData;
+    PipeData *pipeData;
     WaitingQueue readQueue = NULL;
     WaitingQueue writeQueue = NULL;
     if ((pipeData = malloc(sizeof(PipeData))) == NULL || (readQueue = newWQ()) == NULL || (writeQueue = newWQ()) == NULL) {
@@ -76,16 +78,17 @@ Pipe createPipe() {
     return id;
 }
 
-Pipe openPipe(const char* name) {
+Pipe
+openPipe(const char *name) {
     if (namedPipes == NULL && (namedPipes = newNamer()) == NULL)
         return -1;
 
-    Pipe pipe = (Pipe)(size_t)getResource(namedPipes, name) - 1;
+    Pipe pipe = (Pipe) (size_t) getResource(namedPipes, name) - 1;
 
     if (pipe < 0) {
         if ((pipe = createPipe()) < 0)
             return -1;
-        if (addResource(namedPipes, (void*)(size_t)(pipe + 1), name, &pipes[pipe]->name) != 0) {
+        if (addResource(namedPipes, (void *) (size_t) (pipe + 1), name, &pipes[pipe]->name) != 0) {
             freePipe(pipe);
             return -1;
         }
@@ -94,13 +97,13 @@ Pipe openPipe(const char* name) {
     return pipe;
 }
 
-
-int unlinkPipe(const char* name) {
-    Pipe pipe = (Pipe)(size_t)deleteResource(namedPipes, name) - 1;
+int
+unlinkPipe(const char *name) {
+    Pipe pipe = (Pipe) (size_t) deleteResource(namedPipes, name) - 1;
     if (pipe < 0)
         return 1;
 
-    PipeData* pipeData = pipes[pipe];
+    PipeData *pipeData = pipes[pipe];
     pipeData->name = NULL;
 
     if (pipeData->readerFdCount == 0) {
@@ -119,8 +122,9 @@ int unlinkPipe(const char* name) {
     return 0;
 }
 
-int freePipe(Pipe pipe) {
-    PipeData* pipeData = getPipeData(pipe);
+int
+freePipe(Pipe pipe) {
+    PipeData *pipeData = getPipeData(pipe);
     if (pipeData == NULL)
         return 1;
 
@@ -128,13 +132,13 @@ int freePipe(Pipe pipe) {
     return free(pipeData->buffer) + freeWQ(pipeData->readProcessWQ) + freeWQ(pipeData->writeProcessWQ) + free(pipeData);
 }
 
-
-static ssize_t writeData(PipeData* pipe, const void* buf, size_t count) {
+static ssize_t
+writeData(PipeData *pipe, const void *buf, size_t count) {
     size_t requiredBufferSize = pipe->remainingBytes + count;
     if (pipe->bufferSize < requiredBufferSize && pipe->bufferSize < MAX_BUFFER_SIZE) {
         size_t newBufferSize = requiredBufferSize < MAX_BUFFER_SIZE ? requiredBufferSize : MAX_BUFFER_SIZE;
         newBufferSize = ROUND_BUFFER_SIZE(newBufferSize);
-        void* newBuf = malloc(newBufferSize);
+        void *newBuf = malloc(newBufferSize);
         if (newBuf != NULL) {
             size_t x = pipe->bufferSize - pipe->readOffset;
             if (x >= pipe->remainingBytes) {
@@ -174,8 +178,8 @@ static ssize_t writeData(PipeData* pipe, const void* buf, size_t count) {
     return bytesToWrite;
 }
 
-
-ssize_t readData(PipeData* pipe, void* buf, size_t count) {
+ssize_t
+readData(PipeData *pipe, void *buf, size_t count) {
     size_t bytesToRead = pipe->remainingBytes;
     if (bytesToRead > count)
         bytesToRead = count;
@@ -206,26 +210,30 @@ ssize_t readData(PipeData* pipe, void* buf, size_t count) {
     return bytesToRead;
 }
 
-ssize_t readPipe(Pipe pipe, void* buf, size_t count) {
-    PipeData* pipeData = getPipeData(pipe);
+ssize_t
+readPipe(Pipe pipe, void *buf, size_t count) {
+    PipeData *pipeData = getPipeData(pipe);
     return pipeData == NULL ? -1 : readData(pipeData, buf, count);
 }
 
-ssize_t writePipe(Pipe pipe, const void* buf, size_t count) {
-    PipeData* pipeData = getPipeData(pipe);
+ssize_t
+writePipe(Pipe pipe, const void *buf, size_t count) {
+    PipeData *pipeData = getPipeData(pipe);
     return pipeData == NULL ? -1 : writeData(pipeData, buf, count);
 }
 
-int addFdPipe(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite) {
-    PipeData* pipeData = getPipeData(pipe);
+int
+addFdPipe(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite) {
+    PipeData *pipeData = getPipeData(pipe);
     if (pipeData == NULL)
         return -1;
 
-    PipeFdMapping* mapping = malloc(sizeof(PipeFdMapping));
+    PipeFdMapping *mapping = malloc(sizeof(PipeFdMapping));
     if (mapping == NULL)
         return -1;
 
-    int r = addFdProcess(pid, fd, mapping, allowRead ? &fdReadHandler : NULL, allowWrite ? &fdWriteHandler : NULL, &fdCloseHandler, &fdDupHandler);
+    int r = addFdProcess(pid, fd, mapping, allowRead ? &fdReadHandler : NULL, allowWrite ? &fdWriteHandler : NULL,
+                         &fdCloseHandler, &fdDupHandler);
     if (r < 0) {
         free(mapping);
         return r;
@@ -243,9 +251,10 @@ int addFdPipe(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite) {
     return r;
 }
 
-static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t count) {
-    PipeFdMapping* mapping = (PipeFdMapping*)resource;
-    PipeData* pipe = pipes[mapping->pipe];
+static ssize_t
+fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count) {
+    PipeFdMapping *mapping = (PipeFdMapping *) resource;
+    PipeData *pipe = pipes[mapping->pipe];
 
     if (count == 0)
         return 0;
@@ -260,9 +269,10 @@ static ssize_t fdReadHandler(Pid pid, int fd, void* resource, char* buf, size_t 
     return r;
 }
 
-static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, size_t count) {
-    PipeFdMapping* mapping = (PipeFdMapping*)resource;
-    PipeData* pipe = pipes[mapping->pipe];
+static ssize_t
+fdWriteHandler(Pid pid, int fd, void *resource, const char *buf, size_t count) {
+    PipeFdMapping *mapping = (PipeFdMapping *) resource;
+    PipeData *pipe = pipes[mapping->pipe];
 
     if (count == 0)
         return 0;
@@ -277,9 +287,10 @@ static ssize_t fdWriteHandler(Pid pid, int fd, void* resource, const char* buf, 
     return r == 0 ? -1 : r;
 }
 
-static int fdCloseHandler(Pid pid, int fd, void* resource) {
-    PipeFdMapping* mapping = (PipeFdMapping*)resource;
-    PipeData* pipe = pipes[mapping->pipe];
+static int
+fdCloseHandler(Pid pid, int fd, void *resource) {
+    PipeFdMapping *mapping = (PipeFdMapping *) resource;
+    PipeData *pipe = pipes[mapping->pipe];
 
     pipe->readerFdCount -= mapping->allowRead;
     pipe->writerFdCount -= mapping->allowWrite;
@@ -302,17 +313,19 @@ static int fdCloseHandler(Pid pid, int fd, void* resource) {
     return result;
 }
 
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource) {
-    PipeFdMapping* mapping = (PipeFdMapping*)resource;
+static int
+fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource) {
+    PipeFdMapping *mapping = (PipeFdMapping *) resource;
     return addFdPipe(pidTo, fdTo, mapping->pipe, mapping->allowRead, mapping->allowWrite);
 }
 
-int listPipes(PipeInfo* array, int maxPipes) {
+int
+listPipes(PipeInfo *array, int maxPipes) {
     int pipeCounter = 0;
     for (int i = 0; i < MAX_PIPES && pipeCounter < maxPipes; i++) {
-        PipeData* pipe = pipes[i];
+        PipeData *pipe = pipes[i];
         if (pipe != NULL) {
-            PipeInfo* info = &array[pipeCounter++];
+            PipeInfo *info = &array[pipeCounter++];
             info->remainingBytes = pipe->remainingBytes;
             info->readerFdCount = pipe->readerFdCount;
             info->writerFdCount = pipe->writerFdCount;

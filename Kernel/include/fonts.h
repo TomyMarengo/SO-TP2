@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-#define CHAR_WIDTH 8
+#define CHAR_WIDTH  8
 #define CHAR_HEIGHT 16
 
-uint8_t* getCharMapping(uint8_t c);
+uint8_t *getCharMapping(uint8_t c);
 
 #define ________ 0x00
 #define _______X 0x01

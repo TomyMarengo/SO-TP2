@@ -1,8 +1,8 @@
-#include <sem.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <namer.h>
 #include <scheduler.h>
+#include <sem.h>
 #include <string.h>
 #include <waitingQueue.h>
 
@@ -10,21 +10,22 @@ typedef struct {
     uint8_t value;
     Lock lock;
     uint8_t linkedProcesses;
-    const char* name;
-    WaitingQueue processesWQ; 
+    const char *name;
+    WaitingQueue processesWQ;
 } Semaphore;
 
-static Semaphore* semaphores[MAX_SEMAPHORES] = {NULL};
+static Semaphore *semaphores[MAX_SEMAPHORES] = {NULL};
 static Namer namer;
 static Lock generalLock;
 
-extern int spinLock(Lock* lock);
-extern void unlock(Lock* lock);
+extern int spinLock(Lock *lock);
+extern void unlock(Lock *lock);
 static int freeSem(Sem sem);
 static int isValidSemId(Sem sem);
 static int adquireSem(Sem sem);
 
-static int freeSem(Sem sem) {
+static int
+freeSem(Sem sem) {
     int value = deleteResource(namer, semaphores[sem]->name) == NULL;
     value += freeWQ(semaphores[sem]->processesWQ);
     value += free(semaphores[sem]);
@@ -34,11 +35,13 @@ static int freeSem(Sem sem) {
     return SEM_OK;
 }
 
-static int isValidSemId(Sem sem) {
+static int
+isValidSemId(Sem sem) {
     return sem > 0 && sem < MAX_SEMAPHORES && semaphores[sem] != NULL;
 }
 
-static int adquireSem(Sem sem) {
+static int
+adquireSem(Sem sem) {
     spinLock(&generalLock);
 
     if (!isValidSemId(sem)) {
@@ -51,7 +54,8 @@ static int adquireSem(Sem sem) {
     return SEM_OK;
 }
 
-int initializeSem() {
+int
+initializeSem() {
     namer = newNamer();
     generalLock = 0;
     if (namer != 0)
@@ -59,11 +63,12 @@ int initializeSem() {
     return 0;
 }
 
-Sem openSem(const char* name, uint8_t initialValue) {
+Sem
+openSem(const char *name, uint8_t initialValue) {
 
     spinLock(&generalLock);
 
-    Sem sem = (Sem)(int64_t)getResource(namer, name);
+    Sem sem = (Sem) (int64_t) getResource(namer, name);
 
     if (sem != 0) {
         semaphores[sem]->linkedProcesses += 1;
@@ -96,7 +101,7 @@ Sem openSem(const char* name, uint8_t initialValue) {
         return SEM_FAIL;
     }
 
-    if (addResource(namer, (void*)(int64_t)i, name, &(semaphores[i]->name)) != 0) {
+    if (addResource(namer, (void *) (int64_t) i, name, &(semaphores[i]->name)) != 0) {
         freeWQ(semaphores[i]->processesWQ);
         free(semaphores[i]);
         semaphores[i] = NULL;
@@ -105,10 +110,11 @@ Sem openSem(const char* name, uint8_t initialValue) {
     }
 
     unlock(&generalLock);
-    return (Sem)i;
+    return (Sem) i;
 }
 
-int closeSem(Sem sem) {
+int
+closeSem(Sem sem) {
 
     if (adquireSem(sem) == SEM_NOT_EXISTS) {
         return SEM_NOT_EXISTS;
@@ -123,7 +129,8 @@ int closeSem(Sem sem) {
     return SEM_OK;
 }
 
-int post(Sem sem) {
+int
+post(Sem sem) {
 
     if (adquireSem(sem) == SEM_NOT_EXISTS) {
         return SEM_NOT_EXISTS;
@@ -136,7 +143,8 @@ int post(Sem sem) {
     return SEM_OK;
 }
 
-int wait(Sem sem) {
+int
+wait(Sem sem) {
 
     if (adquireSem(sem) == SEM_NOT_EXISTS) {
         return SEM_NOT_EXISTS;
@@ -157,14 +165,15 @@ int wait(Sem sem) {
     return SEM_OK;
 }
 
-int listSemaphores(SemaphoreInfo* array, int maxSemaphores) {
+int
+listSemaphores(SemaphoreInfo *array, int maxSemaphores) {
     spinLock(&generalLock);
     int semCounter = 0;
 
     for (int i = 1; i < MAX_SEMAPHORES && semCounter < maxSemaphores; ++i) {
-        Semaphore* sem = semaphores[i];
+        Semaphore *sem = semaphores[i];
         if (sem != NULL) {
-            SemaphoreInfo* info = &array[semCounter++];
+            SemaphoreInfo *info = &array[semCounter++];
             info->value = sem->value;
             info->linkedProcesses = sem->linkedProcesses;
 

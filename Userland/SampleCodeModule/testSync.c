@@ -1,24 +1,26 @@
+#include <defs.h>
 #include <stdint.h>
+#include <syscalls.h>
 #include <test.h>
 #include <testUtil.h>
-#include <defs.h>
-#include <syscalls.h>
 #include <userstdlib.h>
 
 /* Constants */
-#define SEM_ID "sem"
+#define SEM_ID               "sem"
 #define TOTAL_PAIR_PROCESSES 2
 
-int64_t global; // shared memory
+int64_t global;  // shared memory
 
-void slowInc(int64_t* p, int64_t inc) {
+void
+slowInc(int64_t *p, int64_t inc) {
     uint64_t aux = *p;
-    sys_yield(); // This makes the race condition highly probable
+    sys_yield();  // This makes the race condition highly probable
     aux += inc;
     *p = aux;
 }
 
-void myProcessInc(int argc, char* argv[]) {
+void
+myProcessInc(int argc, char *argv[]) {
     uint64_t n;
     int8_t inc;
     int8_t use_sem;
@@ -57,7 +59,8 @@ void myProcessInc(int argc, char* argv[]) {
         sys_closeSem(sem);
 }
 
-void testSync(int argc, char* argv[]) {
+void
+testSync(int argc, char *argv[]) {
     uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
     if (argc != 2)
@@ -69,23 +72,19 @@ void testSync(int argc, char* argv[]) {
     char *argvDec[] = {argv[0], "-1", argv[1], NULL};
     char *argvInc[] = {argv[0], "1", argv[1], NULL};
 
-    ProcessCreateInfo decInfo = {
-        .name = "processDec",
-        .isForeground = 1,
-        .priority = PRIORITY_DEFAULT,
-        .start = (ProcessStart)myProcessInc,
-        .argc = 3,
-        .argv = (const char* const*)argvDec
-    };
+    ProcessCreateInfo decInfo = {.name = "processDec",
+                                 .isForeground = 1,
+                                 .priority = PRIORITY_DEFAULT,
+                                 .start = (ProcessStart) myProcessInc,
+                                 .argc = 3,
+                                 .argv = (const char *const *) argvDec};
 
-    ProcessCreateInfo incInfo = {
-        .name = "processInc",
-        .isForeground = 1,
-        .priority = PRIORITY_DEFAULT,
-        .start = (ProcessStart)myProcessInc,
-        .argc = 3,
-        .argv = (const char* const*)argvInc
-    };
+    ProcessCreateInfo incInfo = {.name = "processInc",
+                                 .isForeground = 1,
+                                 .priority = PRIORITY_DEFAULT,
+                                 .start = (ProcessStart) myProcessInc,
+                                 .argc = 3,
+                                 .argv = (const char *const *) argvInc};
 
     global = 0;
 

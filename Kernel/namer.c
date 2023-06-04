@@ -1,24 +1,25 @@
 #include <stddef.h>
 
-#include <namer.h>
 #include <defs.h>
 #include <memoryManager.h>
+#include <namer.h>
 #include <string.h>
 
 #define BUFFER_CHUNK_SIZE 8
 
 typedef struct {
-    char* name;
-    void* resource;
+    char *name;
+    void *resource;
 } NamedResource;
 
 struct NamerData {
-    NamedResource* resources;
+    NamedResource *resources;
     int count;
     int bufferSize;
 };
 
-static int isNameValid(const char* name) {
+static int
+isNameValid(const char *name) {
     if (name == NULL)
         return 0;
 
@@ -37,7 +38,8 @@ static int isNameValid(const char* name) {
     return 0;
 }
 
-Namer newNamer() {
+Namer
+newNamer() {
     Namer namer = malloc(sizeof(struct NamerData));
 
     if (namer != NULL) {
@@ -49,18 +51,22 @@ Namer newNamer() {
     return namer;
 }
 
-int freeNamer(Namer namer) {
+int
+freeNamer(Namer namer) {
     return free(namer->resources) + free(namer);
 }
 
-static int findResourceIndex(Namer namer, const char* name, int* c) {
+static int
+findResourceIndex(Namer namer, const char *name, int *c) {
     int i;
     *c = 1;
-    for (i = 0; i < namer->count && (*c = strcmp(name, namer->resources[i].name)) < 0; i++);
+    for (i = 0; i < namer->count && (*c = strcmp(name, namer->resources[i].name)) < 0; i++)
+        ;
     return i;
 }
 
-int addResource(Namer namer, void* resource, const char* name, const char** nameData) {
+int
+addResource(Namer namer, void *resource, const char *name, const char **nameData) {
     if (!isNameValid(name))
         return 1;
 
@@ -71,14 +77,14 @@ int addResource(Namer namer, void* resource, const char* name, const char** name
     if (c == 0)
         return 1;
 
-    char* nameCopy = malloc(strlen(name) + 1);
+    char *nameCopy = malloc(strlen(name) + 1);
     if (nameCopy == NULL)
         return -1;
 
     // Expand the buffer if necessary.
     if (namer->count == namer->bufferSize) {
         size_t newBufferSize = namer->bufferSize + BUFFER_CHUNK_SIZE;
-        NamedResource* newBuffer = realloc(namer->resources, newBufferSize * sizeof(NamedResource));
+        NamedResource *newBuffer = realloc(namer->resources, newBufferSize * sizeof(NamedResource));
         if (newBuffer == NULL) {
             free(nameCopy);
             return -1;
@@ -100,10 +106,11 @@ int addResource(Namer namer, void* resource, const char* name, const char** name
     return 0;
 }
 
-void* deleteResource(Namer namer, const char* name) {
+void *
+deleteResource(Namer namer, const char *name) {
     int c;
     int index = findResourceIndex(namer, name, &c);
-    void* resource = namer->resources[index].resource;
+    void *resource = namer->resources[index].resource;
 
     if (c != 0)
         return NULL;
@@ -117,7 +124,8 @@ void* deleteResource(Namer namer, const char* name) {
     return resource;
 }
 
-void* getResource(Namer namer, const char* name) {
+void *
+getResource(Namer namer, const char *name) {
     int c;
     int index = findResourceIndex(namer, name, &c);
     return c == 0 ? namer->resources[index].resource : NULL;

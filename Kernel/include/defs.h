@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
 
 /* ---  Flags for access rights of the segments --- */
 
@@ -14,31 +15,31 @@
 /**
  * @brief Code Segment.
  */
-#define ACS_CSEG    0x18
+#define ACS_CSEG 0x18
 
 /**
  * @brief Data Segment.
  */
-#define ACS_DSEG    0x10
+#define ACS_DSEG 0x10
 
 /**
  * @brief Read Segment.
  */
-#define ACS_READ    0x02
+#define ACS_READ 0x02
 
 /**
  * @brief Write Segment.
  */
-#define ACS_WRITE   0x02
+#define ACS_WRITE 0x02
 
-#define ACS_IDT     ACS_DSEG
+#define ACS_IDT ACS_DSEG
 
 /**
  * @brief Interrupt GATE 32 bits.
  */
 #define ACS_INT_386 0x0E
 
-#define ACS_INT     (ACS_PRESENT | ACS_INT_386)
+#define ACS_INT (ACS_PRESENT | ACS_INT_386)
 
 #define ACS_CODE  (ACS_PRESENT | ACS_CSEG | ACS_READ)
 #define ACS_DATA  (ACS_PRESENT | ACS_DSEG | ACS_WRITE)
@@ -49,7 +50,7 @@
 /**
  * @brief Standard Input File Descriptor.
  */
-#define STDIN  0
+#define STDIN 0
 
 /**
  * @brief Standard Output File Descriptor.
@@ -64,12 +65,9 @@
 /**
  * @brief Keyboard Input File Descriptor.
  */
-#define KBDIN  3
+#define KBDIN 3
 
-/* --- Kernel types --- */
-/* -------------------- */
-
-/* --- Memory Management */
+/* --- Memory Management --- */
 
 /**
  * @brief Represents the various categories of supported memory managers.
@@ -136,7 +134,29 @@ typedef int8_t Priority;
 /**
  * @brief Process start function.
  */
-typedef void (*ProcessStart)(int argc, char* argv[]);
+typedef void (*ProcessStart)(int argc, char *argv[]);
+
+#define PROCESS_STACK_SIZE 4096
+
+/**
+ * @brief Defines a function that will handle a file descriptor read operation.
+ */
+typedef ssize_t (*ReadHandler)(Pid pid, int fd, void* resource, char* buf, size_t count);
+
+/**
+ * @brief Defines a function that will handle a file descriptor write operation.
+ */
+typedef ssize_t (*WriteHandler)(Pid pid, int fd, void* resource, const char* buf, size_t count);
+
+/**
+ * @brief Defines a function that will handle a file descriptor close operation.
+ */
+typedef int (*CloseHandler)(Pid pid, int fd, void* resource);
+
+/**
+ * @brief Defines a function that will handle a file descriptor dup operation.
+ */
+typedef int (*DupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
 
 /**
  * @brief Represents the various categories of supported process status.
@@ -149,27 +169,32 @@ typedef enum { READY = 0, RUNNING = 1, BLOCKED = 2, KILLED = 3 } ProcessStatus;
 typedef struct {
     Pid pid;
     char name[MAX_NAME_LENGTH + 1];
-    void* stackEnd;
-    void* stackStart;
+    void *stackEnd;
+    void *stackStart;
     int isForeground;
     Priority priority;
     ProcessStatus status;
-    void* currentRSP;
+    void *currentRSP;
 } ProcessInfo;
 
 /**
  * @brief Represents the information needed for a create process request.
  */
 typedef struct {
-    const char* name;
+    const char *name;
     ProcessStart start;
     int isForeground;
     Priority priority;
     int argc;
-    const char* const* argv;
+    const char *const *argv;
 } ProcessCreateInfo;
 
 /* --- Pipes --- */
+
+/**
+ * @brief Represents a pipe.
+ */
+typedef int Pipe;
 
 /**
  * @brief Represents information of a process at particular time.
@@ -185,18 +210,34 @@ typedef struct {
 
 /* --- Semaphores --- */
 
+#define MAX_SEMAPHORES 127
+#define SEM_OK 0
+#define SEM_FAIL -1
+#define SEM_NOT_EXISTS -2
+
 /**
  * @brief Represents a semaphore.
  */
 typedef int8_t Sem;
 
 /**
+ * @brief Represents a lock.
+ */
+typedef int8_t Lock;
+
+/**
  * @brief Represents information of a semaphore at particular time.
  */
 typedef struct {
     int value;
-    int linkedProcesses; 
-    char name[MAX_NAME_LENGTH+1];
-    Pid processesWQ[MAX_PID_ARRAY_LENGTH+1];
+    int linkedProcesses;
+    char name[MAX_NAME_LENGTH + 1];
+    Pid processesWQ[MAX_PID_ARRAY_LENGTH + 1];
 } SemaphoreInfo;
 #endif
+
+/* --- Others --- */
+
+typedef struct NamerData* Namer;
+
+typedef struct WaitingQueueData* WaitingQueue;

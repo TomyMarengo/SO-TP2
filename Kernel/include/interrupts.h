@@ -1,7 +1,7 @@
 #ifndef _INTERRUPTS_H_
 #define _INTERRUPTS_H_
 
-#include <stdint.h>
+#include <defs.h>
 
 /**
  * @brief Clear Interrupt Flag.
@@ -32,7 +32,6 @@ void picMasterMask(uint8_t mask);
  * @brief Pic Slave Mask.
  */
 void picSlaveMask(uint8_t mask);
-
 
 /* --- Interrupt and Exception Handlers --- */
 

@@ -1,5 +1,5 @@
 #include <defs.h>
-#include <userstdlib.h>
 #include <syscalls.h>
+#include <userstdlib.h>
 
-void ps(int argc, char* argv[]);
+void ps(int argc, char *argv[]);

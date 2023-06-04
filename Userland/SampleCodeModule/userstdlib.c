@@ -8,14 +8,16 @@
 
 #define IS_DIGIT(x) (((x) >= '0' && (x) <= '9'))
 
-void sleep(unsigned long millis) {
+void
+sleep(unsigned long millis) {
     unsigned long start = sys_millis();
     do {
         sys_yield();
     } while (sys_millis() - start < millis);
 }
 
-int getChar() {
+int
+getChar() {
     char c;
     if (sys_read(STDIN, &c, 1) <= 0) {
         return -1;
@@ -23,11 +25,13 @@ int getChar() {
     return c;
 }
 
-int putChar(char c) {
+int
+putChar(char c) {
     return sys_write(STDOUT, &c, 1);
 }
 
-int fgetChar(int fd) {
+int
+fgetChar(int fd) {
     char c;
     if (sys_read(fd, &c, 1) <= 0) {
         return -1;
@@ -35,19 +39,23 @@ int fgetChar(int fd) {
     return c;
 }
 
-int fputChar(int fd, char c) {
+int
+fputChar(int fd, char c) {
     return sys_write(fd, &c, 1);
 }
 
-int print(const char* str) {
+int
+print(const char *str) {
     return sys_write(STDOUT, str, strlen(str));
 }
 
-int fprint(int fd, const char* str) {
+int
+fprint(int fd, const char *str) {
     return sys_write(fd, str, strlen(str));
 }
 
-int atoi(const char* str) {
+int
+atoi(const char *str) {
     int answer = 0;
     int neg = 1;
 
@@ -66,11 +74,13 @@ int atoi(const char* str) {
     return neg * answer;
 }
 
-int getLine(char* buffer, int maxSize) {
+int
+getLine(char *buffer, int maxSize) {
     return fgetLine(STDIN, buffer, maxSize);
 }
 
-int fgetLine(int fd, char* buffer, int maxSize) {
+int
+fgetLine(int fd, char *buffer, int maxSize) {
     int count = 0;
     char c;
 
@@ -90,9 +100,10 @@ int fgetLine(int fd, char* buffer, int maxSize) {
     return count;
 }
 
-char* convert(unsigned int num, unsigned int base, char* buff) {
-    const char* representation = "0123456789ABCDEF";
-    char* ptr;
+char *
+convert(unsigned int num, unsigned int base, char *buff) {
+    const char *representation = "0123456789ABCDEF";
+    char *ptr;
 
     ptr = &buff[sizeof(buff) - 1];
     *ptr = '\0';
@@ -106,15 +117,16 @@ char* convert(unsigned int num, unsigned int base, char* buff) {
 }
 
 // Retrieved from: https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c
-void fprintf(int fd, const char* frmt, ...) {
-    va_list arg;         
-    va_start(arg, frmt); 
+void
+fprintf(int fd, const char *frmt, ...) {
+    va_list arg;
+    va_start(arg, frmt);
 
-    const char* aux;
+    const char *aux;
 
     int i;
     unsigned int u;
-    char* s;
+    char *s;
     char tmpBuff[33];
 
     for (aux = frmt; *aux != '\0'; aux++) {
@@ -129,43 +141,43 @@ void fprintf(int fd, const char* frmt, ...) {
         aux++;
 
         switch (*aux) {
-            case 'c':
-                i = va_arg(arg, int); 
-                fputChar(fd, i);
-                break;
+        case 'c':
+            i = va_arg(arg, int);
+            fputChar(fd, i);
+            break;
 
-            case 'd':
-                i = va_arg(arg, int); 
-                if (i < 0) {
-                    i = -i;
-                    fputChar(fd, '-');
-                }
-                fprint(fd, convert(i, 10, tmpBuff));
-                break;
+        case 'd':
+            i = va_arg(arg, int);
+            if (i < 0) {
+                i = -i;
+                fputChar(fd, '-');
+            }
+            fprint(fd, convert(i, 10, tmpBuff));
+            break;
 
-            case 'o':
-                u = va_arg(arg, unsigned int);
-                fprint(fd, convert(u, 8, tmpBuff));
-                break;
+        case 'o':
+            u = va_arg(arg, unsigned int);
+            fprint(fd, convert(u, 8, tmpBuff));
+            break;
 
-            case 's':
-                s = va_arg(arg, char*);
-                fprint(fd, s == NULL ? "(NULL)" : s);
-                break;
+        case 's':
+            s = va_arg(arg, char *);
+            fprint(fd, s == NULL ? "(NULL)" : s);
+            break;
 
-            case 'u':
-                u = va_arg(arg, unsigned int);
-                fprint(fd, convert(u, 10, tmpBuff));
-                break;
+        case 'u':
+            u = va_arg(arg, unsigned int);
+            fprint(fd, convert(u, 10, tmpBuff));
+            break;
 
-            case 'x':
-                u = va_arg(arg, unsigned int); 
-                fprint(fd, convert(u, 16, tmpBuff));
-                break;
+        case 'x':
+            u = va_arg(arg, unsigned int);
+            fprint(fd, convert(u, 16, tmpBuff));
+            break;
 
-            case '%':
-                fputChar(fd, '%');
-                break;
+        case '%':
+            fputChar(fd, '%');
+            break;
         }
     }
 
@@ -173,15 +185,16 @@ void fprintf(int fd, const char* frmt, ...) {
 }
 
 // Retrieved from: https://stackoverflow.com/questions/1735236/how-to-write-my-own-printf-in-c
-void printf(const char* frmt, ...) {
-    va_list arg;        
-    va_start(arg, frmt); 
+void
+printf(const char *frmt, ...) {
+    va_list arg;
+    va_start(arg, frmt);
 
-    const char* aux;
+    const char *aux;
 
     int i;
     unsigned int u;
-    char* s;
+    char *s;
     char tmpBuff[33];
 
     for (aux = frmt; *aux != '\0'; aux++) {
@@ -196,62 +209,62 @@ void printf(const char* frmt, ...) {
         aux++;
 
         switch (*aux) {
-            case 'c':
-                i = va_arg(arg, int); 
-                fputChar(STDOUT, i);
-                break;
+        case 'c':
+            i = va_arg(arg, int);
+            fputChar(STDOUT, i);
+            break;
 
-            case 'd':
-                i = va_arg(arg, int); 
-                if (i < 0) {
-                    i = -i;
-                    fputChar(STDOUT, '-');
-                }
-                fprint(STDOUT, convert(i, 10, tmpBuff));
-                break;
+        case 'd':
+            i = va_arg(arg, int);
+            if (i < 0) {
+                i = -i;
+                fputChar(STDOUT, '-');
+            }
+            fprint(STDOUT, convert(i, 10, tmpBuff));
+            break;
 
-            case 'o':
-                u = va_arg(arg, unsigned int);
-                fprint(STDOUT, convert(u, 8, tmpBuff));
-                break;
+        case 'o':
+            u = va_arg(arg, unsigned int);
+            fprint(STDOUT, convert(u, 8, tmpBuff));
+            break;
 
-            case 's':
-                s = va_arg(arg, char*); 
-                fprint(STDOUT, s == NULL ? "(NULL)" : s);
-                break;
+        case 's':
+            s = va_arg(arg, char *);
+            fprint(STDOUT, s == NULL ? "(NULL)" : s);
+            break;
 
-            case 'u':
-                u = va_arg(arg, unsigned int); 
-                fprint(STDOUT, convert(u, 10, tmpBuff));
-                break;
+        case 'u':
+            u = va_arg(arg, unsigned int);
+            fprint(STDOUT, convert(u, 10, tmpBuff));
+            break;
 
-            case 'x':
-                u = va_arg(arg, unsigned int); 
-                fprint(STDOUT, convert(u, 16, tmpBuff));
-                break;
+        case 'x':
+            u = va_arg(arg, unsigned int);
+            fprint(STDOUT, convert(u, 16, tmpBuff));
+            break;
 
-            case '%':
-                fputChar(STDOUT, '%');
-                break;
+        case '%':
+            fputChar(STDOUT, '%');
+            break;
         }
     }
-    
+
     va_end(arg);
 }
 
-
 // thanks chatGPT
-char* my_strtok(char* str, const char delim) {
-    static char* buffer;
-    static char* token;
+char *
+my_strtok(char *str, const char delim) {
+    static char *buffer;
+    static char *token;
     static int pos;
     static int len;
 
     // If a new string is passed, reset all the static variables
-    if(str != NULL) {
+    if (str != NULL) {
         buffer = str;
         len = 0;
-        while(buffer[len] != '\0') {
+        while (buffer[len] != '\0') {
             len++;
         }
         pos = 0;
@@ -259,7 +272,7 @@ char* my_strtok(char* str, const char delim) {
     }
 
     // If we reached the end of the string, return NULL
-    if(pos >= len) {
+    if (pos >= len) {
         return NULL;
     }
 
@@ -267,11 +280,11 @@ char* my_strtok(char* str, const char delim) {
     token = buffer + pos;
 
     // Find the next occurrence of the delimiter
-    while(pos < len) {
-        if(buffer[pos] == delim) {
+    while (pos < len) {
+        if (buffer[pos] == delim) {
             // Replace the delimiter with a null-terminating character
             buffer[pos] = '\0';
-            pos++; // Move to the next character
+            pos++;  // Move to the next character
             return token;
         }
         pos++;

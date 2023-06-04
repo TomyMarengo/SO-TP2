@@ -1,5 +1,6 @@
 #include <shell.h>
 
-void main(int argc, char* argv[]) {
+void
+main(int argc, char *argv[]) {
     runShell();
 }
