@@ -61,8 +61,11 @@ void testSync(int argc, char* argv[]) {
     uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
     if (argc != 2)
+    {
+        printf("Wrong usage...\nTest sync takes two arguments:\nn -Integer amount of times to Inc/Dec\nuse_sem -0 for False integer for True \n");
         return;
-
+    }
+        
     char *argvDec[] = {argv[0], "-1", argv[1], NULL};
     char *argvInc[] = {argv[0], "1", argv[1], NULL};
 
@@ -88,8 +91,8 @@ void testSync(int argc, char* argv[]) {
 
     uint64_t i;
     for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-        pids[i] = sys_createProcess(-1, -1, -1, &decInfo);
-        pids[i + TOTAL_PAIR_PROCESSES] = sys_createProcess(-1, -1, -1, &incInfo);
+        pids[i] = sys_createProcess(-1, STDOUT, STDERR, &decInfo);
+        pids[i + TOTAL_PAIR_PROCESSES] = sys_createProcess(-1, STDOUT, STDERR, &incInfo);
     }
 
     for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {

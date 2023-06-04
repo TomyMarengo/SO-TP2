@@ -12,5 +12,6 @@ void bussyWait(uint64_t n);
 void endlessLoop(int argc, char* argv[]);
 void endlessLoopPrint(int argc, char* argv[]);
 void* memsetTest(void* destiny, int32_t c, size_t length);
+uint8_t getMaxAvailableProcesses();
 
 #endif

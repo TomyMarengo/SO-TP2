@@ -5,7 +5,7 @@
 #include <userstdlib.h>
 
 #define MINOR_WAIT 1000000  // TODO: Change this value to prevent a process from flooding the screen
-#define WAIT       10000000  // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
+#define WAIT       100000000  // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
 
 #define TOTAL_PROCESSES 3
 #define LOWEST          PRIORITY_MIN  // TODO: Change as required
@@ -30,7 +30,7 @@ testPrio() {
     };
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
-        pids[i] = sys_createProcess(-1, -1, -1, &endlessInfo);
+        pids[i] = sys_createProcess(-1, STDOUT, STDERR, &endlessInfo);
 
     bussyWait(WAIT);
     printf("\nCHANGING PRIORITIES...\n");

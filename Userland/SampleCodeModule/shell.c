@@ -44,22 +44,6 @@ void runShell() {
 
 void commandDispatcher(char * command)
 {
-    int index = -1;
-    for (int i = 0 ; i < MAX_PROCESSES-1 ; i++)
-    {
-        if ( runningPrograms[i] == 0 )
-        {
-            index = i;
-            break;
-        }
-    }
-
-    if ( index == -1 )
-    {
-        printf("No se pueden inicializar mas programas...\nPrueba terminar alguno\n");
-        return;
-    }
-
     char *commandName = my_strtok(command, ' ');
     char *args[MAX_PARAMS+1];
 
@@ -83,7 +67,12 @@ void commandDispatcher(char * command)
         if (strcmp(availableCommands[i].name, commandName) == 0)
         {
             ProcessCreateInfo processInfo = {availableCommands[i].name, (ProcessStart)availableCommands[i].functionAddress, 1, PRIORITY_DEFAULT, argc, args};
-            runningPrograms[index] = sys_createProcess(KBDIN,STDOUT,STDERR,&processInfo);
+            int ret = sys_createProcess(KBDIN,STDOUT,STDERR,&processInfo);
+            if ( ret == -1 )
+            {
+                printf("Error al crear el proceso!\nPuede deberse al limite de procesos concurrentes, prueba eliminar alguno...\n");
+                return 1;
+            }
             return 0;
         }
     }

@@ -8,16 +8,16 @@ void ps(int argc, char* argv[]){
         return;
     }
     
-    ProcessInfo processes[MAX_PROCESSES];
+    ProcessInfo processes[MAX_PROCESSES] = {};
     
     sys_listProcesses(processes,MAX_PROCESSES);
 
     for (int i = 0 ; i < MAX_PROCESSES ; i++)
     {
-        if ( processes[i].pid == 0 && i != 0 )
-            return;
-        printf("PID: %d   name: %s   status: %d\n", processes[i].pid, processes[i].name, processes[i].status);
+        if (processes[i].stackEnd == 0)
+            continue;
+        printf("PID: %d   name: %s status: %d\n", processes[i].pid, processes[i].name, processes[i].status);
     }
 
-    sys_kill(sys_getpid());
+    // sys_kill(sys_getpid());
 }

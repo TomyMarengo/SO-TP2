@@ -3,6 +3,26 @@
 #include <syscalls.h>
 #include <userstdlib.h>
 
+// SysCalls
+
+uint8_t getMaxAvailableProcesses()
+{
+    int count = 0 ;
+
+    ProcessInfo processes[MAX_PROCESSES] = {};
+    
+    sys_listProcesses(processes,MAX_PROCESSES);
+
+    for (int i = 0 ; i < MAX_PROCESSES ; i++)
+    {
+        if (processes[i].stackEnd == 0)
+            continue;
+        count++;
+    }
+
+    return MAX_PROCESSES - count;
+}
+
 // Random
 static uint32_t m_z = 362436069;
 static uint32_t m_w = 521288629;
