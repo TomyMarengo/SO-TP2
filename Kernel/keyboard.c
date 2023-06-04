@@ -58,7 +58,7 @@ interruptHandlerKeyboard() {
         {
             ctrl = 1;
         }
-        else if (code == 0x1D)
+        else if (code == 0x9D)
         {
             ctrl = 0;
         }
