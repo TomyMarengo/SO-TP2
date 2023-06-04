@@ -13,8 +13,8 @@ static char* phyloName[MAX_PHYLOSOPHERS] = {"Aristoteles", "Socrates", "Platon",
 static Phylo phylos[MAX_PHYLOSOPHERS];
 static int phyloCount = 0;
 
-static Sem chopsticks[MAX_CHOPSTICKS];
-static Sem semPickChopsticks;
+static Sem forks[MAX_FORKS];
+static Sem semPickForks;
 
 static void phylosopher(int argc, char* argv[]);
 static void waitForKey();
@@ -29,7 +29,7 @@ static void addChopstick();
 static void removeChopstick();
 
 static void terminatePhylos();
-static void terminateChopsticks();
+static void terminateForks();
 
 static void printState();
 
@@ -64,13 +64,13 @@ void startPhylo(int argc, char* argv[]) {
 
     for (int i = 0; i < MAX_PHYLOSOPHERS; ++i) {
         phylos[i].phyloPid = -1;
-        chopsticks[i] = -1;
+        forks[i] = -1;
     }
 
     for (int i = 0; i < MIN_PHYLOSOPHERS; ++i)
         addPhylo();
 
-    if ((semPickChopsticks = sys_openSem("semPickSticks", 1)) == -1) {
+    if ((semPickForks = sys_openSem("semPickSticks", 1)) == -1) {
         fprint(STDERR, "sys_openSem failed\n");
         terminatePhylos();
         sys_exit();
@@ -86,7 +86,7 @@ static void waitForKey() {
 
         if (c < 0 || c == QUIT) {
             terminatePhylos();
-            terminateChopsticks();
+            terminateForks();
             sys_exit();
         } else if (c == ADD) {
 
@@ -136,17 +136,17 @@ static void phyloEat(int phyloIdx) {
     printState();
 
     int otherSemIdx = (phyloIdx + 1) % phyloCount;
-    sys_wait(semPickChopsticks);
-    sys_wait(chopsticks[phyloIdx]);    // Left chopstick
-    sys_wait(chopsticks[otherSemIdx]); // Right chopstick
-    sys_post(semPickChopsticks);
+    sys_wait(semPickForks);
+    sys_wait(forks[phyloIdx]);    // Left chopstick
+    sys_wait(forks[otherSemIdx]); // Right chopstick
+    sys_post(semPickForks);
 
     printState();
     phylos[phyloIdx].phyloState = EATING;
     sleep(getEatingTime());
 
-    sys_post(chopsticks[otherSemIdx]); // Right chopstick
-    sys_post(chopsticks[phyloIdx]);    // Left chopstick
+    sys_post(forks[otherSemIdx]); // Right chopstick
+    sys_post(forks[phyloIdx]);    // Left chopstick
 }
 
 static void phyloSleep(int phyloIdx) {
@@ -186,18 +186,18 @@ static void removePhylo() {
 }
 
 static void addChopstick() {
-    if (chopsticks[phyloCount] >= 0)
+    if (forks[phyloCount] >= 0)
         return;
 
     char aux[] = {phyloCount + '0', 0};
-    char semName[strlen(CHOPSTICKS_SEM_NAME) + 2];
-    strcpy(semName, CHOPSTICKS_SEM_NAME);
+    char semName[strlen(FORKS_SEM_NAME) + 2];
+    strcpy(semName, FORKS_SEM_NAME);
     strcat(semName, aux);
-    chopsticks[phyloCount] = sys_openSem(semName, 1);
-    if (chopsticks[phyloCount] < 0) {
+    forks[phyloCount] = sys_openSem(semName, 1);
+    if (forks[phyloCount] < 0) {
         fprint(STDERR, "sys_openSem failed\n");
         terminatePhylos();
-        terminateChopsticks();
+        terminateForks();
         sys_exit();
     }
 }
@@ -211,11 +211,11 @@ static void terminatePhylos() {
         sys_kill(phylos[i].phyloPid);
 }
 
-static void terminateChopsticks() {
-    for (int i = 0; i < MAX_CHOPSTICKS && chopsticks[i] >= -1; ++i)
-        sys_close(chopsticks[i]);
+static void terminateForks() {
+    for (int i = 0; i < MAX_FORKS && forks[i] >= -1; ++i)
+        sys_close(forks[i]);
 
-    sys_close(semPickChopsticks);
+    sys_close(semPickForks);
 }
 
 static void printState() {

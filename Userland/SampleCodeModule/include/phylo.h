@@ -9,10 +9,10 @@
 
 #define MAX_PHYLOSOPHERS 10
 #define MIN_PHYLOSOPHERS 5
-#define MAX_CHOPSTICKS MAX_PHYLOSOPHERS
-#define MIN_CHOPSTICKS MIN_PHYLOSOPHERS
+#define MAX_FORKS MAX_PHYLOSOPHERS
+#define MIN_FORKS MIN_PHYLOSOPHERS
 
-#define CHOPSTICKS_SEM_NAME "semChops"
+#define FORKS_SEM_NAME "semFORKS"
 
 #define ADD 'a'
 #define REMOVE 'r'
@@ -25,11 +25,11 @@
 #define SLEEPING_TIME_MIN 2000
 #define SLEEPING_TIME_MAX 5000
 
-typedef enum {EATING = 0, WAITINGTOEAT, SLEEPING, THINKING, DEAD} TPhyloState;
+typedef enum {EATING = 0, WAITINGTOEAT, SLEEPING, THINKING, DEAD} PhyloState;
 
 typedef struct phylo {
     char* phyloName;
-    TPhyloState phyloState;
+    PhyloState phyloState;
     Pid phyloPid;
 } Phylo;
 
