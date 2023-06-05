@@ -70,25 +70,25 @@ testSync(int argc, char *argv[]) {
     char *argvInc[] = {argv[0], "1", argv[1], NULL};
 
     ProcessCreateInfo decInfo = {.name = "processDec",
-                                 .isForeground = 1,
-                                 .priority = PRIORITY_DEFAULT,
-                                 .start = (ProcessStart) myProcessInc,
-                                 .argc = 3,
-                                 .argv = (const char *const *) argvDec};
+        .isForeground = 1,
+        .priority = PRIORITY_DEFAULT,
+        .start = (ProcessStart) myProcessInc,
+        .argc = 3,
+        .argv = (const char *const *) argvDec};
 
     ProcessCreateInfo incInfo = {.name = "processInc",
-                                 .isForeground = 1,
-                                 .priority = PRIORITY_DEFAULT,
-                                 .start = (ProcessStart) myProcessInc,
-                                 .argc = 3,
-                                 .argv = (const char *const *) argvInc};
+        .isForeground = 1,
+        .priority = PRIORITY_DEFAULT,
+        .start = (ProcessStart) myProcessInc,
+        .argc = 3,
+        .argv = (const char *const *) argvInc};
 
     global = 0;
 
     uint64_t i;
     for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-        pids[i] = sys_createProcess(-1, STDOUT, STDERR, &decInfo);
-        pids[i + TOTAL_PAIR_PROCESSES] = sys_createProcess(-1, STDOUT, STDERR, &incInfo);
+        pids[i] = sys_createProcess(-1, -1, -1, &decInfo);
+        pids[i + TOTAL_PAIR_PROCESSES] = sys_createProcess(-1, -1, -1, &incInfo);
     }
 
     for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {

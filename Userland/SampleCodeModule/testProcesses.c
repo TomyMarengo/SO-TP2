@@ -22,11 +22,11 @@ testProcesses(int argc, char *argv[]) {
     while (1) {
 
         ProcessCreateInfo loopInfo = {.name = "loopProcess",
-                                      .isForeground = 0,
-                                      .priority = PRIORITY_DEFAULT,
-                                      .start = (ProcessStart) endlessLoop,
-                                      .argc = 0,
-                                      .argv = (const char *const *) argvAux};
+            .isForeground = 0,
+            .priority = PRIORITY_DEFAULT,
+            .start = (ProcessStart) endlessLoop,
+            .argc = 0,
+            .argv = (const char *const *) argvAux};
 
         // Create max_processes processes
         for (rq = 0; rq < max_processes; rq++) {

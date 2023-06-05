@@ -12,21 +12,21 @@
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-void
-testPrio() {
+void testPrio(int argc, char* argv[]) {
     int64_t pids[TOTAL_PROCESSES];
-    char *argv[] = {0};
+    char *argvAux[] = {0};
     uint64_t i;
 
-    ProcessCreateInfo endlessInfo = {.name = "endless",
-                                     .isForeground = 1,
-                                     .priority = PRIORITY_DEFAULT,
-                                     .start = (ProcessStart) endlessLoopPrint,
-                                     .argc = 0,
-                                     .argv = (const char *const *) argv};
+    ProcessCreateInfo endlessInfo = {
+        .name = "endless",
+        .isForeground = 1,
+        .priority = PRIORITY_DEFAULT,
+        .start = (ProcessStart) endlessLoopPrint,
+        .argc = 0,
+        .argv = (const char *const *) argvAux};
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
-        pids[i] = sys_createProcess(-1, STDOUT, STDERR, &endlessInfo);
+        pids[i] = sys_createProcess(-1, -1, -1, &endlessInfo);
 
     bussyWait(WAIT);
     printf("\nCHANGING PRIORITIES...\n");

@@ -8,7 +8,6 @@ static void interpretCommand(char* buffer);
 static int parseCommandArgs(char* str, int i, int* argc, char* argv[]);
 
 void runShell() {
-	sys_clearScreen();
     print("Welcome to the Shell! Type 'HELP' to see a list of available commands.\n");
 
     char command[MAX_COMMAND_LENGTH + 1];

@@ -4,7 +4,7 @@
 #include <defs.h>
 
 void testMM(int argc, char *argv[]);
-void testPrio();
+void testPrio(int argc, char* argv[]);
 void testProcesses(int argc, char *argv[]);
 void testSync(int argc, char *argv[]);
 void bussyWait(uint64_t n);

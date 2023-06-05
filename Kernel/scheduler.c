@@ -74,7 +74,7 @@ initializeScheduler() {
     currentRunningPID = PSEUDOPID_KERNEL;
     currentQuantum = 0;
 }
-
+    
 int
 onProcessCreated(Pid pid, ProcessStart start, Priority priority, void *currentRSP, int argc, const char *const argv[]) {
     if (priority < PRIORITY_MAX || priority > PRIORITY_MIN)

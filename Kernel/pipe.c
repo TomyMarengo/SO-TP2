@@ -233,7 +233,7 @@ addFdPipe(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite) {
         return -1;
 
     int r = addFdProcess(pid, fd, mapping, allowRead ? &fdReadHandler : NULL, allowWrite ? &fdWriteHandler : NULL,
-                         &fdCloseHandler, &fdDupHandler);
+        &fdCloseHandler, &fdDupHandler);
     if (r < 0) {
         free(mapping);
         return r;
