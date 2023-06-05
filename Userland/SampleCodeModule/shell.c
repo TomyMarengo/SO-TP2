@@ -77,7 +77,6 @@ static void interpretCommand(char* str) {
         i = parseCommandArgs(str, i, &commandArgcs[commandCount], commandArgvs[commandCount]);
         commandCount++;
     }
-
     int isForeground = (str[i] != BACKGROUND_CHAR);
 
     if (!isForeground) {
@@ -102,7 +101,7 @@ static void interpretCommand(char* str) {
         }
     }
 
-    Pid pidToWait[commandCount];
+    Pid pidToWait[commandCount]; 
     for (int i = 0; i < commandCount; i++) {
         int fdStdin = (i == 0 ? STDIN : pipes[(i - 1) * 2]);
         int fdStdout = (i == (commandCount - 1) ? STDOUT : pipes[i * 2 + 1]);

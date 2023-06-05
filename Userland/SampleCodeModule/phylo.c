@@ -3,12 +3,15 @@
 #include <string.h>
 #include <syscalls.h>
 #include <userlib.h>
+#include <testUtil.h>
 
-static char *phyloName[MAX_PHYLOSOPHERS] = {"Aristoteles", "Socrates", "Platon",        "Pitagoras", "Kant",
-                                            "Heraclito",   "Sofocles", "TalesDeMileto", "Diogenes",  "Democrito"};
+static char *phyloName[MAX_PHYLOSOPHERS] = {"Aristoteles", "Platon", "Pitagoras",
+                                            "Heraclito", "TalesDeMileto", "Diogenes"};
 
 static Phylo phylos[MAX_PHYLOSOPHERS];
 static int phyloCount = 0;
+
+static int maxPhilosophers = 0;
 
 static Sem forks[MAX_FORKS];
 static Sem semPickForks;
@@ -55,12 +58,18 @@ getSleepingTime() {
 
 void
 startPhylo(int argc, char *argv[]) {
+
+    maxPhilosophers = getMaxAvailableProcesses();
+    if ( maxPhilosophers < MIN_PHYLOSOPHERS  ){
+        fprintf(STDERR,"Error...\nPhylo requires a minimum of 6 available processes.\nUse ps to make sure your environment meets the criteria.\n");
+        return;
+    }
     nextRand = (unsigned int) sys_millis();
     printf("A minimum quantity of philosophers are being created, please stand by\n");
     printf("Press %c to quit, %c to add a new philosopher, and %c to remove a philosopher.\n", QUIT, ADD, REMOVE);
     phyloSleep(500);
 
-    for (int i = 0; i < MAX_PHYLOSOPHERS; ++i) {
+    for (int i = 0; i < maxPhilosophers; ++i) {
         phylos[i].phyloPid = -1;
         forks[i] = -1;
     }
@@ -87,8 +96,8 @@ waitForKey() {
             terminateForks();
             sys_exit();
         } else if (c == ADD) {
-            if (phyloCount >= MAX_PHYLOSOPHERS)
-                printf("\nCan't have more than %d philosophers\n", MAX_PHYLOSOPHERS);
+            if (phyloCount >= maxPhilosophers)
+                printf("\nCan't have more than %d philosophers\n", maxPhilosophers);
             else
                 addPhylo();
         } else if (c == REMOVE) {
@@ -174,8 +183,8 @@ addPhylo() {
     char *auxi[] = {idxToString};
     ProcessCreateInfo phyloContexInfo = {
         .name = phyloName[phyloCount],
-        .start = (void *) philosopher,
-        .isForeground = 0,
+        .start = (ProcessStart) philosopher,
+        .isForeground = 1,
         .priority = PHYLO_PRIORITY,
         .argc = 1,
         .argv = (const char *const *) auxi,
@@ -184,7 +193,6 @@ addPhylo() {
     phylos[phyloCount].phyloPid = sys_createProcess(-1, -1, -1, &phyloContexInfo);
     phyloCount++;
 
-    sys_post(semPickForks);  // Signal semaphore to allow a philosopher to start eating
 }
 
 static void
