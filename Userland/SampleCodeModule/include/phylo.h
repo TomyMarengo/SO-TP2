@@ -12,7 +12,7 @@
 #define MAX_FORKS MAX_PHYLOSOPHERS
 #define MIN_FORKS MIN_PHYLOSOPHERS
 
-#define FORKS_SEM_NAME "semFORKS"
+#define FORKS "forkSem"
 
 #define ADD 'a'
 #define REMOVE 'r'
@@ -25,7 +25,7 @@
 #define SLEEPING_TIME_MIN 2000
 #define SLEEPING_TIME_MAX 5000
 
-typedef enum {EATING = 0, WAITINGTOEAT, SLEEPING, THINKING, DEAD} PhyloState;
+typedef enum {EATING = 0, WAITING, SLEEPING, THINKING, DEAD} PhyloState;
 
 typedef struct phylo {
     char* phyloName;
@@ -33,9 +33,7 @@ typedef struct phylo {
     Pid phyloPid;
 } Phylo;
 
-/**
- * @brief Initialize phylos program 
- */
+
 void startPhylo(int argc, char * argv[]);
 
 #endif
