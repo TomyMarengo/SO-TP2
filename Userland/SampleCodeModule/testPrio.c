@@ -28,13 +28,13 @@ void testPrio(int argc, char* argv[]) {
     for (i = 0; i < TOTAL_PROCESSES; i++)
         pids[i] = sys_createProcess(-1, -1, -1, &endlessInfo);
 
-    bussyWait(WAIT);
+    sleep(1000);
     printf("\nCHANGING PRIORITIES...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
         sys_priority(pids[i], prio[i]);
 
-    bussyWait(WAIT);
+    sleep(1000);
     printf("\nBLOCKING...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
@@ -50,7 +50,7 @@ void testPrio(int argc, char* argv[]) {
     for (i = 0; i < TOTAL_PROCESSES; i++)
         sys_unblock(pids[i]);
 
-    bussyWait(WAIT);
+    sleep(1000);
     printf("\nKILLING...\n");
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
