@@ -41,5 +41,6 @@ void clearKeyboard();
  * @returns The keyboard file descriptor, -1 in error cases.
  */
 int addFdKeyboard(Pid pid, int fd);
+int getCtrlState();
 
 #endif

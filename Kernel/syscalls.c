@@ -16,7 +16,12 @@ typedef size_t (*SyscallHandlerFunction)(size_t rdi, size_t rsi, size_t rdx, siz
 
 static ssize_t
 readHandler(int fd, char *buffer, size_t count) {
-    return handleReadFdProcess(getpid(), fd, buffer, count);
+    ssize_t c = handleReadFdProcess(getpid(), fd, buffer, count);
+    if (buffer[0] && getCtrlState()==1)
+    {
+        return -1;
+    }
+    return c;
 }
 
 static ssize_t

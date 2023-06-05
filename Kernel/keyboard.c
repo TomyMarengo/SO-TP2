@@ -42,6 +42,11 @@ static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *reso
 static WaitingQueue processReadWQ;
 static int ctrl = 0;
 
+int getCtrlState()
+{
+    return ctrl;
+}
+
 void
 initializeKeyboard() {
     processReadWQ = newWQ();
@@ -160,3 +165,4 @@ static int
 fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource) {
     return addFdKeyboard(pidTo, fdTo);
 }
+
