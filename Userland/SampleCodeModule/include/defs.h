@@ -176,7 +176,7 @@ typedef struct {
 #define MAX_COMMAND_LENGTH 128
 #define MAX_ARGS 8
 #define MAX_COMMANDS 8
-#define PIPE_CHAR '|'
+#define PIPE_CHAR '-'
 #define BACKGROUND_CHAR '&'
 
 typedef int (*CommandFunction)(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);

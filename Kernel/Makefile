@@ -2,7 +2,11 @@ include Makefile.inc
 
 KERNEL=kernel.bin
 
-MM=USE_BUDDY
+ifdef MM
+    MM_FLAG := -D$(MM)
+else
+    MM_FLAG :=
+endif
 
 SOURCES=$(wildcard *.c)
 SOURCES_INTERRUPTIONS=$(wildcard interruptions/*.c)
@@ -32,7 +36,7 @@ obj/%.asm.o : asm/%.asm
 	$(ASM) $(ASMFLAGS) $< -o $@
 
 obj/%.o: %.c
-	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -c $< -o $@ -D $(MM)
+	$(GCC) $(GCCFLAGS) -I./include -I./interruptions -c $< -o $@ $(MM_FLAG)
 
 $(LOADEROBJECT):
 	mkdir -p obj
