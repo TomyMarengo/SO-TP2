@@ -26,7 +26,7 @@ static Command validCommands[] = {
     {runTestMM, "testmm", "Runs a test for memory manager."},
     {runTestSync, "testsync", "Runs a synchronization test with multiple processes with semaphores."},
     {runTestProcesses, "testprocesses", "Runs a test for processes."},
-    {runTestPrio, "testprio", "priority a test on process priorities."},
+    {runTestPrio, "testprio", "Runs a test on process priorities."},
     {runPhylo, "phylo", "Runs the philosopher, add one philosopher with \"a\", remove one philosopher with \"r\"."},
 };
 
@@ -87,8 +87,7 @@ int runMem(int stdin, int stdout, int stderr, int isForeground, int argc, const 
     fprintf(stdout, "Memory Manager Type: %s\n", memoryState.type == LIST ? "LIST" : memoryState.type == BUDDY ? "BUDDY" : "UNKNOWN");
     fprintf(stdout, "Total memory: %u.\n", memoryState.total);
     fprintf(stdout, "Used: %u (%u%%).\n", memoryState.used, (memoryState.used * 100 / memoryState.total));
-    fprintf(stdout, "Available: %u.\n", memoryState.total - memoryState.used);
-    fprintf(stdout, "Total chunks: %u", memoryState.chunks);
+    fprintf(stdout, "Available: %u.", memoryState.total - memoryState.used);
 
     return 1;
 }
@@ -96,13 +95,12 @@ int runMem(int stdin, int stdout, int stderr, int isForeground, int argc, const 
 int runPs(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
     ProcessInfo array[MAX_PROCESSES];
     int count = sys_listProcesses(array, MAX_PROCESSES);
-    fprintf(stdout, "Listing %d process%s:", count, count == 1 ? "" : "es");
 
     for (int i = 0; i < count; i++) {
         const char* status = array[i].status == READY ? "READY" : array[i].status == RUNNING ? "RUNNING" : array[i].status == BLOCKED ? "BLOCKED" : array[i].status == KILLED ? "KILLED" : "UNKNOWN";
 
-        fprintf(stdout, "\npid=%d, name=%s, stackEnd=%x, stackStart=%x, isForeground=%d, priority=%d, status=%s, rsp=%x",
-               array[i].pid, array[i].name, array[i].stackEnd, array[i].stackStart, array[i].isForeground, array[i].priority, status, array[i].currentRSP);
+        fprintf(stdout, "PID=%d \t Name=%s \t Status=%s \t Priority=%d \t Foreground=%d \t stackEnd=%x \t stackStart=%x \t RSP=%x\n",
+               array[i].pid, array[i].name, status, array[i].priority, array[i].isForeground, array[i].stackEnd, array[i].stackStart, array[i].currentRSP);
     }
 
     return 1;
@@ -110,7 +108,7 @@ int runPs(int stdin, int stdout, int stderr, int isForeground, int argc, const c
 
 int runKill(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
     if (argc != 1) {
-        fprint(stderr, "Usage: kill [PID]");
+        fprint(stderr, "kill: usage: kill [PID]");
         return 0;
     }
 
@@ -122,18 +120,26 @@ int runKill(int stdin, int stdout, int stderr, int isForeground, int argc, const
     }
 
     int result = sys_kill(pidToKill);
+
+    ProcessInfo array[MAX_PROCESSES];
+    int count = sys_listProcesses(array, MAX_PROCESSES);
+
     if (result == 0) {
-        fprintf(stdout, "Sucessfully killed process with PID %d.", pidToKill);
-        return 1;
+        for (int i = 0; i < count; i++) {
+            if(array[i].pid == pidToKill){
+                fprintf(stdout, "Stoped %s.", array[i].name);
+                return 1;
+            }
+        }
     }
 
-    fprintf(stderr, "Failed to kill process with PID %d. Error code: %d.", pidToKill, result);
+    fprintf(stderr, "kill: (%d) - Error: %d.", pidToKill, result);
     return 0;
 }
 
 int runPriority(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
     if (argc != 2) {
-        fprint(stderr, "Usage: nice [PID] [PRIORITY]. Priority must be a number between -10 and 10.");
+        fprint(stderr, "nice: usage: nice [PID] [PRIORITY]. Priority must be a number between -10 and 10.");
         return 0;
     }
 
@@ -147,9 +153,9 @@ int runPriority(int stdin, int stdout, int stderr, int isForeground, int argc, c
 
     int result = sys_priority(pidToChange, newPriority);
     if (result == 0) {
-        fprintf(stdout, "Process %d has priority %d.\n", pidToChange, newPriority);
+        fprintf(stdout, "Changed priority of %d to %d.\n", pidToChange, newPriority);
     } else {
-        fprintf(stdout, "Failed modifying process' %d priority\n Error: %d.\n", pidToChange, result);
+        fprintf(stdout, "nice: (%d) - Error: %d.", pidToChange, result);
     }
 
     return 1;
@@ -157,48 +163,48 @@ int runPriority(int stdin, int stdout, int stderr, int isForeground, int argc, c
 
 int runBlock(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
     if (argc != 1) {
-        fprint(stderr, "Usage: block [PID]");
+        fprint(stderr, "block: usage: block [PID]");
         return 0;
     }
 
     Pid pidToBlock = atoi(argv[0]);
 
     if (pidToBlock == sys_getpid()) {
-        fprintf(stderr, "You cannot block this shell!");
+        fprintf(stderr, "Impossible to block shell.");
         return 0;
     }
 
     int result = sys_block(pidToBlock);
     if (result == 0) {
-        fprintf(stdout, "Successfully blocked process with PID %d.", pidToBlock);
+        fprintf(stdout, "Blocked process with PID %d.", pidToBlock);
         return 1;
     }
     
-    fprintf(stderr, "Failed to block process with PID %d. Error code: %d.", pidToBlock, result);
+    fprintf(stderr, "block: (%d) - Error: %d.", pidToBlock, result);
     return 0;
 }
 
 int runUnblock(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
     if (argc != 1) {
-        fprint(STDERR, "Usage: unblock [PID]");
+        fprint(STDERR, "unblock: usage: unblock [PID]");
         return 0;
     }
 
     Pid pidToUnblock = atoi(argv[0]);
 
     if (pidToUnblock == 0) {
-        fprint(stderr, "Cannot unblock the shell.");
+        fprint(stderr, "Impossible to unblock shell.");
         return 0;
     }
 
     int result = sys_unblock(pidToUnblock);
 
     if (result == 0) {
-        fprintf(stdout, "Successfully unblocked process with PID %d.", pidToUnblock);
+        fprintf(stdout, "Unblocked process with PID %d.", pidToUnblock);
         return 1;
     }
     
-    fprintf(stdout, "Failed to unblock process with PID %d. Error code: %d.", pidToUnblock, result);
+    fprintf(stdout, "unblock: (%d) - Error: %d.", pidToUnblock, result);
     return 0;
 }
 

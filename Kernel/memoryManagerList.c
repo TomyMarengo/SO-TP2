@@ -174,7 +174,6 @@ getStateMemory(MemoryState *memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = LIST;
-    memoryState->chunks = memoryChunks;
     return 0;
 }
 

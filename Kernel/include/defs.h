@@ -81,7 +81,6 @@ typedef struct {
     size_t total;
     size_t used;
     MemoryManagerType type;
-    unsigned int chunks;
 } MemoryState;
 
 /* --- Processes --- */

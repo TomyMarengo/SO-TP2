@@ -1,5 +1,6 @@
 #ifdef USE_BUDDY
 
+#include <defs.h>
 #include <lib.h>
 #include <memoryManager.h>
 
@@ -213,7 +214,6 @@ getStateMemory(MemoryState *memoryState) {
     memoryState->total = totalMemory;
     memoryState->used = usedMemory;
     memoryState->type = BUDDY;
-    memoryState->chunks = memoryChunks;
     return 0;
 }
 

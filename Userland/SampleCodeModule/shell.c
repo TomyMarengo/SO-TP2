@@ -109,7 +109,7 @@ static void interpretCommand(char* str) {
 
         int success = commands[i]->function(fdStdin, fdStdout, STDERR, isForeground, commandArgcs[i], (const char* const*)commandArgvs[i], &pidToWait[i]);
         if (!success) {
-            fprintf(STDERR, "Error while executing command %s. Aborting commands.", commands[i]->name);
+            fprintf(STDERR, "\nError while executing command %s.", commands[i]->name);
             for (int j = 0; j < i; j++)
                 if (pidToWait[j] >= 0)
                     sys_kill(pidToWait[j]);

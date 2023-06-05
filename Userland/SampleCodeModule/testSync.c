@@ -38,7 +38,7 @@ myProcessInc(int argc, char *argv[]) {
 
     if (use_sem) {
         if ((sem = sys_openSem(SEM_ID, 1)) < 0) {
-            printf("test_sync: ERROR opening semaphore\n");
+            printf("testSync: ERROR opening semaphore\n");
             return;
         }
     }
@@ -62,7 +62,7 @@ testSync(int argc, char *argv[]) {
 
     if (argc != 2)
     {
-        printf("Wrong usage...\nTest sync takes two arguments:\nn -Integer amount of times to Inc/Dec\nuse_sem -0 for False integer for True \n");
+        printf("testsync: usage: testsync [n] [use_sem]\n");
         return;
     }
         
