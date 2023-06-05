@@ -76,3 +76,7 @@ dkms.conf
 .vscode/settings.json
 .vscode/launch.json
 .vscode/tasks.json
+
+#pvs
+.config
+check/
