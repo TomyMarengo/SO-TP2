@@ -39,7 +39,7 @@ void wcProcess(int argc, char* argv[]) {
 void filterProcess(int argc, char* argv[]) {
     int c;
     while ((c = getChar()) >= 0) {
-        if (IS_VOWEL(c))
+        if (!IS_VOWEL(c))
             putChar(c);
     }
 }

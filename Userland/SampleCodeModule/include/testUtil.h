@@ -10,5 +10,6 @@ void testSync(int argc, char *argv[]);
 void bussyWait(uint64_t n);
 void endlessLoop(int argc, char *argv[]);
 void endlessLoopPrint(int argc, char *argv[]);
+uint8_t getMaxAvailableProcesses();
 
 #endif

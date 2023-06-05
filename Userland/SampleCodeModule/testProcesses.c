@@ -14,7 +14,7 @@ testProcesses(int argc, char *argv[]) {
     uint8_t rq;
     uint8_t alive = 0;
     uint8_t action;
-    uint64_t max_processes = MAX_PROCESSES;
+    uint64_t max_processes = getMaxAvailableProcesses();
     char* argvAux[] = {0};
 
     p_rq p_rqs[max_processes];

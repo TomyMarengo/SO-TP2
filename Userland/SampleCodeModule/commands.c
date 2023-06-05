@@ -94,8 +94,8 @@ int runMem(int stdin, int stdout, int stderr, int isForeground, int argc, const 
 }
 
 int runPs(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess) {
-    ProcessInfo array[16];
-    int count = sys_listProcesses(array, 16);
+    ProcessInfo array[MAX_PROCESSES];
+    int count = sys_listProcesses(array, MAX_PROCESSES);
     fprintf(stdout, "Listing %d process%s:", count, count == 1 ? "" : "es");
 
     for (int i = 0; i < count; i++) {

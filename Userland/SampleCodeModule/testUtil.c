@@ -24,3 +24,11 @@ endlessLoopPrint(int argc, char *argv[]) {
         bussyWait(9000000);
     }
 }
+
+uint8_t
+getMaxAvailableProcesses(){
+    ProcessInfo array[MAX_PROCESSES];
+    int count = sys_listProcesses(array, MAX_PROCESSES);
+
+    return MAX_PROCESSES - count;
+}
