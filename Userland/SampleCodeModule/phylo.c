@@ -241,9 +241,5 @@ static void
 printState() {
     print("\n");
     for (int i = 0; i < phyloCount; ++i)
-        printf("%c ", phylos[i].phyloState == WAITING    ? '.'
-                      : phylos[i].phyloState == EATING   ? 'E'
-                      : phylos[i].phyloState == SLEEPING ? '.'
-                      : phylos[i].phyloState == THINKING ? '.'
-                                                         : '.');
+        printf("%c ", phylos[i].phyloState == EATING   ? 'E' : '.');
 }
