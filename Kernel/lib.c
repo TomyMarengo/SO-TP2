@@ -1,9 +1,9 @@
+#include <defs.h>
 #include <lib.h>
-#include <stdint.h>
 
 void *
-memset(void *destination, int32_t c, size_t length) {
-    uint8_t chr = (uint8_t) c;
+memset(void *destination, int32_t value, size_t length) {
+    uint8_t chr = (uint8_t) value;
     char *dst = (char *) destination;
 
     while (length--)
@@ -61,6 +61,6 @@ uintToBase(uint64_t value, char *buffer, uint32_t base) {
 }
 
 uint8_t
-bcdToDec(uint8_t time) {
-    return (time >> 4) * 10 + (time & 0x0F);
+bcdToDec(uint8_t value) {
+    return (value >> 4) * 10 + (value & 0x0F);
 }

@@ -1,13 +1,11 @@
+#include <defs.h>
+#include <process.h>
 #include <graphics.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <pipe.h>
-#include <process.h>
 #include <scheduler.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
-#include <sys/types.h>
 #include <waitingQueue.h>
 
 #define FD_TABLE_CHUNK_SIZE  8
@@ -17,10 +15,10 @@
 
 typedef struct {
     void *resource;
-    FdReadHandler readHandler;
-    FdWriteHandler writeHandler;
-    FdCloseHandler closeHandler;
-    FdDupHandler dupHandler;
+    ReadHandler readHandler;
+    WriteHandler writeHandler;
+    CloseHandler closeHandler;
+    DupHandler dupHandler;
 } FDEntry;
 
 typedef struct {
@@ -51,7 +49,7 @@ getProcessByPid(Pid pid, Process **outProcess) {
 }
 
 static int
-isNameValid(const char *name) {
+isValidName(const char *name) {
     if (name == NULL)
         return 0;
 
@@ -74,7 +72,7 @@ createProcess(const ProcessCreateInfo *createInfo) {
     for (; pid < MAX_PROCESSES && processes[pid].stackEnd != NULL; pid++)
         ;
 
-    if (createInfo->argc < 0 || pid == MAX_PROCESSES || !isNameValid(createInfo->name))
+    if (createInfo->argc < 0 || pid == MAX_PROCESSES || !isValidName(createInfo->name))
         return -1;
 
     void *stackEnd = NULL;
@@ -139,8 +137,8 @@ kill(Pid pid) {
     onProcessKilled(pid);
 
     if (process->pidWQ != NULL) {
-        unblockAllWQ(process->pidWQ);
-        freeWQ(process->pidWQ);
+        unblockAllInQueue(process->pidWQ);
+        freeQueue(process->pidWQ);
     }
 
     for (int i = 0; i < process->argc; i++) {
@@ -181,14 +179,14 @@ handleMalloc(Pid pid, size_t size) {
 }
 
 int
-handleFree(Pid pid, void *ptr) {
+handleFree(Pid pid, void *memorySegment) {
     Process *process;
     if (!getProcessByPid(pid, &process))
         return 1;
 
     int index = -1;
     for (int i = 0; i < process->memoryCount; i++) {
-        if (process->memory[i] == ptr) {
+        if (process->memory[i] == memorySegment) {
             index = i;
             break;
         }
@@ -201,18 +199,18 @@ handleFree(Pid pid, void *ptr) {
     for (int i = index; i < process->memoryCount; i++)
         process->memory[i] = process->memory[i + 1];
 
-    return free(ptr);
+    return free(memorySegment);
 }
 
 void *
-handleRealloc(Pid pid, void *ptr, size_t size) {
+handleRealloc(Pid pid, void *memorySegment, size_t size) {
     Process *process;
     if (!getProcessByPid(pid, &process))
         return NULL;
 
     int index = -1;
     for (int i = 0; i < process->memoryCount; i++) {
-        if (process->memory[i] == ptr) {
+        if (process->memory[i] == memorySegment) {
             index = i;
             break;
         }
@@ -221,7 +219,7 @@ handleRealloc(Pid pid, void *ptr, size_t size) {
     if (index == -1)
         return NULL;
 
-    void *newPtr = realloc(ptr, size);
+    void *newPtr = realloc(memorySegment, size);
 
     if (newPtr != NULL)
         process->memory[index] = newPtr;
@@ -259,8 +257,7 @@ toBackground(Pid pid) {
 }
 
 int
-addFdProcess(Pid pid, int fd, void *resource, FdReadHandler readHandler, FdWriteHandler writeHandler, FdCloseHandler closeHandler,
-             FdDupHandler dupHandler) {
+addFd(Pid pid, int fd, void *resource, ReadHandler readHandler, WriteHandler writeHandler, CloseHandler closeHandler, DupHandler dupHandler) {
     Process *process;
     if (resource == NULL || !getProcessByPid(pid, &process))
         return -1;
@@ -301,7 +298,7 @@ addFdProcess(Pid pid, int fd, void *resource, FdReadHandler readHandler, FdWrite
 }
 
 int
-deleteFdProcess(Pid pid, int fd) {
+deleteFd(Pid pid, int fd) {
     Process *process;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd || process->fdTable[fd].resource == NULL)
         return 1;
@@ -324,7 +321,7 @@ deleteFdUnchecked(Process *process, Pid pid, int fd) {
 }
 
 int
-dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
+dupFd(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
     Process *processFrom;
     if (fdFrom < 0 || !getProcessByPid(pidFrom, &processFrom) || processFrom->fdTableSize <= fdFrom ||
         processFrom->fdTable[fdFrom].resource == NULL || processFrom->fdTable[fdFrom].dupHandler == NULL)
@@ -334,25 +331,25 @@ dupFdProcess(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo) {
 }
 
 ssize_t
-handleReadFdProcess(Pid pid, int fd, char *buf, size_t count) {
+handleRead(Pid pid, int fd, char *buffer, size_t count) {
     Process *process;
     FDEntry *entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd ||
         (entry = &process->fdTable[fd])->resource == NULL || entry->readHandler == NULL)
         return -1;
-    ssize_t c = entry->readHandler(pid, fd, entry->resource, buf, count);
+    ssize_t c = entry->readHandler(pid, fd, entry->resource, buffer, count);
     return c;
 }
 
 ssize_t
-handleWriteFdProcess(Pid pid, int fd, const char *buf, size_t count) {
+handleWrite(Pid pid, int fd, const char *buffer, size_t count) {
     Process *process;
     FDEntry *entry;
     if (fd < 0 || !getProcessByPid(pid, &process) || process->fdTableSize <= fd ||
         (entry = &process->fdTable[fd])->resource == NULL || entry->writeHandler == NULL)
         return -1;
 
-    return entry->writeHandler(pid, fd, entry->resource, buf, count);
+    return entry->writeHandler(pid, fd, entry->resource, buffer, count);
 }
 
 int
@@ -361,20 +358,20 @@ unblockOnKilled(Pid pidToUnblock, Pid pidToWait) {
     if (!getProcessByPid(pidToWait, &process))
         return 1;
 
-    if (process->pidWQ == NULL && (process->pidWQ = newWQ()) == NULL)
+    if (process->pidWQ == NULL && (process->pidWQ = newQueue()) == NULL)
         return -1;
 
-    addIfNotExistsWQ(process->pidWQ, pidToUnblock);
+    addIfNotExistsInQueue(process->pidWQ, pidToUnblock);
     return 0;
 }
 
 uint8_t
-listProcesses(ProcessInfo *array, uint8_t maxProcesses) {
+listProcesses(ProcessInfo *storingInfo, uint8_t maxProcesses) {
     int processCounter = 0;
     for (int i = 0; i < MAX_PROCESSES && processCounter < maxProcesses; ++i) {
         Process *process = &processes[i];
         if (process->stackEnd != NULL) {
-            ProcessInfo *info = &array[processCounter++];
+            ProcessInfo *info = &storingInfo[processCounter++];
             info->pid = i;
             strncpy(info->name, process->name, MAX_NAME_LENGTH);
             info->stackEnd = process->stackEnd;

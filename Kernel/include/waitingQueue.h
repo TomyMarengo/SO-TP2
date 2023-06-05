@@ -6,74 +6,99 @@
 typedef struct WaitingQueueData *WaitingQueue;
 
 /**
- * @brief Creates a new wait queue instance.
+ * @brief Creates a new waiting queue instance.
  *
- * @returns The created wait queue instance, or NULL of the operation failed.
+ * @returns - The created wait queue instance, or NULL if the operation fails.
  */
-WaitingQueue newWQ();
+WaitingQueue newQueue();
 
 /**
- * @brief Frees all resources used by a wait queue. Attempting to use a
- * wait queue after it has been freed results in undefined behavior.
+ * @brief Frees all resources used by a waiting queue.
+ * 
+ * @param queue The waiting queue to be freed.
  *
- * @returns 0 if the operation succeeded, !=0 if not.
+ * @returns - 0 if the operation is successful, 1 otherwise.
  */
-int freeWQ(WaitingQueue wq);
+int freeQueue(WaitingQueue queue);
 
 /**
- * @brief Adds a PID to the waiting queue. If the PID was already in the queue,
- * this operation will add a new entry and have the PID multiple times on the queue.
- *
- * @returns 0 if the operation succeeded, !=0 if not.
+ * @brief Adds a process ID (PID) to the waiting queue. If the PID was already in the queue,
+ * this operation will add a new entry, resulting in multiple occurrences of the PID in the queue.
+ * 
+ * @param queue The waiting queue.
+ * @param pid PID of the process.
+ * 
+ * @returns - 0 if the operation successful, 1 otherwise.
  */
-int addWQ(WaitingQueue wq, Pid pid);
+int addInQueue(WaitingQueue queue, Pid pid);
 
 /**
- * @brief Gets the amount of entries on the queue.
+ * @brief Gets the length of the queue.
+ * 
+ * @param queue The waiting queue.
+ * 
+ * @returns - The amount of entries (length).
  */
-int entriesWQ(WaitingQueue wq);
+int entriesInQueue(WaitingQueue queue);
 
 /**
- * @brief Gets whether a given PID has an entry in the queue.
+ * @brief Gets if the pid is in the queue or not.
+ *  
+ * @param queue The waiting queue.
+ * @param pid PID of the process.
  *
- * @returns 1 if the given PID is contained in the queue, 0 otherwise.
+ * @returns - 1 if the given PID is contained in the queue, 0 otherwise.
  */
-int containsWQ(WaitingQueue wq, Pid pid);
+int containsInQueue(WaitingQueue queue, Pid pid);
 
 /**
- * @brief Adds a PID to the waiting queue, only if it was not already in it.
+ * @brief Adds a PID to the waiting queue if it was not already in it.
+ *  
+ * @param queue The waiting queue.
+ * @param pid PID of the process.
  *
- * @returns 0 if the operation succeeded. The PID already being on the queue is considered success.
+ * @returns - 0 if the operation successful, 1 otherwise.
  */
-int addIfNotExistsWQ(WaitingQueue wq, Pid pid);
+int addIfNotExistsInQueue(WaitingQueue queue, Pid pid);
 
 /**
  * @brief Removes a PID from the waiting queue.
  *
- * @returns 0 if the operation succeeded. The PID not being on the queue is considered a failure.
+ * @param queue The waiting queue.
+ * @param pid PID of the process.
+ * 
+ * @returns - 0 if the operation successful, 1 otherwise.
  */
-int removeWQ(WaitingQueue wq, Pid pid);
+int removeInQueue(WaitingQueue queue, Pid pid);
 
 /**
  * @brief Unblocks a single process on the queue.
  *
- * @returns 0 if the operation succeded. The queue being empty is not considered a failure.
+ * @param queue The waiting queue.
+ * 
+ * @returns - 0 if the operation successful, 1 otherwise.
  */
-int unblockWQ(WaitingQueue wq);
+int unblockInQueue(WaitingQueue queue);
 
 /**
- * @brief Unblocks all the processes on the queue.
+ * @brief Unblocks all processes on the queue.
  *
- * @returns 0 if the operation succeded. The queue being empty is not considered a failure.
+ * @param queue The waiting queue.
+ * 
+ * @returns - 0 if the operation successful, 1 otherwise.
  */
-int unblockAllWQ(WaitingQueue wq);
+int unblockAllInQueue(WaitingQueue queue);
 
 /**
- * @brief Gets up to maxPids PIDs stored in this queue, in the order in which they were queued.
- * (array[0] will be the next PID to be unblocked).
  *
- * @returns The amount of PIDs written to the array.
+ * @brief Gets (maxPids)-amount of pids.
+ * 
+ * @param queue The waiting queue.
+ * @param storingInfo Array of Pid to archive the data.
+ * @param maxPids Limit.
+ * 
+ * @returns - The amount of PIDs written to the storingInfo array.
  */
-int getpidsWQ(WaitingQueue wq, Pid *array, int maxPids);
+int listPidsInQueue(WaitingQueue queue, Pid *storingInfo, int maxPids);
 
 #endif

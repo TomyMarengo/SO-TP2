@@ -2,49 +2,70 @@
 #include <string.h>
 
 size_t
-strlen(const char *s) {
+strlen(const char *str) {
     size_t l;
-    for (l = 0; *s != 0; s++, l++)
+    for (l = 0; *str != 0; str++, l++)
         ;
     return l;
 }
 
-int
-strcmp(const char *s1, const char *s2) {
-    int i;
-    for (i = 0; s1[i] && s1[i] == s2[i]; i++)
+uint64_t itoa(uint64_t number, char *buffer) {
+    int digits = 1;
+    for (int n = number / 10; n != 0; digits++, n /= 10)
         ;
-    return s1[i] - s2[i];
+
+    if (digits == 1) {
+        buffer[0] = '0';
+        buffer[1] = number + '0';
+        buffer[2] = 0;
+        return digits;
+    }
+
+    buffer[digits] = 0;
+    for (int i = digits - 1; i >= 0; i--) {
+        buffer[i] = (number % 10) + '0';
+        number /= 10;
+    }
+
+    return digits;
+}
+
+int
+strcmp(const char *str1, const char *str2) {
+    int i;
+    for (i = 0; str1[i] && str1[i] == str2[i]; i++)
+        ;
+    return str1[i] - str2[i];
 }
 
 char *
-strcat(char *dest, const char *src) {
-    char *rdest = dest;
+strcat(char *destination, const char *source) {
+    char *rdest = destination;
 
-    while (*dest)
-        dest++;
-    while ((*dest++ = *src++))
+    while (*destination)
+        destination++;
+    while ((*destination++ = *source++))
         ;
     return rdest;
 }
 
 char *
-strcpy(char *dest, const char *src) {
+strcpy(char *destination, const char *source) {
     char *w;
-    for (w = dest; *src != '\0'; *(w++) = *(src++))
+    for (w = destination; *source != '\0'; *(w++) = *(source++))
         ;
     *w = '\0';
-    return dest;
+    return destination;
 }
 
 char *
-strncpy(char *dest, const char *src, size_t size) {
+strncpy(char *destination, const char *source, size_t size) {
     int i = 0;
-    char *ret = dest;
-    while (*src && i < size) {
-        *(dest++) = *(src++);
+    char *ret = destination;
+    while (*source && i < size) {
+        *(destination++) = *(source++);
         i++;
     }
-    *dest = '\0';
+    *destination = '\0';
     return ret;
 }

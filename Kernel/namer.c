@@ -1,8 +1,6 @@
-#include <stddef.h>
-
 #include <defs.h>
-#include <memoryManager.h>
 #include <namer.h>
+#include <memoryManager.h>
 #include <string.h>
 
 #define BUFFER_CHUNK_SIZE 8
@@ -19,7 +17,7 @@ struct NamerData {
 };
 
 static int
-isNameValid(const char *name) {
+isValidName(const char *name) {
     if (name == NULL)
         return 0;
 
@@ -67,7 +65,7 @@ findResourceIndex(Namer namer, const char *name, int *c) {
 
 int
 addResource(Namer namer, void *resource, const char *name, const char **nameData) {
-    if (!isNameValid(name))
+    if (!isValidName(name))
         return 1;
 
     int c;

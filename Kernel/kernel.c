@@ -1,17 +1,16 @@
+#include <defs.h>
+#include <kernel.h>
 #include <graphics.h>
 #include <idtLoader.h>
 #include <interrupts.h>
 #include <kernel.h>
 #include <keyboard.h>
-#include <lib.h>
 #include <memoryManager.h>
+#include <lib.h>
 #include <moduleLoader.h>
 #include <process.h>
 #include <scheduler.h>
 #include <sem.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
 
 extern uint8_t text;
 extern uint8_t rodata;

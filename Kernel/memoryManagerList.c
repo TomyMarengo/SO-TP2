@@ -1,4 +1,5 @@
 #ifndef USE_BUDDY
+
 #include <defs.h>
 #include <lib.h>
 #include <memoryManager.h>
@@ -89,11 +90,11 @@ malloc(size_t size) {
 }
 
 int
-free(void *ptr) {
-    if (ptr == NULL)
+free(void *memorySegment) {
+    if (memorySegment == NULL)
         return 0;
 
-    MemoryListNode *node = (MemoryListNode *) (ptr - sizeof(MemoryListNode));
+    MemoryListNode *node = (MemoryListNode *) (memorySegment - sizeof(MemoryListNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -122,18 +123,18 @@ free(void *ptr) {
 }
 
 void *
-realloc(void *ptr, size_t size) {
+realloc(void *memorySegment, size_t size) {
     size = WORD_ALIGN_UP(size);
 
-    if (ptr == NULL)
+    if (memorySegment == NULL)
         return malloc(size);
 
     if (size == 0) {
-        free(ptr);
+        free(memorySegment);
         return NULL;
     }
 
-    MemoryListNode *node = (MemoryListNode *) (ptr - sizeof(MemoryListNode));
+    MemoryListNode *node = (MemoryListNode *) (memorySegment - sizeof(MemoryListNode));
 
     size_t checksum;
     calcNodeChecksum(node, &checksum);
@@ -141,14 +142,14 @@ realloc(void *ptr, size_t size) {
         return NULL;
 
     if (node->size == size)
-        return ptr;
+        return memorySegment;
 
     if (size < node->size) {
         node->leftoverSize += node->size - size;
         usedMemory -= node->size - size;
         node->size = size;
         calcNodeChecksum(node, &node->checksum);
-        return ptr;
+        return memorySegment;
     }
 
     size_t extraRequiredSize = size - node->size;
@@ -157,13 +158,13 @@ realloc(void *ptr, size_t size) {
         node->size = size;
         usedMemory += extraRequiredSize;
         calcNodeChecksum(node, &node->checksum);
-        return ptr;
+        return memorySegment;
     }
 
     void *newPtr = malloc(size);
     if (newPtr != NULL) {
-        memcpy(newPtr, ptr, node->size);
-        free(ptr);
+        memcpy(newPtr, memorySegment, node->size);
+        free(memorySegment);
     }
     return newPtr;
 }

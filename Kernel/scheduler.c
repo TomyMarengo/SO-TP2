@@ -1,6 +1,7 @@
+#include <defs.h>
+#include <scheduler.h>
 #include <interrupts.h>
 #include <memoryManager.h>
-#include <scheduler.h>
 #include <process.h>
 
 #define QUANTUM 5

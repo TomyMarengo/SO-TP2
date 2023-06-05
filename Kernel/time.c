@@ -1,6 +1,6 @@
-#include <lib.h>
-#include <stdint.h>
+#include <defs.h>
 #include <time.h>
+#include <lib.h>
 
 #define SECONDS 0x00
 #define MINUTES 0x02

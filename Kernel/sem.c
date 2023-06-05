@@ -1,8 +1,9 @@
+#include <defs.h>
+#include <sem.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <namer.h>
 #include <scheduler.h>
-#include <sem.h>
 #include <string.h>
 #include <waitingQueue.h>
 
@@ -27,7 +28,7 @@ static int adquireSem(Sem sem);
 static int
 freeSem(Sem sem) {
     int value = deleteResource(namer, semaphores[sem]->name) == NULL;
-    value += freeWQ(semaphores[sem]->processesWQ);
+    value += freeQueue(semaphores[sem]->processesWQ);
     value += free(semaphores[sem]);
     semaphores[sem] = NULL;
     if (value != 0)
@@ -93,7 +94,7 @@ openSem(const char *name, uint8_t initialValue) {
     semaphores[i]->value = initialValue;
     unlock(&semaphores[i]->lock);
     semaphores[i]->linkedProcesses = 1;
-    semaphores[i]->processesWQ = newWQ();
+    semaphores[i]->processesWQ = newQueue();
 
     if (semaphores[i]->processesWQ == NULL) {
         free(semaphores[i]);
@@ -102,7 +103,7 @@ openSem(const char *name, uint8_t initialValue) {
     }
 
     if (addResource(namer, (void *) (int64_t) i, name, &(semaphores[i]->name)) != 0) {
-        freeWQ(semaphores[i]->processesWQ);
+        freeQueue(semaphores[i]->processesWQ);
         free(semaphores[i]);
         semaphores[i] = NULL;
         unlock(&generalLock);
@@ -137,7 +138,7 @@ post(Sem sem) {
     }
 
     semaphores[sem]->value++;
-    unblockWQ(semaphores[sem]->processesWQ);
+    unblockInQueue(semaphores[sem]->processesWQ);
 
     unlock(&semaphores[sem]->lock);
     return SEM_OK;
@@ -153,7 +154,7 @@ wait(Sem sem) {
     Pid cpid = getpid();
 
     while (semaphores[sem]->value == 0) {
-        addWQ(semaphores[sem]->processesWQ, cpid);
+        addInQueue(semaphores[sem]->processesWQ, cpid);
         unlock(&semaphores[sem]->lock);
         block(cpid);
         yield();
@@ -166,14 +167,14 @@ wait(Sem sem) {
 }
 
 int
-listSemaphores(SemaphoreInfo *array, int maxSemaphores) {
+listSemaphores(SemaphoreInfo *storingInfo, int maxSemaphores) {
     spinLock(&generalLock);
     int semCounter = 0;
 
     for (int i = 1; i < MAX_SEMAPHORES && semCounter < maxSemaphores; ++i) {
         Semaphore *sem = semaphores[i];
         if (sem != NULL) {
-            SemaphoreInfo *info = &array[semCounter++];
+            SemaphoreInfo *info = &storingInfo[semCounter++];
             info->value = sem->value;
             info->linkedProcesses = sem->linkedProcesses;
 
@@ -182,7 +183,7 @@ listSemaphores(SemaphoreInfo *array, int maxSemaphores) {
             else
                 strncpy(info->name, sem->name, MAX_NAME_LENGTH);
 
-            int waitingPids = getpidsWQ(sem->processesWQ, info->processesWQ, entriesWQ(sem->processesWQ));
+            int waitingPids = listPidsInQueue(sem->processesWQ, info->processesWQ, entriesInQueue(sem->processesWQ));
             info->processesWQ[waitingPids] = -1;
         }
     }

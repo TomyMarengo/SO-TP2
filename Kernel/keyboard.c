@@ -3,7 +3,6 @@
 #include <lib.h>
 #include <process.h>
 #include <scheduler.h>
-#include <stdint.h>
 #include <waitingQueue.h>
 #include <graphics.h>
 
@@ -28,16 +27,16 @@ static uint8_t scancodeLToAscii[] = {
 };
 
 static uint8_t scancodeUToAscii[] = {0,   27,  '!', '@', '#', '$', '%', '^', '&', '*', '(',  ')', '_', '+', '\b', '\t', 'Q', 'W',
-                                     'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,   'A', 'S', 'D',  'F',  'G', 'H',
-                                     'J', 'K', 'L', ':', '"', '~', 0,   '|', 'Z', 'X', 'C',  'V', 'B', 'N', 'M',  '<',  '>', '?',
-                                     0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
-                                     0,   0,   '-', 0,   0,   0,   '+', 0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0};
+    'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,   'A', 'S', 'D',  'F',  'G', 'H',
+    'J', 'K', 'L', ':', '"', '~', 0,   '|', 'Z', 'X', 'C',  'V', 'B', 'N', 'M',  '<',  '>', '?',
+    0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
+    0,   0,   '-', 0,   0,   0,   '+', 0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0};
 
 static uint8_t *keyMap[] = {scancodeLToAscii, scancodeUToAscii};
 
-static ssize_t fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count);
-static int fdCloseHandler(Pid pid, int fd, void *resource);
-static int fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
+static ssize_t readHandler(Pid pid, int fd, void *resource, char *buf, size_t count);
+static int closeHandler(Pid pid, int fd, void *resource);
+static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
 
 static WaitingQueue processReadWQ;
 static int ctrl = 0;
@@ -49,7 +48,7 @@ int getCtrlState()
 
 void
 initializeKeyboard() {
-    processReadWQ = newWQ();
+    processReadWQ = newQueue();
 }
 
 void
@@ -75,7 +74,7 @@ interruptHandlerKeyboard() {
                 uint16_t bufferEnd = (bufferStart + bufferSize) % BUFFER_MAX_SIZE;
                 buffer[bufferEnd] = keyChar;
                 bufferSize++;
-                unblockAllWQ(processReadWQ);
+                unblockAllInQueue(processReadWQ);
             }
         }
     } else {
@@ -91,7 +90,7 @@ interruptHandlerKeyboard() {
 }
 
 unsigned int
-readChars(char *buf, unsigned int count) {
+readChars(char *bufferDestination, unsigned int count) {
     unsigned int charsToRead = bufferSize;
     if (charsToRead > count)
         charsToRead = count;
@@ -102,10 +101,10 @@ readChars(char *buf, unsigned int count) {
     unsigned int firstReadSize = BUFFER_MAX_SIZE - bufferStart;
     if (firstReadSize > charsToRead)
         firstReadSize = charsToRead;
-    memcpy(buf, buffer + bufferStart, firstReadSize);
+    memcpy(bufferDestination, buffer + bufferStart, firstReadSize);
 
     if (firstReadSize < charsToRead)
-        memcpy(buf + firstReadSize, buffer, charsToRead - firstReadSize);
+        memcpy(bufferDestination + firstReadSize, buffer, charsToRead - firstReadSize);
 
     bufferSize -= charsToRead;
     bufferStart = (bufferStart + charsToRead) % BUFFER_MAX_SIZE;
@@ -131,11 +130,11 @@ clearKeyboard() {
 
 int
 addFdKeyboard(Pid pid, int fd) {
-    return addFdProcess(pid, fd, (void *) 1, &fdReadHandler, NULL, &fdCloseHandler, &fdDupHandler);
+    return addFd(pid, fd, (void *) 1, &readHandler, NULL, &closeHandler, &dupHandler);
 }
 
 static ssize_t
-fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count) {
+readHandler(Pid pid, int fd, void *resource, char *buf, size_t count) {
     if (!isForeground(pid))
         return -1;
 
@@ -147,7 +146,7 @@ fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count) {
 
     int read;
     while ((read = readChars(buf, count)) == 0) {
-        addWQ(processReadWQ, pid);
+        addInQueue(processReadWQ, pid);
         block(pid);
         yield();
     }
@@ -156,13 +155,13 @@ fdReadHandler(Pid pid, int fd, void *resource, char *buf, size_t count) {
 }
 
 static int
-fdCloseHandler(Pid pid, int fd, void *resource) {
-    removeWQ(processReadWQ, pid);
+closeHandler(Pid pid, int fd, void *resource) {
+    removeInQueue(processReadWQ, pid);
     return 0;
 }
 
 static int
-fdDupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource) {
+dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource) {
     return addFdKeyboard(pidTo, fdTo);
 }
 
