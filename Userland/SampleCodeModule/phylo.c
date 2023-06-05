@@ -61,11 +61,11 @@ startPhylo(int argc, char *argv[]) {
 
     maxPhilosophers = getMaxAvailableProcesses();
     if ( maxPhilosophers < MIN_PHYLOSOPHERS  ){
-        fprintf(STDERR,"Error...\nPhylo requires a minimum of 6 available processes.\nUse ps to make sure your environment meets the criteria.\n");
+        fprintf(STDERR,"phylo: (%d) - Error: Phylo requires a minimum of 6 available processes.\n", sys_getpid());
         return;
     }
     nextRand = (unsigned int) sys_millis();
-    printf("A minimum quantity of philosophers are being created, please stand by\n");
+    printf("5 philosophers are starting to thinking...\n");
     printf("Press %c to quit, %c to add a new philosopher, and %c to remove a philosopher.\n", QUIT, ADD, REMOVE);
     phyloSleep(500);
 

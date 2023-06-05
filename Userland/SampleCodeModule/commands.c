@@ -214,9 +214,9 @@ int runSem(int stdin, int stdout, int stderr, int isForeground, int argc, const 
     fprintf(stdout, "Listing %d semaphore%s:", count, count == 1 ? "" : "s");
 
     for (int i = 0; i < count; i++) {
-        fprintf(stdout, "\nname=%s, value=%d, linkedProcesses=%d", array[i].name, array[i].value, array[i].linkedProcesses);
+        fprintf(stdout, "\nName=%s, Value=%d, Processes linked=%d", array[i].name, array[i].value, array[i].linkedProcesses);
 
-        fprintf(stdout, ", processesWQ={");
+        fprintf(stdout, ", Process waiting queue={");
         for (int c = 0; array[i].processesWQ[c] >= 0; c++) {
             if (c != 0) {
                 fprintf(stdout, ", ");
@@ -235,10 +235,10 @@ int runPipe(int stdin, int stdout, int stderr, int isForeground, int argc, const
     fprintf(stdout, "Listing %d pipe%s:", count, count == 1 ? "" : "s");
 
     for (int i = 0; i < count; i++) {
-        fprintf(stdout, "\nbytes=%u, readers=%u, writers=%u, name=%s", (unsigned int)array[i].remainingBytes, (unsigned int)array[i].readerFdCount,
+        fprintf(stdout, "\nBytes=%u, Readers=%u, Writers=%u, Name=%s", (unsigned int)array[i].remainingBytes, (unsigned int)array[i].readerFdCount,
                (unsigned int)array[i].writerFdCount, array[i].name);
 
-        fprintf(stdout, ", readBlocked={");
+        fprintf(stdout, ", Read Blocked={");
         for (int c = 0; array[i].readBlockedPids[c] >= 0; c++) {
             if (c != 0) {
                 fprintf(stdout, ", ");
@@ -247,7 +247,7 @@ int runPipe(int stdin, int stdout, int stderr, int isForeground, int argc, const
         }
         fprintf(stdout, "}");
 
-        fprintf(stdout, ", writeBlocked={");
+        fprintf(stdout, ", Write Blocked={");
         for (int c = 0; array[i].writeBlockedPids[c] >= 0; c++) {
             if (c != 0) {
                 fprintf(stdout, ", ");
