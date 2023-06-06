@@ -1,6 +1,6 @@
 # tOS
 
-### Introducing tOS - The Operating System that Makes You "Cough" :microbe:
+### Introducing tOS - :microbe: The Operating System that Makes You "Cough" :microbe:
 
 Welcome to the world of **tOS**, the operating system that's here to give you a contagious laughter *(and maybe a slight case of the coughs!)*. Operating Systems can be serious business, but why not inject a little humor into the mix?
 
