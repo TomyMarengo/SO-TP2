@@ -4,23 +4,23 @@
 #include <defs.h>
 
 /**
- * @brief Prints current process ID with a greeting a certain number of seconds 
+ * @brief Prints current process ID with a greeting a certain number of seconds
  */
-void loopProcess(int argc, char* argv[]);
+void loopProcess(int argc, char *argv[]);
 
 /**
  * @brief Prints STDIN
  */
-void catProcess(int argc, char* argv[]);
+void catProcess(int argc, char *argv[]);
 
 /**
- * @brief CountS input number of lines 
+ * @brief CountS input number of lines
  */
-void wcProcess(int argc, char* argv[]);
+void wcProcess(int argc, char *argv[]);
 
 /**
- * @brief Filters input vowels 
+ * @brief Filters input vowels
  */
-void filterProcess(int argc, char* argv[]);
+void filterProcess(int argc, char *argv[]);
 
 #endif

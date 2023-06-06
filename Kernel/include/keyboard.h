@@ -15,10 +15,10 @@ void interruptHandlerKeyboard();
 
 /**
  * @brief Tries to retrieve up to count characters from the keyboard buffer and copies them to the provided buffer.
- * 
+ *
  * @param bufferDestination The buffer that will store the characters read.
  * @param count Maximum characters to be read.
- * 
+ *
  * @returns - The number of characters successfully read.
  */
 unsigned int readChars(char *bufferDestination, unsigned int count);
@@ -44,7 +44,7 @@ void clearKeyboard();
  */
 int addFdKeyboard(Pid pid, int fd);
 
-//TODO ADD DOC
+// TODO ADD DOC
 int getCtrlState();
 
 #endif

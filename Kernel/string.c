@@ -9,7 +9,8 @@ strlen(const char *str) {
     return l;
 }
 
-uint64_t itoa(uint64_t number, char *buffer) {
+uint64_t
+itoa(uint64_t number, char *buffer) {
     int digits = 1;
     for (int n = number / 10; n != 0; digits++, n /= 10)
         ;

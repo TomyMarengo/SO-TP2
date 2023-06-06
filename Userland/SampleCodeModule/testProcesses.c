@@ -1,5 +1,5 @@
-#include <testUtil.h>
 #include <syscalls.h>
+#include <testUtil.h>
 #include <userlib.h>
 
 enum State { RUNNING_TEST, BLOCKED_TEST, KILLED_TEST };
@@ -15,18 +15,18 @@ testProcesses(int argc, char *argv[]) {
     uint8_t alive = 0;
     uint8_t action;
     uint64_t max_processes = getMaxAvailableProcesses();
-    char* argvAux[] = {0};
+    char *argvAux[] = {0};
 
     p_rq p_rqs[max_processes];
 
     while (1) {
 
         ProcessCreateInfo loopInfo = {.name = "loopProcess",
-            .isForeground = 0,
-            .priority = PRIORITY_DEFAULT,
-            .start = (ProcessStart) endlessLoop,
-            .argc = 0,
-            .argv = (const char *const *) argvAux};
+                                      .isForeground = 0,
+                                      .priority = PRIORITY_DEFAULT,
+                                      .start = (ProcessStart) endlessLoop,
+                                      .argc = 0,
+                                      .argv = (const char *const *) argvAux};
 
         // Create max_processes processes
         for (rq = 0; rq < max_processes; rq++) {

@@ -1,9 +1,9 @@
 #include <defs.h>
-#include <sem.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <namer.h>
 #include <scheduler.h>
+#include <sem.h>
 #include <string.h>
 #include <waitingQueue.h>
 

@@ -1,5 +1,5 @@
-#include <testUtil.h>
 #include <syscalls.h>
+#include <testUtil.h>
 #include <userlib.h>
 
 /* Constants */
@@ -60,28 +60,27 @@ void
 testSync(int argc, char *argv[]) {
     uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
 
-    if (argc != 2)
-    {
+    if (argc != 2) {
         printf("testsync: usage: testsync [n] [use_sem]\n");
         return;
     }
-        
+
     char *argvDec[] = {argv[0], "-1", argv[1], NULL};
     char *argvInc[] = {argv[0], "1", argv[1], NULL};
 
     ProcessCreateInfo decInfo = {.name = "processDec",
-        .isForeground = 1,
-        .priority = PRIORITY_DEFAULT,
-        .start = (ProcessStart) myProcessInc,
-        .argc = 3,
-        .argv = (const char *const *) argvDec};
+                                 .isForeground = 1,
+                                 .priority = PRIORITY_DEFAULT,
+                                 .start = (ProcessStart) myProcessInc,
+                                 .argc = 3,
+                                 .argv = (const char *const *) argvDec};
 
     ProcessCreateInfo incInfo = {.name = "processInc",
-        .isForeground = 1,
-        .priority = PRIORITY_DEFAULT,
-        .start = (ProcessStart) myProcessInc,
-        .argc = 3,
-        .argv = (const char *const *) argvInc};
+                                 .isForeground = 1,
+                                 .priority = PRIORITY_DEFAULT,
+                                 .start = (ProcessStart) myProcessInc,
+                                 .argc = 3,
+                                 .argv = (const char *const *) argvInc};
 
     global = 0;
 

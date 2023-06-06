@@ -48,9 +48,9 @@ uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 
 /**
  * @brief Converts a binary-coded decimal number into its decimal representation.
- * 
+ *
  * @param value The number to be converted.
- * 
+ *
  * @returns - The decimal representation of value.
  */
 uint8_t bcdToDec(uint8_t value);

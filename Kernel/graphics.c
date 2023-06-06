@@ -1,9 +1,8 @@
 #include <defs.h>
-#include <graphics.h>
 #include <fonts.h>
+#include <graphics.h>
 #include <lib.h>
 #include <process.h>
-
 
 // Retrieved from https://wiki.osdev.org/VESA_Video_Modes
 struct vbe_mode_info_structure {

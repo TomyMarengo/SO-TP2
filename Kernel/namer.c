@@ -1,6 +1,6 @@
 #include <defs.h>
-#include <namer.h>
 #include <memoryManager.h>
+#include <namer.h>
 #include <string.h>
 
 #define BUFFER_CHUNK_SIZE 8

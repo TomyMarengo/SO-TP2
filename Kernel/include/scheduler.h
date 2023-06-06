@@ -17,7 +17,7 @@ void initializeScheduler();
  * @param currentRSP Current RSP.
  * @param argc Amount of arguments.
  * @param argv Arguments.
- * 
+ *
  * @returns - 0 if the operation is successful.
  */
 int onProcessCreated(Pid pid, ProcessStart start, Priority priority, void *currentRSP, int argc, const char *const argv[]);
@@ -27,17 +27,17 @@ int onProcessCreated(Pid pid, ProcessStart start, Priority priority, void *curre
  * halted. To accomplish this, yield() must be invoked.
  *
  * @param pid PID of the process.
- * 
+ *
  * @returns - 0 if the operation is successful, 1 otherwise.
  */
 int onProcessKilled(Pid pid);
 
 /**
  * @brief Instructs the scheduler that a specific process should remain inactive until it is unblocked.
- * If the caller is the process itself, it is not immediately blocked. To accomplish this, yield() 
+ * If the caller is the process itself, it is not immediately blocked. To accomplish this, yield()
  *
  * @param pid PID of the process.
- * 
+ *
  * @returns - 0 if the operation is successful, 1 otherwise.
  */
 int block(Pid pid);
@@ -46,7 +46,7 @@ int block(Pid pid);
  * @brief Put a process in READY state.
  *
  * @param pid PID of the process.
- * 
+ *
  * @returns - 0 if the operation succeeded or if it was running or ready already, 1 otherwise.
  */
 int unblock(Pid pid);
@@ -63,7 +63,7 @@ Pid getpid();
  *
  * @param pid PID of the process.
  * @param newPriority New priority desired.
- * 
+ *
  * @returns - 0 if the operation is successful, 1 otherwise.
  */
 int setPriority(Pid pid, Priority newPriority);
@@ -72,7 +72,7 @@ int setPriority(Pid pid, Priority newPriority);
  * @brief Determines the next process to be executed with priority-based Round Robin algorithm.
  *
  * @param currentRSP RSP (Stack Pointer) of the interrupted process.
- * 
+ *
  * @returns - RSP (Stack Pointer) of the next process to be executed.
  */
 void *switchProcess(void *currentRSP);
@@ -82,7 +82,7 @@ void *switchProcess(void *currentRSP);
  *
  * @param pid PID of the process.
  * @param processInfo ProcessInfo struct to archive the data.
- * 
+ *
  * @returns - 0 if the operation is successful, 1 otherwise.
  */
 int getProcessInfo(Pid pid, ProcessInfo *processInfo);

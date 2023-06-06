@@ -140,22 +140,22 @@ typedef void (*ProcessStart)(int argc, char *argv[]);
 /**
  * @brief Defines a function that will handle a file descriptor read operation.
  */
-typedef ssize_t (*ReadHandler)(Pid pid, int fd, void* resource, char* buf, size_t count);
+typedef ssize_t (*ReadHandler)(Pid pid, int fd, void *resource, char *buf, size_t count);
 
 /**
  * @brief Defines a function that will handle a file descriptor write operation.
  */
-typedef ssize_t (*WriteHandler)(Pid pid, int fd, void* resource, const char* buf, size_t count);
+typedef ssize_t (*WriteHandler)(Pid pid, int fd, void *resource, const char *buf, size_t count);
 
 /**
  * @brief Defines a function that will handle a file descriptor close operation.
  */
-typedef int (*CloseHandler)(Pid pid, int fd, void* resource);
+typedef int (*CloseHandler)(Pid pid, int fd, void *resource);
 
 /**
  * @brief Defines a function that will handle a file descriptor dup operation.
  */
-typedef int (*DupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void* resource);
+typedef int (*DupHandler)(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource);
 
 /**
  * @brief Represents the various categories of supported process status.
@@ -210,8 +210,8 @@ typedef struct {
 /* --- Semaphores --- */
 
 #define MAX_SEMAPHORES 127
-#define SEM_OK 0
-#define SEM_FAIL -1
+#define SEM_OK         0
+#define SEM_FAIL       -1
 #define SEM_NOT_EXISTS -2
 
 /**
@@ -237,6 +237,6 @@ typedef struct {
 
 /* --- Others --- */
 
-typedef struct NamerData* Namer;
+typedef struct NamerData *Namer;
 
-typedef struct WaitingQueueData* WaitingQueue;
+typedef struct WaitingQueueData *WaitingQueue;

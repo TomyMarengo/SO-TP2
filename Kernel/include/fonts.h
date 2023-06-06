@@ -8,9 +8,9 @@
 
 /**
  * @brief Takes an ASCII value as input and returns a pointer to the pixel data of the corresponding character.
- * 
+ *
  * @param character The ASCII character.
- * 
+ *
  * @returns - A pointer to the pixel data of the corresponding character.
  */
 uint8_t *getCharMapping(uint8_t character);

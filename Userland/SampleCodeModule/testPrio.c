@@ -1,5 +1,5 @@
-#include <testUtil.h>
 #include <syscalls.h>
+#include <testUtil.h>
 #include <userlib.h>
 
 #define MINOR_WAIT 1000000  // TODO: Change this value to prevent a process from flooding the screen
@@ -12,18 +12,18 @@
 
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-void testPrio(int argc, char* argv[]) {
+void
+testPrio(int argc, char *argv[]) {
     int64_t pids[TOTAL_PROCESSES];
     char *argvAux[] = {0};
     uint64_t i;
 
-    ProcessCreateInfo endlessInfo = {
-        .name = "endless",
-        .isForeground = 1,
-        .priority = PRIORITY_DEFAULT,
-        .start = (ProcessStart) endlessLoopPrint,
-        .argc = 0,
-        .argv = (const char *const *) argvAux};
+    ProcessCreateInfo endlessInfo = {.name = "endless",
+                                     .isForeground = 1,
+                                     .priority = PRIORITY_DEFAULT,
+                                     .start = (ProcessStart) endlessLoopPrint,
+                                     .argc = 0,
+                                     .argv = (const char *const *) argvAux};
 
     for (i = 0; i < TOTAL_PROCESSES; i++)
         pids[i] = sys_createProcess(-1, -1, -1, &endlessInfo);

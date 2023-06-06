@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-
 /* ------------------- */
 /* --- Kernel Defs --- */
 /* ------------------- */
@@ -95,7 +94,6 @@ typedef int8_t Priority;
  */
 #define MAX_PROCESSES 8
 
-
 /**
  * @brief Process start function.
  */
@@ -173,17 +171,18 @@ typedef struct {
 /* ------------------- */
 
 #define MAX_COMMAND_LENGTH 128
-#define MAX_ARGS 8
-#define MAX_COMMANDS 8
-#define PIPE_CHAR '|'
-#define BACKGROUND_CHAR '&'
+#define MAX_ARGS           8
+#define MAX_COMMANDS       8
+#define PIPE_CHAR          '|'
+#define BACKGROUND_CHAR    '&'
 
-typedef int (*CommandFunction)(int stdin, int stdout, int stderr, int isForeground, int argc, const char* const argv[], Pid* createdProcess);
+typedef int (*CommandFunction)(int stdin, int stdout, int stderr, int isForeground, int argc, const char *const argv[],
+                               Pid *createdProcess);
 
 typedef struct {
     CommandFunction function;
-    const char* name;
-    const char* description;
+    const char *name;
+    const char *description;
 } Command;
 
 #endif

@@ -11,4 +11,3 @@ _start(int argc, char *argv[]) {
     memset(&bss, 0, &endOfBinary - &bss);
     return main(0, 0);
 }
-

@@ -1,9 +1,9 @@
 #include <defs.h>
-#include <process.h>
 #include <graphics.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <pipe.h>
+#include <process.h>
 #include <scheduler.h>
 #include <string.h>
 #include <waitingQueue.h>
@@ -243,7 +243,6 @@ toForeground(Pid pid) {
         return -1;
 
     return process->isForeground = 1;
-    return 0;
 }
 
 int
@@ -253,11 +252,11 @@ toBackground(Pid pid) {
         return -1;
 
     return process->isForeground = 0;
-    return 0;
 }
 
 int
-addFd(Pid pid, int fd, void *resource, ReadHandler readHandler, WriteHandler writeHandler, CloseHandler closeHandler, DupHandler dupHandler) {
+addFd(Pid pid, int fd, void *resource, ReadHandler readHandler, WriteHandler writeHandler, CloseHandler closeHandler,
+      DupHandler dupHandler) {
     Process *process;
     if (resource == NULL || !getProcessByPid(pid, &process))
         return -1;

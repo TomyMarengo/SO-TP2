@@ -1,8 +1,8 @@
 #include <defs.h>
-#include <pipe.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <namer.h>
+#include <pipe.h>
 #include <process.h>
 #include <scheduler.h>
 #include <string.h>
@@ -229,7 +229,8 @@ addFdPipe(Pid pid, int fd, Pipe pipe, int allowRead, int allowWrite) {
     if (mapping == NULL)
         return -1;
 
-    int r = addFd(pid, fd, mapping, allowRead ? &readHandler : NULL, allowWrite ? &writeHandler : NULL, &closeHandler, &dupHandler);
+    int r =
+        addFd(pid, fd, mapping, allowRead ? &readHandler : NULL, allowWrite ? &writeHandler : NULL, &closeHandler, &dupHandler);
     if (r < 0) {
         free(mapping);
         return r;

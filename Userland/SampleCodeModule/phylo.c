@@ -2,11 +2,10 @@
 #include <phylo.h>
 #include <string.h>
 #include <syscalls.h>
-#include <userlib.h>
 #include <testUtil.h>
+#include <userlib.h>
 
-static char *phyloName[MAX_PHYLOSOPHERS] = {"Aristoteles", "Platon", "Pitagoras",
-                                            "Heraclito", "TalesDeMileto", "Diogenes"};
+static char *phyloName[MAX_PHYLOSOPHERS] = {"Aristoteles", "Platon", "Pitagoras", "Heraclito", "TalesDeMileto", "Diogenes"};
 
 static Phylo phylos[MAX_PHYLOSOPHERS];
 static int phyloCount = 0;
@@ -60,8 +59,8 @@ void
 startPhylo(int argc, char *argv[]) {
 
     maxPhilosophers = getMaxAvailableProcesses();
-    if ( maxPhilosophers < MIN_PHYLOSOPHERS  ){
-        fprintf(STDERR,"phylo: (%d) - Error: Phylo requires a minimum of 6 available processes.\n", sys_getpid());
+    if (maxPhilosophers < MIN_PHYLOSOPHERS) {
+        fprintf(STDERR, "phylo: (%d) - Error: Phylo requires a minimum of 6 available processes.\n", sys_getpid());
         return;
     }
     nextRand = (unsigned int) sys_millis();
@@ -136,7 +135,8 @@ think(int phyloIdx) {
     phyloSleep(getThinkingTime());
 }
 
-static void eat(int phyloIdx) {
+static void
+eat(int phyloIdx) {
     phylos[phyloIdx].phyloState = WAITING;
     printState();
 
@@ -159,7 +159,6 @@ static void eat(int phyloIdx) {
     sys_post(forks[secondForkIdx]);  // Right fork
     sys_post(forks[firstForkIdx]);   // Left fork
 }
-
 
 static void
 phyloSleep(int phyloIdx) {
@@ -192,7 +191,6 @@ addPhylo() {
 
     phylos[phyloCount].phyloPid = sys_createProcess(-1, -1, -1, &phyloContexInfo);
     phyloCount++;
-
 }
 
 static void
@@ -241,5 +239,5 @@ static void
 printState() {
     print("\n");
     for (int i = 0; i < phyloCount; ++i)
-        printf("%c ", phylos[i].phyloState == EATING   ? 'E' : '.');
+        printf("%c ", phylos[i].phyloState == EATING ? 'E' : '.');
 }

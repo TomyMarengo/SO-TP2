@@ -1,13 +1,14 @@
-#include <shell.h>
-#include <defs.h>
 #include <commands.h>
+#include <defs.h>
+#include <shell.h>
 #include <syscalls.h>
 #include <userlib.h>
 
-static void interpretCommand(char* buffer);
-static int parseCommandArgs(char* str, int i, int* argc, char* argv[]);
+static void interpretCommand(char *buffer);
+static int parseCommandArgs(char *str, int i, int *argc, char *argv[]);
 
-void runShell() {
+void
+runShell() {
     print("Welcome to the Shell! Type 'HELP' to see a list of available commands.\n");
 
     char command[MAX_COMMAND_LENGTH + 1];
@@ -22,23 +23,26 @@ void runShell() {
     fprint(STDERR, "Error: shell failed to read from STDIN. Am I running in foreground?\n");
 }
 
-static int advanceWhileWhitespace(char* str, int i) {
+static int
+advanceWhileWhitespace(char *str, int i) {
     while (str[i] == ' ')
         i++;
     return i;
 }
 
-static int advanceUntilWhitespace(char* str, int i) {
+static int
+advanceUntilWhitespace(char *str, int i) {
     while (str[i] != ' ' && str[i] != '\0' && str[i] != BACKGROUND_CHAR && str[i] != PIPE_CHAR)
         i++;
     return i;
 }
 
-static void interpretCommand(char* str) {
+static void
+interpretCommand(char *str) {
     int commandCount = 0;
-    const Command* commands[MAX_COMMANDS];
+    const Command *commands[MAX_COMMANDS];
     int commandArgcs[MAX_COMMANDS];
-    char* commandArgvs[MAX_COMMANDS][MAX_ARGS];
+    char *commandArgvs[MAX_COMMANDS][MAX_ARGS];
 
     int i = 0;
     while (1) {
@@ -64,7 +68,7 @@ static void interpretCommand(char* str) {
             return;
         }
 
-        char* commandNameStart = &str[i];
+        char *commandNameStart = &str[i];
         i = advanceUntilWhitespace(str, i);
         char prevChar = str[i];
         str[i] = '\0';
@@ -101,13 +105,14 @@ static void interpretCommand(char* str) {
         }
     }
 
-    Pid pidToWait[commandCount]; 
+    Pid pidToWait[commandCount];
     for (int i = 0; i < commandCount; i++) {
         int fdStdin = (i == 0 ? STDIN : pipes[(i - 1) * 2]);
         int fdStdout = (i == (commandCount - 1) ? STDOUT : pipes[i * 2 + 1]);
         pidToWait[i] = -1;
 
-        int success = commands[i]->function(fdStdin, fdStdout, STDERR, isForeground, commandArgcs[i], (const char* const*)commandArgvs[i], &pidToWait[i]);
+        int success = commands[i]->function(fdStdin, fdStdout, STDERR, isForeground, commandArgcs[i],
+                                            (const char *const *) commandArgvs[i], &pidToWait[i]);
         if (!success) {
             fprintf(STDERR, "\nError while executing command %s.", commands[i]->name);
             for (int j = 0; j < i; j++)
@@ -130,7 +135,8 @@ static void interpretCommand(char* str) {
     }
 }
 
-static int parseCommandArgs(char* str, int i, int* argc, char* argv[]) {
+static int
+parseCommandArgs(char *str, int i, int *argc, char *argv[]) {
     *argc = 0;
 
     while (str[i] != '\0' && str[i] != BACKGROUND_CHAR && str[i] != PIPE_CHAR) {
@@ -139,7 +145,7 @@ static int parseCommandArgs(char* str, int i, int* argc, char* argv[]) {
             continue;
         }
 
-        char* argStart = &str[i];
+        char *argStart = &str[i];
         i = advanceUntilWhitespace(str, i);
 
         if (*argc < MAX_ARGS)

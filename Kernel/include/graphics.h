@@ -102,7 +102,7 @@ void restartCursor();
  * @param pid PID of the process.
  * @param fd File descriptor to add.
  * @param color Color resource to map to the screen.
- * 
+ *
  * @returns - The screen file descriptor, -1 in error cases.
  */
 int addFdScreen(Pid pid, int fd, const Color *color);

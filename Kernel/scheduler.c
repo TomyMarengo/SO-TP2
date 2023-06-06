@@ -1,8 +1,8 @@
 #include <defs.h>
-#include <scheduler.h>
 #include <interrupts.h>
 #include <memoryManager.h>
 #include <process.h>
+#include <scheduler.h>
 
 #define QUANTUM 5
 
@@ -75,7 +75,7 @@ initializeScheduler() {
     currentRunningPID = PSEUDOPID_KERNEL;
     currentQuantum = 0;
 }
-    
+
 int
 onProcessCreated(Pid pid, ProcessStart start, Priority priority, void *currentRSP, int argc, const char *const argv[]) {
     if (priority < PRIORITY_MAX || priority > PRIORITY_MIN)
@@ -203,15 +203,17 @@ getProcessInfo(Pid pid, ProcessInfo *processInfo) {
     return 0;
 }
 
-static ProcessControlBlock* getCurrentProcess() {
+static ProcessControlBlock *
+getCurrentProcess() {
     if (currentRunningPID > 0 && processTable[currentRunningPID].status == RUNNING)
         return &processTable[currentRunningPID];
 
     return NULL;
 }
 
-int killCurrentProcess() {
-    ProcessControlBlock* currentProcess = getCurrentProcess();
+int
+killCurrentProcess() {
+    ProcessControlBlock *currentProcess = getCurrentProcess();
 
     if (currentProcess == NULL)
         return 1;

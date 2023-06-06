@@ -8,7 +8,7 @@
  * `uint64_t` value.
  *
  * @param str Pointer to the input string.
- * 
+ *
  * @returns - Length of the string.
  */
 size_t strlen(const char *str);
@@ -18,7 +18,7 @@ size_t strlen(const char *str);
  *
  * @param number Integer to convert.
  * @param buffer Buffer to store the string.
- * 
+ *
  * @returns - Number of digits converted.
  */
 uint64_t itoa(uint64_t number, char *buffer);
@@ -28,7 +28,7 @@ uint64_t itoa(uint64_t number, char *buffer);
  *
  * @param destination Pointer to the destination string.
  * @param source Pointer to the source string.
- * 
+ *
  * @returns - Pointer to the destination string.
  */
 char *strcpy(char *destination, const char *source);
@@ -39,7 +39,7 @@ char *strcpy(char *destination, const char *source);
  * @param destination Pointer to the destination string.
  * @param source Pointer to the source string.
  * @param limit Maximum number of characters to copy.
- * 
+ *
  * @returns - Pointer to the destination string.
  */
 char *strncpy(char *destination, const char *source, size_t n);
@@ -49,7 +49,7 @@ char *strncpy(char *destination, const char *source, size_t n);
  *
  * @param str1 A string.
  * @param str2 A string.
- * 
+ *
  * @returns - If the strings are equal, the function returns 0.
  */
 int strcmp(const char *str1, const char *str2);
@@ -59,7 +59,7 @@ int strcmp(const char *str1, const char *str2);
  *
  * @param destination Pointer to the destination string.
  * @param source Pointer to the source string.
- * 
+ *
  * @returns - A pointer to the resulting string.
  */
 char *strcat(char *destination, const char *source);

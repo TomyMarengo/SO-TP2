@@ -1,5 +1,5 @@
-#include <testUtil.h>
 #include <syscalls.h>
+#include <testUtil.h>
 #include <userlib.h>
 
 void
@@ -26,7 +26,7 @@ endlessLoopPrint(int argc, char *argv[]) {
 }
 
 uint8_t
-getMaxAvailableProcesses(){
+getMaxAvailableProcesses() {
     ProcessInfo array[MAX_PROCESSES];
     int count = sys_listProcesses(array, MAX_PROCESSES);
 

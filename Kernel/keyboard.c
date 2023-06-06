@@ -1,10 +1,10 @@
 #include <defs.h>
+#include <graphics.h>
 #include <keyboard.h>
 #include <lib.h>
 #include <process.h>
 #include <scheduler.h>
 #include <waitingQueue.h>
-#include <graphics.h>
 
 #define LEFT_SHIFT      0x2A
 #define RIGHT_SHIFT     0x36
@@ -27,10 +27,10 @@ static uint8_t scancodeLToAscii[] = {
 };
 
 static uint8_t scancodeUToAscii[] = {0,   27,  '!', '@', '#', '$', '%', '^', '&', '*', '(',  ')', '_', '+', '\b', '\t', 'Q', 'W',
-    'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,   'A', 'S', 'D',  'F',  'G', 'H',
-    'J', 'K', 'L', ':', '"', '~', 0,   '|', 'Z', 'X', 'C',  'V', 'B', 'N', 'M',  '<',  '>', '?',
-    0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
-    0,   0,   '-', 0,   0,   0,   '+', 0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0};
+                                     'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\n', 0,   'A', 'S', 'D',  'F',  'G', 'H',
+                                     'J', 'K', 'L', ':', '"', '~', 0,   '|', 'Z', 'X', 'C',  'V', 'B', 'N', 'M',  '<',  '>', '?',
+                                     0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
+                                     0,   0,   '-', 0,   0,   0,   '+', 0,   0,   0,   0,    0,   0,   0,   0,    0,    0,   0};
 
 static uint8_t *keyMap[] = {scancodeLToAscii, scancodeUToAscii};
 
@@ -41,8 +41,8 @@ static int dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resour
 static WaitingQueue processReadWQ;
 static int ctrl = 0;
 
-int getCtrlState()
-{
+int
+getCtrlState() {
     return ctrl;
 }
 
@@ -57,16 +57,12 @@ interruptHandlerKeyboard() {
     if (code < 0x80) {
         if (code == LEFT_SHIFT || code == RIGHT_SHIFT) {
             keyMapRow |= 0x01;
-        }
-        else if (code == 0x1D)
-        {
+        } else if (code == 0x1D) {
             ctrl = 1;
-        }
-        else {
+        } else {
             uint8_t keyChar = keyMap[keyMapRow][code];
-            if (keyChar == 'c' && ctrl == 1)
-            {
-                if(getpid()!=0)
+            if (keyChar == 'c' && ctrl == 1) {
+                if (getpid() != 0)
                     killCurrentProcess();
                 return;
             }
@@ -78,8 +74,7 @@ interruptHandlerKeyboard() {
             }
         }
     } else {
-        if (code == 0x9D)
-        {
+        if (code == 0x9D) {
             ctrl = 0;
         }
         code -= 0x80;
@@ -164,4 +159,3 @@ static int
 dupHandler(Pid pidFrom, Pid pidTo, int fdFrom, int fdTo, void *resource) {
     return addFdKeyboard(pidTo, fdTo);
 }
-

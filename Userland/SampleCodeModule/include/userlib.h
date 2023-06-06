@@ -69,7 +69,7 @@ int getLine(char *buffer, int maxSize);
  */
 int fgetLine(int fd, char *buffer, int maxSize);
 
-uint8_t processExists( Pid pid );
+uint8_t processExists(Pid pid);
 
 void intToStr(int num, char str[]);
 

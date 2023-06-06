@@ -1,8 +1,8 @@
 #include <defs.h>
-#include <waitingQueue.h>
 #include <lib.h>
 #include <memoryManager.h>
 #include <scheduler.h>
+#include <waitingQueue.h>
 
 #define BUFFER_CHUNK_SIZE 8
 

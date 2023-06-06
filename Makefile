@@ -18,6 +18,8 @@ clean:
 	cd Image; make clean
 	cd Kernel; make clean
 	cd Userland; make clean
+	rm -rf check
+	rm -rf .config
 
 check:
 	mkdir -p check

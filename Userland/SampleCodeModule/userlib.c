@@ -1,7 +1,7 @@
-#include <userlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <syscalls.h>
+#include <userlib.h>
 
 #define IS_DIGIT(x) (((x) >= '0' && (x) <= '9'))
 
@@ -315,19 +315,20 @@ printf(const char *frmt, ...) {
     va_end(arg);
 }
 
-uint8_t processExists( Pid pid )
-{
+uint8_t
+processExists(Pid pid) {
     ProcessInfo array[MAX_PROCESSES];
     int count = sys_listProcesses(array, MAX_PROCESSES);
 
-    for ( int i = 0; i < count; i++ ){
-        if ( array[i].pid == pid )
+    for (int i = 0; i < count; i++) {
+        if (array[i].pid == pid)
             return 1;
     }
     return 0;
 }
 
-static void reverse(char * str, int length) {
+static void
+reverse(char *str, int length) {
     int start = 0;
     int end = length - 1;
     while (start < end) {
@@ -339,7 +340,8 @@ static void reverse(char * str, int length) {
     }
 }
 
-void intToStr(int num, char * str) {
+void
+intToStr(int num, char *str) {
     int i = 0;
     int isNegative = 0;
 

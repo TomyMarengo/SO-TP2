@@ -1,12 +1,11 @@
 #include <defs.h>
-#include <kernel.h>
 #include <graphics.h>
 #include <idtLoader.h>
 #include <interrupts.h>
 #include <kernel.h>
 #include <keyboard.h>
-#include <memoryManager.h>
 #include <lib.h>
+#include <memoryManager.h>
 #include <moduleLoader.h>
 #include <process.h>
 #include <scheduler.h>
