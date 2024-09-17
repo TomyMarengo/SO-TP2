@@ -19,3 +19,12 @@ Join us on this adventure as we develop **tOS**, the operating system that's as 
 Symptoms :microbe: may include uncontrollable outbreaks of laughter, and an insatiable desire to find and fix bugs. While we strive for a smooth experience, please be prepared for unexpected hiccups, system sneezes, and occasional moments of "coughing" code. Consult with your friendly neighborhood debugger if symptoms persist. Get ready to embark on an exciting journey through the realm of tOS, where even the bugs can't resist a good laugh! :microbe:
 
  Proceed with a sense of humor!
+
+## Compilation
+
+Run `compile.sh` in the root folder of the project. If the "buddy" parameter is provided, the buddy memory manager will be used; otherwise, the "Free List" memory manager will be utilized.
+
+## Execution
+
+Run `run.sh` to execute the project graphically with QEMU. For this, you must have an environment capable of running graphical applications, such as Ubuntu or Windows with WSL2.
+
